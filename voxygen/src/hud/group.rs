@@ -4,8 +4,7 @@ use super::{
 };
 
 use crate::{
-    i18n::VoxygenLocalization, settings::Settings, ui::fonts::ConrodVoxygenFonts,
-    window::GameInput, GlobalState,
+    i18n::Localization, settings::Settings, ui::fonts::Fonts, window::GameInput, GlobalState,
 };
 use client::{self, Client};
 use common::{
@@ -63,8 +62,8 @@ pub struct Group<'a> {
     client: &'a Client,
     settings: &'a Settings,
     imgs: &'a Imgs,
-    fonts: &'a ConrodVoxygenFonts,
-    localized_strings: &'a std::sync::Arc<VoxygenLocalization>,
+    fonts: &'a Fonts,
+    localized_strings: &'a Localization,
     pulse: f32,
     global_state: &'a GlobalState,
 
@@ -79,8 +78,8 @@ impl<'a> Group<'a> {
         client: &'a Client,
         settings: &'a Settings,
         imgs: &'a Imgs,
-        fonts: &'a ConrodVoxygenFonts,
-        localized_strings: &'a std::sync::Arc<VoxygenLocalization>,
+        fonts: &'a Fonts,
+        localized_strings: &'a Localization,
         pulse: f32,
         global_state: &'a GlobalState,
     ) -> Self {

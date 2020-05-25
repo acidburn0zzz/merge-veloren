@@ -3,9 +3,9 @@ use super::{
     MANA_COLOR, REGION_COLOR, SAY_COLOR, TELL_COLOR, TEXT_BG, TEXT_COLOR,
 };
 use crate::{
-    i18n::VoxygenLocalization,
+    i18n::Localization,
     settings::GameplaySettings,
-    ui::{fonts::ConrodVoxygenFonts, Ingameable},
+    ui::{fonts::Fonts, Ingameable},
 };
 use common::comp::{Energy, SpeechBubble, SpeechBubbleType, Stats};
 use conrod_core::{
@@ -67,9 +67,9 @@ pub struct Overhead<'a> {
     in_group: bool,
     settings: &'a GameplaySettings,
     pulse: f32,
-    voxygen_i18n: &'a std::sync::Arc<VoxygenLocalization>,
+    i18n: &'a Localization,
     imgs: &'a Imgs,
-    fonts: &'a ConrodVoxygenFonts,
+    fonts: &'a Fonts,
 
     #[conrod(common_builder)]
     common: widget::CommonBuilder,
@@ -84,9 +84,9 @@ impl<'a> Overhead<'a> {
         in_group: bool,
         settings: &'a GameplaySettings,
         pulse: f32,
-        voxygen_i18n: &'a std::sync::Arc<VoxygenLocalization>,
+        i18n: &'a Localization,
         imgs: &'a Imgs,
-        fonts: &'a ConrodVoxygenFonts,
+        fonts: &'a Fonts,
     ) -> Self {
         Self {
             info,
@@ -95,7 +95,7 @@ impl<'a> Overhead<'a> {
             in_group,
             settings,
             pulse,
-            voxygen_i18n,
+            i18n,
             imgs,
             fonts,
             common: widget::CommonBuilder::default(),
@@ -238,7 +238,7 @@ impl<'a> Widget for Overhead<'a> {
                     .set(state.ids.health_bar, ui);
                 let mut txt = format!("{}/{}", health_cur_txt, health_max_txt);
                 if stats.is_dead {
-                    txt = self.voxygen_i18n.get("hud.group.dead").to_string()
+                    txt = self.i18n.get("hud.group.dead").to_string()
                 };
                 Text::new(&txt)
                     .mid_top_with_margin_on(state.ids.health_bar_bg, 2.0)
@@ -322,8 +322,7 @@ impl<'a> Widget for Overhead<'a> {
         // Speech bubble
         if let Some(bubble) = self.bubble {
             let dark_mode = self.settings.speech_bubble_dark_mode;
-            let localizer =
-                |s: &str, i| -> String { self.voxygen_i18n.get_variation(&s, i).to_string() };
+            let localizer = |s: &str, i| -> String { self.i18n.get_variation(&s, i).to_string() };
             let bubble_contents: String = bubble.message(localizer);
             let (text_color, shadow_color) = bubble_color(&bubble, dark_mode);
             let mut text = Text::new(&bubble_contents)

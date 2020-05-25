@@ -5,7 +5,7 @@
 
 use veloren_voxygen::{
     audio::{self, AudioFrontend},
-    i18n::{self, i18n_asset_key, VoxygenLocalization},
+    i18n::{self, i18n_asset_key, Localization},
     logging,
     profile::Profile,
     run,
@@ -151,7 +151,7 @@ fn main() {
     let profile = Profile::load();
 
     let mut localization_watcher = watch::ReloadIndicator::new();
-    let localized_strings = VoxygenLocalization::load_watched(
+    let localized_strings = Localization::load_watched(
         &i18n_asset_key(&settings.language.selected_language),
         &mut localization_watcher,
     )
@@ -163,7 +163,7 @@ fn main() {
             "Impossible to load language: change to the default language (English) instead.",
         );
         settings.language.selected_language = i18n::REFERENCE_LANG.to_owned();
-        VoxygenLocalization::load_watched(
+        Localization::load_watched(
             &i18n_asset_key(&settings.language.selected_language),
             &mut localization_watcher,
         )
