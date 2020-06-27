@@ -11,13 +11,13 @@ use crate::{
 };
 use client::Client;
 use common::{
-    character::{CharacterItem, MAX_CHARACTERS_PER_PLAYER},
+    assets::Asset,
+    character::{CharacterId, CharacterItem, MAX_CHARACTERS_PER_PLAYER},
     comp,
     comp::humanoid,
 };
 //ImageFrame, Tooltip,
 use crate::settings::Settings;
-use common::assets::load_expect;
 //use std::time::Duration;
 //use ui::ice::widget;
 use iced::{
@@ -106,7 +106,7 @@ pub enum Event {
         tool: Option<String>,
         body: comp::Body,
     },
-    DeleteCharacter(i32),
+    DeleteCharacter(CharacterId),
 }
 
 struct CharacterList {
@@ -408,7 +408,7 @@ pub struct CharSelectionUi {
 impl CharSelectionUi {
     pub fn new(global_state: &mut GlobalState) -> Self {
         // Load language
-        let i18n = load_expect::<Localization>(&i18n_asset_key(
+        let i18n = Localization::load_expect(&i18n_asset_key(
             &global_state.settings.language.selected_language,
         ));
 

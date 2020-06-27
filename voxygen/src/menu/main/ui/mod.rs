@@ -20,8 +20,7 @@ use iced::{text_input, Column, Container, HorizontalAlignment, Length};
 use crate::settings::Settings;
 use common::assets::Asset;
 use image::DynamicImage;
-//use inline_tweak::*;
-use rand::{seq::SliceRandom, thread_rng, Rng};
+use rand::{seq::SliceRandom, thread_rng};
 use std::time::Duration;
 
 // TODO: what is this? (showed up in rebase)
@@ -466,7 +465,7 @@ impl<'a> MainMenuUi {
         let controls = Controls::new(
             fonts,
             Imgs::load(&mut ui).expect("Failed to load images"),
-            ui.add_graphic(Graphic::Image(DynamicImage::load_expect(bg_img_spec))),
+            ui.add_graphic(Graphic::Image(DynamicImage::load_expect(bg_img_spec), None)),
             i18n,
             &global_state.settings,
         );
