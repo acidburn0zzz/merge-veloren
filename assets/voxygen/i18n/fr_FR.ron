@@ -387,9 +387,21 @@ objets magiques ?"#,
         "char_selection.skin": "Couleur de la peau",
         "char_selection.eyeshape": "Forme des yeux",
         "char_selection.accessories": "Accessoires",
+<<<<<<< HEAD
         "char_selection.create_info_name": "Votre personnage doit avoir un prénom !",
 
         /// Fin de la section Création du personnage
+=======
+        "char_selection.level_fmt": "Niveau {level_nb}",
+        "char_selection.create_new_character": "Créer un nouveau personnage",
+        "char_selection.human_default": "Humain par défault",
+        "char_selection.uncanny_valley": "Vallée dérangeante",
+        "char_selection.chest_color": "Couleur du torse",
+        "char_selection.logout": "Se déconnecter",
+        "char_selection.enter_world": "Entrer dans le monde",
+        "char_selection.plains_of_uncertainty": "Plaines de l'incertitude",
+        "char_selection.character_creation": "Création de personnages",
+>>>>>>> 883233a7a... Basic structure of character selection
 
         /// Start character window section
         "character_window.character_name": "Personnage",

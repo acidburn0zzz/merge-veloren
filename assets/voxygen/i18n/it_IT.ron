@@ -462,8 +462,12 @@ oggetti infusi di magia?"#,
                 "char_selection.change_server": "Cambia Server",
                 "char_selection.enter_world": "Unisciti al Mondo",
                 "char_selection.logout": "Disconnettiti",
+<<<<<<< HEAD
                 "char_selection.create_new_charater": "Crea un nuovo Personaggio",
                 "char_selection.creating_character": "Creazione Personaggio...",
+=======
+                "char_selection.create_new_character": "Crea un nuovo Personaggio",
+>>>>>>> 883233a7a... Basic structure of character selection
                 "char_selection.character_creation": "Creazione Personaggio",
 
                 "char_selection.human_default": "Umano Predefinito",

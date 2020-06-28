@@ -400,8 +400,12 @@ https://account.veloren.net."#,
         "char_selection.change_server": "Сменить сервер",
         "char_selection.enter_world": "Войти в мир",
         "char_selection.logout": "Выйти в меню",
+<<<<<<< HEAD
         "char_selection.create_new_charater": "Создать нового персонажа",
         "char_selection.creating_character": "Создание персонажа...",
+=======
+        "char_selection.create_new_character": "Создать нового персонажа",
+>>>>>>> 883233a7a... Basic structure of character selection
         "char_selection.character_creation": "Создание персонажа",
 
         "char_selection.human_default": "Стандартный человек",
