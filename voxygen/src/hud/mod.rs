@@ -1083,7 +1083,7 @@ impl Hud {
                         h,
                         i,
                         uid,
-                        client.group_members().contains(uid),
+                        client.group_members().contains_key(uid),
                     )
                 })
                 .filter(|(entity, pos, _, stats, _, _, _, _, hpfl, _, in_group)| {
@@ -1957,7 +1957,6 @@ impl Hud {
                 &self.imgs,
                 &self.fonts,
                 &self.voxygen_i18n,
-                info.selected_entity,
             )
             .set(self.ids.group_window, ui_widgets)
             {
