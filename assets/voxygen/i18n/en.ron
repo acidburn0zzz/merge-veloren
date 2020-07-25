@@ -160,6 +160,8 @@ https://account.veloren.net."#,
         "main.login.banned": "You have been banned with the following reason",
         "main.login.kicked": "You have been kicked with the following reason",
 
+		"main.servers.select_server": "Select a server",
+
         /// End Main screen section
 
 
