@@ -117,23 +117,6 @@ impl<'a> Widget for Crafting<'a> {
                 )
             });
         }
-        /*if state.ids.recipe_img_frame.len() < self.client.recipe_book().iter().len() {
-            state.update(|state| {
-                state.ids.recipe_img_frame.resize(
-                    self.client.recipe_book().iter().len(),
-                    &mut ui.widget_id_generator(),
-                )
-            });
-        }
-        if state.ids.recipe_img.len() < self.client.recipe_book().iter().len() {
-            state.update(|state| {
-                state.ids.recipe_img.resize(
-                    self.client.recipe_book().iter().len(),
-                    &mut ui.widget_id_generator(),
-                )
-            });
-        }*/
-
         let ids = &state.ids;
 
         let mut events = Vec::new();

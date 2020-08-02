@@ -120,7 +120,11 @@ impl<'a> Widget for Social<'a> {
         let mut events = Vec::new();
 
         // Window frame and BG
-        let pos = if self.show.group { 180.0 } else { 25.0 };
+        let pos = if self.show.group || self.show.group_menu {
+            200.0
+        } else {
+            25.0
+        };
         // TODO: Different window visuals depending on the selected tab
         let window_bg = match &self.show.social_tab {
             SocialTab::Online => self.imgs.social_bg_on,
@@ -133,7 +137,7 @@ impl<'a> Widget for Social<'a> {
             SocialTab::Faction => self.imgs.social_frame_fact,
         };
         Image::new(window_bg)
-            .top_left_with_margins_on(ui.window, 200.0, pos)
+            .bottom_left_with_margins_on(ui.window, 308.0, pos)
             .color(Some(UI_MAIN))
             .w_h(280.0, 460.0)
             .set(state.ids.bg, ui);
@@ -189,7 +193,7 @@ impl<'a> Widget for Social<'a> {
             SocialTab::Online => UI_MAIN,
             _ => Color::Rgba(1.0, 1.0, 1.0, 0.6),
         })
-        .top_right_with_margins_on(state.ids.frame, 50.0, -28.0)
+        .top_right_with_margins_on(state.ids.frame, 50.0, -27.0)
         .set(state.ids.online_tab, ui)
         .was_clicked()
         {

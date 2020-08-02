@@ -485,6 +485,7 @@ impl<'a> Widget for Group<'a> {
                     .was_clicked()
                 {
                     self.show.group_menu = false;
+                    self.show.group = !self.show.group;
                     events.push(Event::LeaveGroup);
                 };
                 // Group leader functions
