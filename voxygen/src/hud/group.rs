@@ -358,15 +358,17 @@ impl<'a> Widget for Group<'a> {
                         // Health Text
                         let txt = format!(
                             "{}/{}",
-                            stats.health.current() as u32,
-                            stats.health.maximum() as u32,
+                            stats.health.current() / 10 as u32,
+                            stats.health.maximum() / 10 as u32,
                         );
+                        // Change font size depending on health amount
                         let font_size = match stats.health.maximum() {
                             0..=999 => 14,
                             1000..=9999 => 13,
                             10000..=99999 => 12,
                             _ => 11,
                         };
+                        // Change text offset depending on health amount
                         let txt_offset = match stats.health.maximum() {
                             0..=999 => 4.0,
                             1000..=9999 => 4.5,
@@ -469,7 +471,7 @@ impl<'a> Widget for Group<'a> {
                     .label_font_size(self.fonts.cyri.scale(10))
                     .set(state.ids.btn_friend, ui)
                     .was_clicked()
-                    {};
+                {};
                 if Button::image(self.imgs.button)
                     .w_h(90.0, 22.0)
                     .bottom_right_with_margins_on(state.ids.bg, 5.0, 5.0)
