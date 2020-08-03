@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- IF THIS IS STILL HERE WHEN THE MR IS REVIEWED XVAR FORGOT TO FILL IN THE CHANGELOG
 
 - New level of detail feature, letting you see all the world's terrain at any view distance.
 - Point and directional lights now cast realistic shadows, using shadow mapping.
@@ -117,12 +118,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Animals run/turn at different speeds
 - Updated windowing library (winit 0.19 -> 0.22)
 - Bow M2 is now a charged attack that scales the longer it's held
-- Fixed window resizing on Mac OS X.
-- Dehardcoded many item variants
-- Tooltips avoid the mouse better and disappear when hovered
-- Improved social window functions and visuals
-- Changed agent behaviour to allow fleeing
-- Waypoints now spawn on dungeon staircases
 
 ### Removed
 
