@@ -42,6 +42,7 @@ widget_ids! {
         level_skull,
         health_bar,
         health_bar_bg,
+        health_txt,
         mana_bar,
         health_bar_fg,
     }
@@ -62,6 +63,7 @@ pub struct Overhead<'a> {
     voxygen_i18n: &'a std::sync::Arc<VoxygenLocalization>,
     imgs: &'a Imgs,
     fonts: &'a ConrodVoxygenFonts,
+
     #[conrod(common_builder)]
     common: widget::CommonBuilder,
 }
@@ -141,19 +143,21 @@ impl<'a> Widget for Overhead<'a> {
         // Name
         Text::new(&self.name)
             .font_id(self.fonts.cyri.conrod_id)
-            .font_size(30)
+            .font_size(20)
             .color(Color::Rgba(0.0, 0.0, 0.0, 1.0))
-            .x_y(-1.0, MANA_BAR_Y + 48.0)
+            .x_y(-1.0, MANA_BAR_Y + 32.0)
+            .parent(id)
             .set(state.ids.name_bg, ui);
         Text::new(&self.name)
             .font_id(self.fonts.cyri.conrod_id)
-            .font_size(30)
+            .font_size(20)
             .color(if self.in_group {
                 GROUP_MEMBER
             } else {
                 DEFAULT_NPC
             })
-            .x_y(0.0, MANA_BAR_Y + 50.0)
+            .x_y(0.0, MANA_BAR_Y + 32.0)
+            .parent(id)
             .set(state.ids.name, ui);
 
         // Speech bubble
@@ -331,6 +335,25 @@ impl<'a> Widget for Overhead<'a> {
             }))
             .parent(id)
             .set(state.ids.health_bar, ui);
+        let mut txt = format!(
+            "{}/{}",
+            self.stats.health.current() / 10 as u32,
+            self.stats.health.maximum() / 10 as u32,
+        );
+        match self.stats.health.current() / 10 as u32 {
+            0 => txt = format!("1/{}", self.stats.health.maximum() / 10 as u32),
+            _ => {},
+        };
+        if self.stats.is_dead {
+            txt = self.voxygen_i18n.get("hud.group.dead").to_string()
+        };
+        Text::new(&txt)
+            .mid_top_with_margin_on(state.ids.health_bar_bg, 2.0)
+            .font_size(10)
+            .font_id(self.fonts.cyri.conrod_id)
+            .color(TEXT_COLOR)
+            .parent(id)
+            .set(state.ids.health_txt, ui);
 
         // % Mana Filling
         if let Some(energy) = self.energy {
@@ -377,6 +400,7 @@ impl<'a> Widget for Overhead<'a> {
             .w_h(18.0 * BARSIZE, 18.0 * BARSIZE)
             .x_y(-39.0 * BARSIZE, MANA_BAR_Y + 7.0)
             .color(Some(Color::Rgba(1.0, 1.0, 1.0, 1.0)))
+            .graphics_for(state.ids.health_bar_bg)
             .parent(id)
             .set(state.ids.level_skull, ui);
         } else {
@@ -395,6 +419,7 @@ impl<'a> Widget for Overhead<'a> {
                     EQUAL
                 })
                 .x_y(-37.0 * BARSIZE, MANA_BAR_Y + 9.0)
+                .graphics_for(state.ids.health_bar_bg)
                 .parent(id)
                 .set(state.ids.level, ui);
         }

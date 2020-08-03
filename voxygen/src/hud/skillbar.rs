@@ -219,9 +219,9 @@ impl<'a> Widget for Skillbar<'a> {
 
         let exp_percentage = (self.stats.exp.current() as f64) / (self.stats.exp.maximum() as f64);
 
-        let hp_percentage =
+        let mut hp_percentage =
             self.stats.health.current() as f64 / self.stats.health.maximum() as f64 * 100.0;
-        let energy_percentage = self.energy.current() as f64 / self.energy.maximum() as f64 * 100.0;
+        let mut energy_percentage = self.energy.current() as f64 / self.energy.maximum() as f64 * 100.0;
 
         let scale = 2.0;
 
@@ -1160,6 +1160,10 @@ impl<'a> Widget for Skillbar<'a> {
         };
 
         // Lifebar
+        if self.stats.is_dead {            
+            hp_percentage = 0.0;
+            energy_percentage = 0.0;
+        };
         Image::new(self.imgs.healthbar_bg)
             .w_h(100.0 * scale, 20.0 * scale)
             .top_left_with_margins_on(state.ids.m1_slot, 0.0, -100.0 * scale)
@@ -1191,11 +1195,19 @@ impl<'a> Widget for Skillbar<'a> {
         // Bar Text
         // Values
         if let BarNumbers::Values = bar_values {
-            let hp_text = format!(
+            let mut hp_text = format!(
                 "{}/{}",
                 (self.stats.health.current() / 10) as u32,
                 (self.stats.health.maximum() / 10) as u32
             );
+            // Don't show "0" health for rounded health value
+            match self.stats.health.current() / 10 as u32 {
+                0 => hp_text = format!("1/{}", self.stats.health.maximum() / 10 as u32),
+                _ => {},
+            };
+            if self.stats.is_dead {
+                hp_text = self.localized_strings.get("hud.group.dead").to_string();                
+            };
             Text::new(&hp_text)
                 .mid_top_with_margin_on(state.ids.healthbar_bg, 6.0 * scale)
                 .font_size(self.fonts.cyri.scale(14))
