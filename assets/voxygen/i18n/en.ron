@@ -336,6 +336,7 @@ magically infused items?"#,
         "hud.group.add_friend": "Add to Friends",
         "hud.group.link_group": "Link Groups",
         "hud.group.in_menu": "In Menu",
+        "hud.group.members": "Group Members",
 
         "hud.spell": "Spells",
 

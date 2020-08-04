@@ -1,15 +1,11 @@
 use super::{
-    img_ids::{Imgs, ImgsRot},
-    Show, BLACK, GROUP_COLOR, HP_COLOR, KILL_COLOR, LOW_HP_COLOR, MANA_COLOR, TEXT_COLOR,
-    TEXT_COLOR_GREY, UI_HIGHLIGHT_0,
+    img_ids::Imgs, Show, BLACK, GROUP_COLOR, HP_COLOR, KILL_COLOR, LOW_HP_COLOR, MANA_COLOR,
+    TEXT_COLOR, TEXT_COLOR_GREY, UI_HIGHLIGHT_0, UI_MAIN,
 };
 
 use crate::{
-    i18n::VoxygenLocalization,
-    settings::Settings,
-    ui::{fonts::ConrodVoxygenFonts, ImageFrame, Tooltip, TooltipManager, Tooltipable},
-    window::GameInput,
-    GlobalState,
+    i18n::VoxygenLocalization, settings::Settings, ui::fonts::ConrodVoxygenFonts,
+    window::GameInput, GlobalState,
 };
 use client::{self, Client};
 use common::{
@@ -51,6 +47,8 @@ widget_ids! {
         member_stam[],
         dead_txt[],
         health_txt[],
+        timeout_bg,
+        timeout,
     }
 }
 
@@ -60,7 +58,6 @@ pub struct State {
     selected_member: Option<Uid>,
 }
 
-const TOOLTIP_UPSHIFT: f64 = 40.0;
 #[derive(WidgetCommon)]
 pub struct Group<'a> {
     show: &'a mut Show,
@@ -69,8 +66,6 @@ pub struct Group<'a> {
     imgs: &'a Imgs,
     fonts: &'a ConrodVoxygenFonts,
     localized_strings: &'a std::sync::Arc<VoxygenLocalization>,
-    tooltip_manager: &'a mut TooltipManager,
-    rot_imgs: &'a ImgsRot,
     pulse: f32,
     global_state: &'a GlobalState,
 
@@ -86,8 +81,6 @@ impl<'a> Group<'a> {
         imgs: &'a Imgs,
         fonts: &'a ConrodVoxygenFonts,
         localized_strings: &'a std::sync::Arc<VoxygenLocalization>,
-        tooltip_manager: &'a mut TooltipManager,
-        rot_imgs: &'a ImgsRot,
         pulse: f32,
         global_state: &'a GlobalState,
     ) -> Self {
@@ -96,8 +89,6 @@ impl<'a> Group<'a> {
             client,
             settings,
             imgs,
-            rot_imgs,
-            tooltip_manager,
             fonts,
             localized_strings,
             pulse,
@@ -138,26 +129,6 @@ impl<'a> Widget for Group<'a> {
         let widget::UpdateArgs { state, ui, .. } = args;
 
         let mut events = Vec::new();
-        let localized_strings = self.localized_strings;
-
-        let button_tooltip = Tooltip::new({
-            // Edge images [t, b, r, l]
-            // Corner images [tr, tl, br, bl]
-            let edge = &self.rot_imgs.tt_side;
-            let corner = &self.rot_imgs.tt_corner;
-            ImageFrame::new(
-                [edge.cw180, edge.none, edge.cw270, edge.cw90],
-                [corner.none, corner.cw270, corner.cw90, corner.cw180],
-                Color::Rgba(0.08, 0.07, 0.04, 1.0),
-                5.0,
-            )
-        })
-        .title_font_size(self.fonts.cyri.scale(15))
-        .parent(ui.window)
-        .desc_font_size(self.fonts.cyri.scale(12))
-        .title_text_color(TEXT_COLOR)
-        .font_id(self.fonts.cyri.conrod_id)
-        .desc_text_color(TEXT_COLOR);
 
         // Don't show pets
         let group_members = self
@@ -217,6 +188,20 @@ impl<'a> Widget for Group<'a> {
                 .w_h(49.0, 26.0)
                 .bottom_left_with_margins_on(ui.window, 190.0, 10.0)
                 .set(state.ids.group_button, ui);
+            // Show timeout bar
+            let max_time = 90.0;
+            let time = 50.0;
+            let progress_perc = time / max_time;
+            Image::new(self.imgs.progress_frame)
+                .w_h(100.0, 10.0)
+                .middle_of(state.ids.bg)
+                .color(Some(UI_MAIN))
+                .set(state.ids.timeout_bg, ui);
+            Image::new(self.imgs.progress)
+                .w_h(100.0 * progress_perc, 8.0)
+                .top_left_with_margins_on(state.ids.timeout_bg, 0.0, 0.0)
+                .color(Some(UI_HIGHLIGHT_0))
+                .set(state.ids.timeout, ui);
         }
         // Buttons
         if let Some((group_name, leader)) = self.client.group_info().filter(|_| in_group) {
@@ -230,13 +215,6 @@ impl<'a> Widget for Group<'a> {
             .bottom_left_with_margins_on(ui.window, 190.0, 10.0)
             .hover_image(self.imgs.group_icon_hover)
             .press_image(self.imgs.group_icon_press)
-            .with_tooltip(
-                self.tooltip_manager,
-                &localized_strings.get("hud.group"),
-                "",
-                &button_tooltip,
-            )
-            .bottom_offset(TOOLTIP_UPSHIFT)
             .set(state.ids.group_button, ui)
             .was_clicked()
             {
