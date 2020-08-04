@@ -54,7 +54,7 @@ pub fn handle_group(server: &mut Server, entity: specs::Entity, manip: GroupMani
                 if client.invited_to_group.is_some() {
                     already_has_invite = true;
                 } else {
-                    client.notify(ServerMsg::GroupInvite((*inviter_uid)));
+                    client.notify(ServerMsg::GroupInvite(*inviter_uid));
                     client.invited_to_group = Some(entity);
                 }
             // Would be cool to do this in agent system (e.g. add an invited

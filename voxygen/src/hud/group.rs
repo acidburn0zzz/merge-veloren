@@ -1,6 +1,6 @@
 use super::{
-    img_ids::Imgs, Show, BLACK, GROUP_COLOR, HP_COLOR, KILL_COLOR, LOW_HP_COLOR, MANA_COLOR,
-    TEXT_COLOR, TEXT_COLOR_GREY, UI_HIGHLIGHT_0, UI_MAIN,
+    img_ids::Imgs, Show, BLACK, ERROR_COLOR, GROUP_COLOR, HP_COLOR, KILL_COLOR, LOW_HP_COLOR,
+    MANA_COLOR, TEXT_COLOR, TEXT_COLOR_GREY, UI_HIGHLIGHT_0, UI_MAIN,
 };
 
 use crate::{
@@ -179,7 +179,7 @@ impl<'a> Widget for Group<'a> {
         if self.show.group_menu || open_invite.is_some() {
             // Frame
             Rectangle::fill_with([220.0, 165.0], color::Color::Rgba(0.0, 0.0, 0.0, 0.8))
-                .bottom_left_with_margins_on(ui.window, 220.0, 10.0)
+                .bottom_left_with_margins_on(ui.window, 45.0, 490.0)
                 .crop_kids()
                 .set(state.ids.bg, ui);
         }
@@ -187,7 +187,7 @@ impl<'a> Widget for Group<'a> {
             // Group Menu button
             Button::image(self.imgs.group_icon)
                 .w_h(49.0, 26.0)
-                .bottom_left_with_margins_on(ui.window, 190.0, 10.0)
+                .bottom_left_with_margins_on(ui.window, 10.0, 490.0)
                 .set(state.ids.group_button, ui);
             // Show timeout bar
             let max_time = 90.0;
@@ -213,7 +213,7 @@ impl<'a> Widget for Group<'a> {
                 self.imgs.group_icon
             })
             .w_h(49.0, 26.0)
-            .bottom_left_with_margins_on(ui.window, 190.0, 10.0)
+            .bottom_left_with_margins_on(ui.window, 10.0, 490.0)
             .hover_image(self.imgs.group_icon_hover)
             .press_image(self.imgs.group_icon_press)
             .set(state.ids.group_button, ui)
@@ -298,7 +298,7 @@ impl<'a> Widget for Group<'a> {
 
                     // change panel positions when debug info is shown
                     let offset = if self.global_state.settings.gameplay.toggle_debug {
-                        240.0
+                        290.0
                     } else {
                         110.0
                     };
@@ -316,10 +316,15 @@ impl<'a> Widget for Group<'a> {
                         21..=40 => LOW_HP_COLOR,
                         _ => HP_COLOR,
                     };
+                    let lead = if uid == leader { true } else { false };
                     // Don't show panel for the player!
                     // Panel BG
                     back.w_h(152.0, 36.0)
-                        .color(Some(TEXT_COLOR))
+                        .color(if lead {
+                            Some(ERROR_COLOR)
+                        } else {
+                            Some(TEXT_COLOR)
+                        })
                         .set(state.ids.member_panels_bg[i], ui);
                     // Health
                     Image::new(self.imgs.bar_content)
@@ -380,7 +385,7 @@ impl<'a> Widget for Group<'a> {
                         .bottom_left_with_margins_on(state.ids.member_panels_txt_bg[i], 2.0, 2.0)
                         .font_size(20)
                         .font_id(self.fonts.cyri.conrod_id)
-                        .color(GROUP_COLOR)
+                        .color(if lead { ERROR_COLOR } else { GROUP_COLOR })
                         .set(state.ids.member_panels_txt[i], ui);
                     if let Some(energy) = energy {
                         let stam_perc = energy.current() as f64 / energy.maximum() as f64;
@@ -440,13 +445,13 @@ impl<'a> Widget for Group<'a> {
                     .font_id(self.fonts.cyri.conrod_id)
                     .color(TEXT_COLOR)
                     .set(state.ids.title, ui);
-                if Button::image(self.imgs.button)
+                if Button::image(self.imgs.button) // Change button behaviour and style when the friendslist is working
                     .w_h(90.0, 22.0)
                     .top_right_with_margins_on(state.ids.bg, 30.0, 5.0)
-                    .hover_image(self.imgs.button) // Change this when the friendslist is working
-                    .press_image(self.imgs.button) // Change this when the friendslist is working                
-                    .label_color(TEXT_COLOR_GREY) // Change this when the friendslist is working
-                    .image_color (TEXT_COLOR_GREY) // Change this when the friendslist is working
+                    .hover_image(self.imgs.button)
+                    .press_image(self.imgs.button)
+                    .label_color(TEXT_COLOR_GREY)
+                    .image_color(TEXT_COLOR_GREY)
                     .label(&self.localized_strings.get("hud.group.add_friend"))
                     .label_font_id(self.fonts.cyri.conrod_id)
                     .label_font_size(self.fonts.cyri.scale(10))
@@ -495,19 +500,19 @@ impl<'a> Widget for Group<'a> {
                         }
                     };
                     if Button::image(self.imgs.button)
-                    .w_h(90.0, 22.0)
-                    .mid_bottom_with_margin_on(state.ids.btn_leader, -27.0)
-                    .hover_image(self.imgs.button)
-                    .press_image(self.imgs.button)
-                    .label(&self.localized_strings.get("hud.group.link_group"))
-                    .hover_image(self.imgs.button) // Change this when the friendslist is working
-                .press_image(self.imgs.button) // Change this when the friendslist is working                
-                .label_color(TEXT_COLOR_GREY) // Change this when the friendslist is working
-                .image_color (TEXT_COLOR_GREY) // Change this when the friendslist is working
-                    .label_font_id(self.fonts.cyri.conrod_id)
-                    .label_font_size(self.fonts.cyri.scale(10))
-                    .set(state.ids.btn_link, ui)
-                    .was_clicked()
+                        .w_h(90.0, 22.0)
+                        .mid_bottom_with_margin_on(state.ids.btn_leader, -27.0)
+                        .hover_image(self.imgs.button)
+                        .press_image(self.imgs.button)
+                        .label(&self.localized_strings.get("hud.group.link_group"))
+                        .hover_image(self.imgs.button)
+                        .press_image(self.imgs.button)
+                        .label_color(TEXT_COLOR_GREY)
+                        .image_color(TEXT_COLOR_GREY)
+                        .label_font_id(self.fonts.cyri.conrod_id)
+                        .label_font_size(self.fonts.cyri.scale(10))
+                        .set(state.ids.btn_link, ui)
+                        .was_clicked()
                     {};
                     if Button::image(self.imgs.button)
                         .w_h(90.0, 22.0)
@@ -558,7 +563,6 @@ impl<'a> Widget for Group<'a> {
                 for (i, &uid) in group_members.iter().copied().enumerate() {
                     let selected = state.selected_member.map_or(false, |u| u == uid);
                     let char_name = uid_to_name_text(uid, &self.client);
-
                     // TODO: Do something special visually if uid == leader
                     if Button::image(if selected {
                         self.imgs.selection
@@ -578,7 +582,11 @@ impl<'a> Widget for Group<'a> {
                     .crop_kids()
                     .label_x(Relative::Place(Place::Start(Some(4.0))))
                     .label(&char_name)
-                    .label_color(TEXT_COLOR)
+                    .label_color(if uid == leader {
+                        ERROR_COLOR
+                    } else {
+                        TEXT_COLOR
+                    })
                     .label_font_id(self.fonts.cyri.conrod_id)
                     .label_font_size(self.fonts.cyri.scale(12))
                     .set(state.ids.members[i], ui)
