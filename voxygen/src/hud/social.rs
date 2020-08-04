@@ -509,7 +509,9 @@ impl<'a> Widget for Social<'a> {
                     "{}/6 {}",
                     &current_members,
                     &self.localized_strings.get("hud.group.members")
-                );
+                )
+            } else {
+                format!("{}", &self.localized_strings.get("hud.group.members"))
             };
             if Button::image(self.imgs.button)
                 .w_h(106.0, 26.0)
