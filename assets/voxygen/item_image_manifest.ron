@@ -1037,7 +1037,7 @@
     Armor(Neck("Neck0")): Png(
         "element.icons.neck-0",
     ),
-    Armor(Neck(Neck1)): Png(
+    Armor(Neck("Neck1")): Png(
         "element.icons.neck-1",
     ),
     // Tabards

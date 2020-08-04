@@ -3,7 +3,7 @@ Item(
     description: "Keeps your shoulders warm.",
     kind: Armor(
         (
-            kind: Back(Short1),
+            kind: Back("Short1"),
             stats: (
                 protection: Normal(0.1),
             ),
