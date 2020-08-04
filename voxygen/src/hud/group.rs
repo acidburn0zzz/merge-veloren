@@ -35,7 +35,6 @@ widget_ids! {
         scroll_area,
         scrollbar,
         members[],
-        invite_bubble,
         bubble_frame,
         btn_accept,
         btn_decline,
@@ -380,12 +379,14 @@ impl<'a> Widget for Group<'a> {
                         .font_size(20)
                         .font_id(self.fonts.cyri.conrod_id)
                         .color(BLACK)
+                        .w(300.0) // limit name length display
                         .set(state.ids.member_panels_txt_bg[i], ui);
                     Text::new(&char_name)
                         .bottom_left_with_margins_on(state.ids.member_panels_txt_bg[i], 2.0, 2.0)
                         .font_size(20)
                         .font_id(self.fonts.cyri.conrod_id)
                         .color(if lead { ERROR_COLOR } else { GROUP_COLOR })
+                        .w(300.0) // limit name length display
                         .set(state.ids.member_panels_txt[i], ui);
                     if let Some(energy) = energy {
                         let stam_perc = energy.current() as f64 / energy.maximum() as f64;
@@ -621,6 +622,7 @@ impl<'a> Widget for Group<'a> {
                 .font_size(12)
                 .font_id(self.fonts.cyri.conrod_id)
                 .color(TEXT_COLOR)
+                .w(165.0) // Text stays within frame
                 .set(state.ids.title, ui);
             // Accept Button
             let accept_key = self

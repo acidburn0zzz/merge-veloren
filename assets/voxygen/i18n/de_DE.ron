@@ -322,8 +322,7 @@ magischen Gegenstände ergattern?"#,
         "hud.social.zone" : "Gebiet",
 
         "hud.group": "Gruppe",
-        "hud.group.invite_to_join": "{name}
-        lädt euch in seine Gruppe ein!",
+        "hud.group.invite_to_join": "{name} lädt euch in seine Gruppe ein!",
         "hud.group.invite": "Einladen",
         "hud.group.kick": "Kicken",
         "hud.group.assign_leader": "Anführer",
