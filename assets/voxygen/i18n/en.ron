@@ -326,7 +326,8 @@ magically infused items?"#,
         "hud.crafting.tool_cata": "Requires:",
 
         "hud.group": "Group",
-        "hud.group.invite_to_join": "{name} invited you to their group!",
+        "hud.group.invite_to_join": "{name}
+        invited you to their group!",
         "hud.group.invite": "Invite",
         "hud.group.kick": "Kick",
         "hud.group.assign_leader": "Assign Leader",
