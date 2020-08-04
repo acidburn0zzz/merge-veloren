@@ -198,8 +198,8 @@ impl<'a> Widget for Group<'a> {
                 .color(Some(UI_MAIN))
                 .set(state.ids.timeout_bg, ui);
             Image::new(self.imgs.progress)
-                .w_h(100.0 * progress_perc, 8.0)
-                .top_left_with_margins_on(state.ids.timeout_bg, 0.0, 0.0)
+                .w_h(98.0 * progress_perc, 8.0)
+                .top_left_with_margins_on(state.ids.timeout_bg, 1.0, 1.0)
                 .color(Some(UI_HIGHLIGHT_0))
                 .set(state.ids.timeout, ui);
         }
@@ -297,7 +297,7 @@ impl<'a> Widget for Group<'a> {
 
                     // change panel positions when debug info is shown
                     let offset = if self.global_state.settings.gameplay.toggle_debug {
-                        210.0
+                        240.0
                     } else {
                         110.0
                     };
