@@ -78,6 +78,7 @@ pub struct Social<'a> {
 }
 
 impl<'a> Social<'a> {
+    #[allow(clippy::too_many_arguments)] // TODO: Pending review in #587
     pub fn new(
         show: &'a Show,
         client: &'a Client,
@@ -511,7 +512,7 @@ impl<'a> Widget for Social<'a> {
                     &self.localized_strings.get("hud.group.members")
                 )
             } else {
-                format!("{}", &self.localized_strings.get("hud.group.members"))
+                (&self.localized_strings.get("hud.group.members")).to_string()
             };
             if Button::image(self.imgs.button)
                 .w_h(106.0, 26.0)
