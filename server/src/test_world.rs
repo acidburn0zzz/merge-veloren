@@ -1,5 +1,5 @@
 use common::{
-    generation::{ChunkSupplement, EntityInfo, EntityKind},
+    generation::{ChunkSupplement, EntityInfo},
     terrain::{Block, BlockKind, TerrainChunk, TerrainChunkMeta, TerrainChunkSize},
     vol::{ReadVol, RectVolSize, Vox, WriteVol},
 };
@@ -29,13 +29,6 @@ impl World {
         let height = rng.gen::<i32>() % 8;
 
         let mut supplement = ChunkSupplement::default();
-
-        if chunk_pos.map(|e| e % 8 == 0).reduce_and() {
-            supplement = supplement.with_entity(EntityInfo {
-                pos: Vec3::<f32>::from(chunk_pos.map(|e| e as f32 * 32.0)) + Vec3::unit_z() * 256.0,
-                kind: EntityKind::Waypoint,
-            });
-        }
 
         Ok((
             TerrainChunk::new(
