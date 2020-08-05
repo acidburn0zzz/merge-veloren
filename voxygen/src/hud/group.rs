@@ -25,7 +25,7 @@ widget_ids! {
         group_button,
         bg,
         title,
-        close,
+        title_bg,
         btn_bg,
         btn_friend,
         btn_leader,
@@ -177,8 +177,8 @@ impl<'a> Widget for Group<'a> {
         // broken
         if self.show.group_menu || open_invite.is_some() {
             // Frame
-            Rectangle::fill_with([220.0, 165.0], color::Color::Rgba(0.0, 0.0, 0.0, 0.8))
-                .bottom_left_with_margins_on(ui.window, 45.0, 490.0)
+            Rectangle::fill_with([220.0, 140.0], color::Color::Rgba(0.0, 0.0, 0.0, 0.8))
+                .bottom_left_with_margins_on(ui.window, 108.0, 490.0)
                 .crop_kids()
                 .set(state.ids.bg, ui);
         }
@@ -220,6 +220,18 @@ impl<'a> Widget for Group<'a> {
             {
                 self.show.group_menu = !self.show.group_menu;
             };
+            Text::new(&group_name)
+                .up_from(state.ids.group_button, 5.0)
+                .font_size(14)
+                .font_id(self.fonts.cyri.conrod_id)
+                .color(BLACK)
+                .set(state.ids.title_bg, ui);
+            Text::new(&group_name)
+                .bottom_right_with_margins_on(state.ids.title_bg, 1.0, 1.0)
+                .font_size(14)
+                .font_id(self.fonts.cyri.conrod_id)
+                .color(TEXT_COLOR)
+                .set(state.ids.title, ui);
             // Member panels
             let group_size = group_members.len();
             if state.ids.member_panels_bg.len() < group_size {
@@ -440,15 +452,9 @@ impl<'a> Widget for Group<'a> {
 
             if self.show.group_menu {
                 let selected = state.selected_member;
-                Text::new(&group_name)
-                    .mid_top_with_margin_on(state.ids.bg, 2.0)
-                    .font_size(20)
-                    .font_id(self.fonts.cyri.conrod_id)
-                    .color(TEXT_COLOR)
-                    .set(state.ids.title, ui);
                 if Button::image(self.imgs.button) // Change button behaviour and style when the friendslist is working
                     .w_h(90.0, 22.0)
-                    .top_right_with_margins_on(state.ids.bg, 30.0, 5.0)
+                    .top_right_with_margins_on(state.ids.bg, 5.0, 5.0)
                     .hover_image(self.imgs.button)
                     .press_image(self.imgs.button)
                     .label_color(TEXT_COLOR_GREY)
@@ -552,8 +558,8 @@ impl<'a> Widget for Group<'a> {
                 }
                 // Scrollable area for group member names
                 Rectangle::fill_with([110.0, 135.0], color::TRANSPARENT)
-                    .top_left_with_margins_on(state.ids.bg, 30.0, 5.0)
-                    .scroll_kids()
+                    .top_left_with_margins_on(state.ids.bg, 5.0, 5.0)
+                    .crop_kids()
                     .scroll_kids_vertically()
                     .set(state.ids.scroll_area, ui);
                 Scrollbar::y_axis(state.ids.scroll_area)
@@ -618,7 +624,7 @@ impl<'a> Widget for Group<'a> {
                 .get("hud.group.invite_to_join")
                 .replace("{name}", &name);
             Text::new(&invite_text)
-                .mid_top_with_margin_on(state.ids.bg, 20.0)
+                .mid_top_with_margin_on(state.ids.bg, 5.0)
                 .font_size(12)
                 .font_id(self.fonts.cyri.conrod_id)
                 .color(TEXT_COLOR)
@@ -642,7 +648,7 @@ impl<'a> Widget for Group<'a> {
                 ))
                 .label_color(TEXT_COLOR)
                 .label_font_id(self.fonts.cyri.conrod_id)
-                .label_font_size(self.fonts.cyri.scale(15))
+                .label_font_size(self.fonts.cyri.scale(12))
                 .set(state.ids.btn_accept, ui)
                 .was_clicked()
             {
@@ -667,7 +673,7 @@ impl<'a> Widget for Group<'a> {
                 ))
                 .label_color(TEXT_COLOR)
                 .label_font_id(self.fonts.cyri.conrod_id)
-                .label_font_size(self.fonts.cyri.scale(15))
+                .label_font_size(self.fonts.cyri.scale(12))
                 .set(state.ids.btn_decline, ui)
                 .was_clicked()
             {
