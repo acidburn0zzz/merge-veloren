@@ -4724,6 +4724,7 @@ dependencies = [
  "authc",
  "criterion",
  "crossbeam",
+ "derivative",
  "dot_vox",
  "enum-iterator",
  "hashbrown",
