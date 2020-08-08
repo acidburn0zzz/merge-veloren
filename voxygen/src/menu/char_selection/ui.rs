@@ -11,7 +11,7 @@ use crate::{
 };
 use client::Client;
 use common::{
-    assets::Asset,
+    assets::load_expect,
     character::{Character, CharacterItem, MAX_CHARACTERS_PER_PLAYER},
     comp::{self, humanoid, item::ItemAsset},
     LoadoutBuilder,
@@ -359,8 +359,8 @@ impl CharSelectionUi {
                     level: 1,
                     loadout: LoadoutBuilder::new()
                         .defaults()
-                        .active_item(LoadoutBuilder::default_item_config_from_str(*tool))
-                        .build(),
+                        .active_item(LoadoutBuilder::default_item_config_from_str((*tool).unwrap())) // TODO: Remove tool/unwrap
+                        .build()
                 }])
             },
         }
@@ -385,16 +385,16 @@ impl CharSelectionUi {
                     block_ability: None,
                     dodge_ability: None,
                 });
-                // FIXME: Error gracefully.
-                loadout.chest = Some(ItemAsset::load_expect_cloned(
+                // FIXME: Error gracefully
+                loadout.chest = Some(comp::Item::new_from_asset_expect(
                     "common.items.armor.starter.rugged_chest",
                 ));
-                // FIXME: Error gracefully.
-                loadout.pants = Some(ItemAsset::load_expect_cloned(
+                // FIXME: Error gracefully
+                loadout.pants = Some(comp::Item::new_from_asset_expect(
                     "common.items.armor.starter.rugged_pants",
                 ));
-                // FIXME: Error gracefully.
-                loadout.foot = Some(ItemAsset::load_expect_cloned(
+                // FIXME: Error gracefully
+                loadout.foot = Some(comp::Item::new_from_asset_expect(
                     "common.items.armor.starter.sandals_0",
                 ));
                 Some(loadout.clone())

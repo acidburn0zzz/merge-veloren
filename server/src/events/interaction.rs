@@ -125,7 +125,7 @@ pub fn handle_possess(server: &Server, possessor_uid: Uid, possesse_uid: Uid) {
                     .expect("Could not read loadouts component while possessing")
                     .or_insert(comp::Loadout::default());
 
-                let item = item::ItemAsset::load_expect_cloned("common.items.debug.possess");
+                let item = comp::Item::new_from_asset_expect("common.items.debug.possess");
                 if let item::ItemKind::Tool(tool) = &item.kind {
                     let mut abilities = tool.get_abilities();
                     let mut ability_drain = abilities.drain(..);
