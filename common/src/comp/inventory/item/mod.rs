@@ -19,7 +19,6 @@ use tracing::{info, warn};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use crate::assets::Error;
-use global_counter::primitive::exact::CounterU64;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Throwable {
@@ -109,8 +108,6 @@ impl ItemId {
     }
 }
 
-static ITEM_UNIQUE_ID : CounterU64 = CounterU64::new(1);
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[derive(Derivative)]
 #[derivative(PartialEq)]
@@ -118,8 +115,6 @@ pub struct Item {
     #[serde(skip)]
     #[derivative(PartialEq="ignore")]
     pub item_id: Arc<AtomicU64>,
-    #[serde(skip)]
-    pub item_unique_id: u64,
     item_definition_id: Option<String>, //TODO: Intern these strings?
     name: String,
     description: String,
@@ -135,7 +130,6 @@ impl Item {
         info!("Created empty item");
         Self {
             item_id: Arc::new(AtomicU64::new(0)),
-            item_unique_id: 0,
             item_definition_id: None,
             name: "Empty Item".to_owned(),
             description: "This item may grant abilities, but is invisible".to_owned(),
@@ -146,22 +140,21 @@ impl Item {
     /// Creates a new instance of an `Item` from the provided asset identifier
     /// Panics if the asset does not exist.
     pub fn new_from_asset_expect(asset: &str) -> Self {
-        let mut item = ItemAsset::load_expect_cloned(asset);
 
         // item_definition_id is the asset ID
+        let mut item = ItemAsset::load_expect_cloned(asset);
         item.item_definition_id = Some(asset.to_owned());
-        item.item_unique_id = ITEM_UNIQUE_ID.inc();
+        item.item_id  = Arc::new(AtomicU64::new(0));
         item
     }
 
+    /// Creates a new instance of an `Item from the provided asset identifier if it exists
     pub fn new_from_asset(asset: &str) -> Result<Self, Error> {
         let mut item = ItemAsset::load_cloned(asset)?;
 
         // item_definition_id is the asset ID
         item.item_definition_id = Some(asset.to_owned());
-        item.item_unique_id = ITEM_UNIQUE_ID.inc();
-        info!("Created instance of item {:?}", item.item_definition_id);
-
+        item.item_id  = Arc::new(AtomicU64::new(0));
         Ok(item)
     }
 
@@ -213,7 +206,7 @@ impl Item {
     pub fn try_reclaim_from_block(block: Block) -> Option<Self> {
         let chosen;
         let mut rng = rand::thread_rng();
-        Some(ItemAsset::load_expect_cloned(match block.kind() {
+        Some(Item::new_from_asset_expect(match block.kind() {
             BlockKind::Apple => "common.items.food.apple",
             BlockKind::Mushroom => "common.items.food.mushroom",
             BlockKind::Velorite => "common.items.ore.velorite",
