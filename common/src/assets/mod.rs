@@ -121,16 +121,8 @@ pub trait Asset: Sized {
         }
     }
 
-    fn load_glob(specifier: &str) -> Result<Arc<Vec<Arc<Self::Output>>>, Error>
-    where
-        Self::Output: Send + Sync + 'static,
-    {
-        if let Some(assets) = ASSETS.read().unwrap().get(specifier) {
-            return Ok(Arc::clone(assets).downcast()?);
-        }
-
-        // Get glob matches
-        let glob_matches = read_dir(specifier.trim_end_matches(".*")).map(|dir| {
+    fn get_glob_matches(specifier: &str) -> Result<Vec<String>, Error> {
+        read_dir(specifier.trim_end_matches(".*")).map(|dir| {
             dir.filter_map(|direntry| {
                 direntry.ok().and_then(|file| {
                     file.file_name()
@@ -140,10 +132,19 @@ pub trait Asset: Sized {
                         .map(|s| s.to_owned())
                 })
             })
-            .collect::<Vec<_>>()
-        });
+                .collect::<Vec<_>>()
+        })
+    }
 
-        match glob_matches {
+    fn load_glob(specifier: &str) -> Result<Arc<Vec<Arc<Self::Output>>>, Error>
+    where
+        Self::Output: Send + Sync + 'static,
+    {
+        if let Some(assets) = ASSETS.read().unwrap().get(specifier) {
+            return Ok(Arc::clone(assets).downcast()?);
+        }
+
+        match get_glob_matches(specifier) {
             Ok(glob_matches) => {
                 let assets = Arc::new(
                     glob_matches
@@ -167,6 +168,20 @@ pub trait Asset: Sized {
                 let mut assets_write = ASSETS.write().unwrap();
                 assets_write.insert(specifier.to_owned(), clone);
                 Ok(assets)
+            },
+            Err(error) => Err(error),
+        }
+    }
+
+    pub fn load_glob_cloned<A: Asset + Clone + 'static>(specifier: &str) -> Result<Vec<(Self::Output, String)>, Error> {
+        match get_glob_matches(specifier) {
+            Ok(glob_matches) => {
+                Ok(glob_matches
+                    .into_iter()
+                    .map(|name| {
+                        (load_expect_cloned::<A>(&specifier.replace("*", &name)), name)
+                    })
+                    .collect::<Vec<_>>())
             },
             Err(error) => Err(error),
         }
