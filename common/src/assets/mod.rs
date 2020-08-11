@@ -179,7 +179,8 @@ pub trait Asset: Sized {
                 Ok(glob_matches
                     .into_iter()
                     .map(|name| {
-                        (load_expect_cloned::<A>(&specifier.replace("*", &name)), name)
+                        let full_specifier = &specifier.replace("*", &name);
+                        (load_expect_cloned::<A>(full_specifier), full_specifier.to_string())
                     })
                     .collect::<Vec<_>>())
             },
