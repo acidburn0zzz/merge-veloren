@@ -4,6 +4,7 @@
 #![cfg_attr(not(feature = "worldgen"), feature(const_panic))]
 
 pub mod alias_validator;
+mod character_creator;
 pub mod chunk_generator;
 pub mod client;
 pub mod cmd;
