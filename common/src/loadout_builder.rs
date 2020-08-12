@@ -1,9 +1,6 @@
-use crate::{
-    assets::Asset,
-    comp::{
-        item::{Item, ItemAsset, ItemKind},
-        Body, CharacterAbility, ItemConfig, Loadout,
-    },
+use crate::comp::{
+    item::{Item, ItemKind},
+    Body, CharacterAbility, ItemConfig, Loadout,
 };
 use std::time::Duration;
 
