@@ -165,7 +165,7 @@ fn loadout_insert(
 /// let mut loadout = LoadoutBuilder::new()
 ///     .defaults()
 ///     .active_item(LoadoutBuilder::default_item_config_from_str(
-///         "common.items.weapons.sword.zweihander_sword_0"
+///         "common.items.weapons.sword.zweihander_sword_0",
 ///     ))
 ///     .build();
 ///
@@ -343,7 +343,7 @@ pub fn equip(slot: usize, inventory: &mut Inventory, loadout: &mut Loadout) {
 /// let mut loadout = LoadoutBuilder::new()
 ///     .defaults()
 ///     .active_item(LoadoutBuilder::default_item_config_from_str(
-///         "common.items.weapons.sword.zweihander_sword_0"
+///         "common.items.weapons.sword.zweihander_sword_0",
 ///     ))
 ///     .build();
 ///
@@ -362,8 +362,7 @@ pub fn unequip(slot: EquipSlot, inventory: &mut Inventory, loadout: &mut Loadout
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{LoadoutBuilder};
-    use crate::comp::Item;
+    use crate::{comp::Item, LoadoutBuilder};
 
     #[test]
     fn test_unequip_items_both_hands() {
@@ -373,7 +372,7 @@ mod tests {
         };
 
         let sword = LoadoutBuilder::default_item_config_from_str(
-            "common.items.weapons.sword.zweihander_sword_0"
+            "common.items.weapons.sword.zweihander_sword_0",
         );
 
         let mut loadout = LoadoutBuilder::new()

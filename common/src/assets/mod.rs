@@ -121,20 +121,20 @@ pub trait Asset: Sized {
         }
     }
 
-    fn get_glob_matches(specifier: &str) -> Result<Vec<String>, Error> {
-        read_dir(specifier.trim_end_matches(".*")).map(|dir| {
-            dir.filter_map(|direntry| {
-                direntry.ok().and_then(|file| {
-                    file.file_name()
-                        .to_string_lossy()
-                        .rsplitn(2, '.')
-                        .last()
-                        .map(|s| s.to_owned())
-                })
+fn get_glob_matches(specifier: &str) -> Result<Vec<String>, Error> {
+    read_dir(specifier.trim_end_matches(".*")).map(|dir| {
+        dir.filter_map(|direntry| {
+            direntry.ok().and_then(|file| {
+                file.file_name()
+                    .to_string_lossy()
+                    .rsplitn(2, '.')
+                    .last()
+                    .map(|s| s.to_owned())
             })
-                .collect::<Vec<_>>()
         })
-    }
+        .collect::<Vec<_>>()
+    })
+}
 
     fn load_glob(specifier: &str) -> Result<Arc<Vec<Arc<Self::Output>>>, Error>
     where
@@ -175,15 +175,16 @@ pub trait Asset: Sized {
 
     pub fn load_glob_cloned<A: Asset + Clone + 'static>(specifier: &str) -> Result<Vec<(Self::Output, String)>, Error> {
         match get_glob_matches(specifier) {
-            Ok(glob_matches) => {
-                Ok(glob_matches
-                    .into_iter()
-                    .map(|name| {
-                        let full_specifier = &specifier.replace("*", &name);
-                        (load_expect_cloned::<A>(full_specifier), full_specifier.to_string())
-                    })
-                    .collect::<Vec<_>>())
-            },
+            Ok(glob_matches) => Ok(glob_matches
+                .into_iter()
+                .map(|name| {
+                    let full_specifier = &specifier.replace("*", &name);
+                    (
+                        load_expect_cloned::<A>(full_specifier),
+                        full_specifier.to_string(),
+                    )
+                })
+                .collect::<Vec<_>>()),
             Err(error) => Err(error),
         }
     }
