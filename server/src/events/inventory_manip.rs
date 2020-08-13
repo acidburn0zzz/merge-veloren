@@ -15,6 +15,8 @@ use comp::LightEmitter;
 use rand::Rng;
 use specs::{join::Join, world::WorldExt, Builder, Entity as EcsEntity, WriteStorage};
 use tracing::{debug, error};
+use std::sync::Arc;
+use std::sync::atomic::AtomicU64;
 use vek::{Rgb, Vec3};
 
 pub fn swap_lantern(
@@ -338,9 +340,10 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
             };
 
             // FIXME: We should really require the drop and write to be atomic!
-            if let (Some(item), Some(pos)) =
+            if let (Some(mut item), Some(pos)) =
                 (item, state.ecs().read_storage::<comp::Pos>().get(entity))
             {
+                item.item_id = Arc::new(AtomicU64::new(0));
                 dropped_items.push((
                     *pos,
                     state
