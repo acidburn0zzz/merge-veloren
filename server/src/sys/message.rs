@@ -1,7 +1,8 @@
 use super::SysTimer;
 use crate::{
-    alias_validator::AliasValidator, client::Client, login_provider::LoginProvider,
-    persistence::character::CharacterLoader, ServerSettings, CLIENT_TIMEOUT, character_creator
+    alias_validator::AliasValidator, character_creator, client::Client,
+    login_provider::LoginProvider, persistence::character::CharacterLoader, ServerSettings,
+    CLIENT_TIMEOUT,
 };
 use common::{
     comp::{
@@ -359,7 +360,7 @@ impl Sys {
                             alias,
                             tool,
                             body,
-                            character_loader
+                            character_loader,
                         );
                     }
                 },
