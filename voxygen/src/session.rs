@@ -505,8 +505,13 @@ impl PlayState for SessionState {
                                     .filter(|(_, pos, _)| {
                                         pos.0.distance_squared(player_pos.0) < MAX_PICKUP_RANGE_SQR
                                     })
-                                    .min_by_key(|(_, pos, _)| {
-                                        (pos.0.distance_squared(player_pos.0) * 1000.0) as i32
+                                    .min_by_key(|(e, pos, _)| {
+                                        let ent_is_targeted = self.target_entity.map_or(false, |target| &target == e);
+                                        if ent_is_targeted {
+                                            0 as i32
+                                        } else {
+                                            (pos.0.distance_squared(player_pos.0) * 1000.0) as i32
+                                        }
                                     })
                                     .map(|(entity, _, _)| entity);
 
