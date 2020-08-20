@@ -1,3 +1,4 @@
+
 --
 -- 1) Back up existing tables and drop them - this migration recreates or drops all existing tables
 --
@@ -34,40 +35,6 @@ FROM    body;
 
 DROP TABLE body;
 
--- Loadout
-CREATE TEMP TABLE _loadout_temp
-(
-    id INTEGER not null
-        primary key,
-    character_id INT not null,
-    items TEXT NOT NULL
-);
-
-INSERT
-INTO    _loadout_temp
-SELECT  id,
-        character_id,
-        items
-FROM    loadout;
-
-DROP TABLE loadout;
-
--- Inventory
-CREATE TEMP TABLE _inventory_temp
-(
-    character_id INTEGER NOT NULL
-        PRIMARY KEY,
-    items TEXT NOT NULL
-);
-
-INSERT
-INTO    _inventory_temp
-SELECT  character_id,
-        items
-FROM    inventory;
-
-DROP TABLE inventory;
-
 -- Stats
 CREATE TEMP TABLE _stats_temp
 (
@@ -81,6 +48,10 @@ CREATE TEMP TABLE _stats_temp
     skills TEXT
 );
 
+INSERT INTO stats
+SELECT id, 1, 0, 2, 2, 1, '{"skill_groups":[],"skills":[]}'
+from character where id not in (select character_id from stats);
+
 INSERT
 INTO    _stats_temp
 SELECT  character_id, level, exp, endurance, fitness, willpower, skills
@@ -89,6 +60,7 @@ FROM    stats;
 DROP TABLE stats;
 
 -- Character
+
 CREATE TEMP TABLE _character_temp
 (
     character_id INT NOT NULL
@@ -103,8 +75,6 @@ SELECT  id,
         player_uuid,
         alias
 FROM    character;
-
-DROP TABLE character;
 
 --
 -- 2) Create new tables
@@ -191,6 +161,7 @@ FROM    char c
 -- Add 1000000 to each character id since SQLite verifies unique constraints
 -- on every individual row in an UPDATE statement. Remove it in the subsequent
 -- UPDATE statement.
+-- Character
 UPDATE  _character_temp
 SET     character_id = (SELECT  entity_id + 1000000
                         FROM    _new_character_ids
@@ -198,6 +169,42 @@ SET     character_id = (SELECT  entity_id + 1000000
 
 UPDATE  _character_temp
 SET     character_id = character_id - 1000000;
+
+
+CREATE TEMP TABLE _loadout_temp
+(
+    character_id INT not null,
+    items TEXT NOT NULL
+);
+
+INSERT
+INTO    _loadout_temp
+SELECT  nci.entity_id,
+        l.items
+FROM    loadout l
+            JOIN    _new_character_ids nci ON l.character_id = nci.character_id;
+
+DROP TABLE loadout;
+
+--
+-- 7) Re-create the Inventory table temporarily, using the new character IDs
+--
+
+CREATE TEMP TABLE _inventory_temp
+(
+    character_id INTEGER NOT NULL
+        PRIMARY KEY,
+    items TEXT NOT NULL
+);
+
+INSERT
+INTO    _inventory_temp
+SELECT  nci.entity_id,
+        items
+FROM    inventory i
+            JOIN    _new_character_ids nci ON i.character_id = nci.character_id;
+
+DROP TABLE inventory;
 
 --
 -- 5) Re-create the Body and Character tables using the new schema and migrate the existing data
@@ -217,7 +224,7 @@ CREATE TEMP TABLE _body_temp_char
 INSERT
 INTO    _body_temp_char
 SELECT  NULL,
-        nci.character_id,
+        nci.entity_id,
         'humanoid',
         json_object(
                 'species', species,
@@ -249,6 +256,7 @@ SELECT  body_id,
         body_data
 FROM    _body_temp_char;
 
+DROP TABLE character;
 CREATE TABLE character
 (
     character_id INT NOT NULL
@@ -270,46 +278,6 @@ SELECT  c.character_id,
         c.alias
 FROM    _character_temp c
             JOIN    _body_temp_char b ON b.character_id = c.character_id;
-
---
--- 6) Re-create the Loadout table temporarily, using the new character IDs
---
-
-CREATE TABLE loadout
-(
-    id INTEGER NOT NULL
-        PRIMARY KEY,
-    character_id INT NOT NULL
-        REFERENCES character(character_id),
-    items TEXT NOT NULL
-);
-
-INSERT
-INTO    loadout
-SELECT  l.id,
-        nci.entity_id,
-        l.items
-FROM    _loadout_temp l
-            JOIN    _new_character_ids nci ON l.character_id = nci.character_id;
-
---
--- 7) Re-create the Inventory table temporarily, using the new character IDs
---
-
-CREATE TABLE inventory
-(
-    character_id INTEGER NOT NULL
-        PRIMARY KEY
-        REFERENCES character(character_id),
-    items TEXT NOT NULL
-);
-
-INSERT
-INTO    inventory
-SELECT  nci.entity_id,
-        i.items
-FROM    _inventory_temp i
-            JOIN    _new_character_ids nci ON i.character_id = nci.character_id;
 
 --
 -- 8) Re-create the Stats table using the new schema and migrate the existing data
@@ -777,8 +745,8 @@ WITH items AS (
         WITH slots AS (
             SELECT character_id,
                    value AS slot_json
-            FROM inventory,
-                json_tree(inventory.items)
+            FROM _inventory_temp,
+                json_tree(_inventory_temp.items)
             WHERE key = 'slots'
         )
         SELECT character_id,
@@ -869,10 +837,10 @@ CREATE TEMP TABLE _temp_loadout_items
     item_definition_id TEXT NOT NULL,
     position TEXT NOT NULL
 );
--- TODO Fix this query taking ages to run
+
 WITH item_json AS (
     SELECT  *
-    FROM    loadout,
+    FROM    _loadout_temp,
         json_each(items)
     WHERE   value IS NOT NULL),
      items AS (
@@ -936,7 +904,7 @@ SELECT  e.entity_id,
         l.parent_container_item_id,
         l.item_definition_id,
         NULL, --stack size
-        NULL --position
+        l.position
 FROM    _temp_loadout_items l
             JOIN    entity e ON (e.entity_id = (
             (SELECT MAX(entity_id) FROM entity)
