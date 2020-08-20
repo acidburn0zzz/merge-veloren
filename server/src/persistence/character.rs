@@ -385,9 +385,8 @@ fn create_character(
             .select(schema::body::dsl::body_id)
             .first::<i32>(&connection)?;
 
-        let character_id = get_new_entity_id(&connection)?;
-
         // Insert character record
+        let character_id = get_new_entity_id(&connection)?;
         let new_character = NewCharacter {
             character_id,
             body_id,
@@ -457,14 +456,14 @@ fn create_character(
 }
 
 /// Delete a character. Returns the updated character list.
-fn delete_character(uuid: &str, character_id: CharacterId, db_dir: &str) -> CharacterListResult {
+fn delete_character(uuid: &str, char_id: CharacterId, db_dir: &str) -> CharacterListResult {
     use schema::character::dsl::*;
 
     let connection = establish_connection(db_dir)?;
     connection.transaction::<_, diesel::result::Error, _>(|| {
         diesel::delete(
             character
-                .filter(character_id.eq(character_id))
+                .filter(character_id.eq(char_id))
                 .filter(player_uuid.eq(uuid)),
         )
         .execute(&connection)?;
