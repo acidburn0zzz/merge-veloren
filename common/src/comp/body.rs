@@ -11,6 +11,7 @@ pub mod quadruped_low;
 pub mod quadruped_medium;
 pub mod quadruped_small;
 pub mod theropod;
+pub mod slime;
 
 use crate::{
     assets::{self, Asset},
@@ -41,6 +42,7 @@ make_case_elim!(
         Golem(body: golem::Body) = 10,
         Theropod(body: theropod::Body) = 11,
         QuadrupedLow(body: quadruped_low::Body) = 12,
+        Slime(body: slime::Body)= 13,
     }
 );
 
@@ -74,6 +76,7 @@ pub struct AllBodies<BodyMeta, SpeciesMeta> {
     pub golem: BodyData<BodyMeta, golem::AllSpecies<SpeciesMeta>>,
     pub theropod: BodyData<BodyMeta, theropod::AllSpecies<SpeciesMeta>>,
     pub quadruped_low: BodyData<BodyMeta, quadruped_low::AllSpecies<SpeciesMeta>>,
+    pub slime: BodyData<BodyMeta, slime::AllSpecies<SpeciesMeta>>,
 }
 
 /// Can only retrieve body metadata by direct index.
@@ -92,6 +95,7 @@ impl<BodyMeta, SpeciesMeta> core::ops::Index<NpcKind> for AllBodies<BodyMeta, Sp
             NpcKind::Archaeos => &self.theropod.body,
             NpcKind::Reddragon => &self.dragon.body,
             NpcKind::Crocodile => &self.quadruped_low.body,
+            NpcKind::GreenSlime => &self.slime.body,
         }
     }
 }
@@ -116,6 +120,7 @@ impl<'a, BodyMeta, SpeciesMeta> core::ops::Index<&'a Body> for AllBodies<BodyMet
             Body::Golem(_) => &self.golem.body,
             Body::Theropod(_) => &self.theropod.body,
             Body::QuadrupedLow(_) => &self.quadruped_low.body,
+            Body::Slime(_) => &self.slime.body,
         }
     }
 }
@@ -166,6 +171,7 @@ impl Body {
             Body::FishSmall(_) => 0.3,
             Body::BipedLarge(_) => 0.75,
             Body::Golem(_) => 0.4,
+            Body::Slime(_) => 0.4,
             Body::Object(_) => 0.4,
         }
     }
@@ -209,6 +215,7 @@ impl Body {
             Body::FishSmall(_) => 0.9,
             Body::BipedLarge(_) => 4.6,
             Body::Golem(_) => 5.8,
+            Body::Slime(_) => 0.6,
             Body::Object(_) => 1.0,
         }
     }
@@ -279,6 +286,7 @@ impl Body {
                 quadruped_low::Species::Maneater => 400,
                 _ => 200,
             },
+            Body::Slime(_) => 500,
         }
     }
 
@@ -348,6 +356,7 @@ impl Body {
                 quadruped_low::Species::Maneater => 30,
                 _ => 20,
             },
+            Body::Slime(_) => 60,
         }
     }
 
@@ -415,6 +424,7 @@ impl Body {
                 quadruped_low::Species::Maneater => 14,
                 _ => 10,
             },
+            Body::Slime(_) => 20,
         }
     }
 
@@ -434,6 +444,7 @@ impl Body {
             Body::Golem(_) => 12,
             Body::Theropod(_) => 1,
             Body::QuadrupedLow(_) => 1,
+            Body::Slime(_) => 1,
         }
     }
 
@@ -495,6 +506,7 @@ impl Body {
                 quadruped_low::Species::Maneater => 40,
                 _ => 20,
             },
+            Body::Slime(_) => 100,
         }
     }
 
@@ -513,6 +525,7 @@ impl Body {
             Body::Golem(_) => 7.5,
             Body::Theropod(_) => 3.0,
             Body::QuadrupedLow(_) => 4.5,
+            Body::Slime(_) => 5.5,
         }
     }
 

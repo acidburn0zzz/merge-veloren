@@ -27,7 +27,7 @@ pub use admin::{Admin, AdminList};
 pub use agent::{Agent, Alignment};
 pub use body::{
     biped_large, bird_medium, bird_small, dragon, fish_medium, fish_small, golem, humanoid, object,
-    quadruped_low, quadruped_medium, quadruped_small, theropod, AllBodies, Body, BodyData,
+    quadruped_low, quadruped_medium, quadruped_small, theropod, slime, AllBodies, Body, BodyData,
 };
 pub use character_state::{Attacking, CharacterState, StateUpdate};
 pub use chat::{

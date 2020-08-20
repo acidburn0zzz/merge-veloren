@@ -54,6 +54,7 @@ pub mod quadruped_low;
 pub mod quadruped_medium;
 pub mod quadruped_small;
 pub mod theropod;
+pub mod slime;
 pub mod vek;
 
 #[cfg(feature = "use-dyn-lib")]
