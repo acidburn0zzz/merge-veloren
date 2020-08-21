@@ -1,6 +1,5 @@
-
 --
--- 1) Back up existing tables and drop them - this migration recreates or drops all existing tables
+-- 1) Back up old body table to temp table and drop it
 --
 
 -- Body
@@ -35,6 +34,16 @@ FROM    body;
 
 DROP TABLE body;
 
+
+--
+-- 2) Back up old stats table to temp table and drop it
+--
+
+-- Add default stats values for the 60~ characters with no stats records
+INSERT INTO stats
+SELECT id, 1, 0, 2, 2, 1, '{"skill_groups":[],"skills":[]}'
+from character where id not in (select character_id from stats);
+
 -- Stats
 CREATE TEMP TABLE _stats_temp
 (
@@ -48,10 +57,6 @@ CREATE TEMP TABLE _stats_temp
     skills TEXT
 );
 
-INSERT INTO stats
-SELECT id, 1, 0, 2, 2, 1, '{"skill_groups":[],"skills":[]}'
-from character where id not in (select character_id from stats);
-
 INSERT
 INTO    _stats_temp
 SELECT  character_id, level, exp, endurance, fitness, willpower, skills
@@ -59,7 +64,9 @@ FROM    stats;
 
 DROP TABLE stats;
 
--- Character
+--
+-- 3) Back up old character table to temp table
+--
 
 CREATE TEMP TABLE _character_temp
 (
@@ -77,8 +84,9 @@ SELECT  id,
 FROM    character;
 
 --
--- 2) Create new tables
+-- 4) Create new entity and item tables
 --
+
 CREATE TABLE entity
 (
     entity_id INTEGER NOT NULL
@@ -106,7 +114,7 @@ CREATE INDEX idx_item_definition_id
     ON item(item_definition_id);
 
 --
--- 3) Create world pseudo-container - this must be entity_id 1 as this is referred to in code
+-- 5) Create world pseudo-container - this must be entity_id 1 as this is referred to in code
 --
 
 -- Create entity_id for world pseudo-container
@@ -124,7 +132,7 @@ VALUES  ((SELECT MAX(entity_id) FROM entity),
          NULL);
 
 --
--- 4) Migrate all existing character records to use a new character_id generated from the entity table
+-- 6) Migrate all existing character records to use a new character_id generated from the entity table
 --
 
 -- Create a temporary table for mapping between the existing character ID and the new entity ID
@@ -170,6 +178,9 @@ SET     character_id = (SELECT  entity_id + 1000000
 UPDATE  _character_temp
 SET     character_id = character_id - 1000000;
 
+--
+-- 7) Back up old loadout table to temp table and drop it
+--
 
 CREATE TEMP TABLE _loadout_temp
 (
@@ -182,12 +193,12 @@ INTO    _loadout_temp
 SELECT  nci.entity_id,
         l.items
 FROM    loadout l
-            JOIN    _new_character_ids nci ON l.character_id = nci.character_id;
+JOIN    _new_character_ids nci ON l.character_id = nci.character_id;
 
 DROP TABLE loadout;
 
 --
--- 7) Re-create the Inventory table temporarily, using the new character IDs
+-- 8) Back up old inventory table to temp table and drop it
 --
 
 CREATE TEMP TABLE _inventory_temp
@@ -202,12 +213,12 @@ INTO    _inventory_temp
 SELECT  nci.entity_id,
         items
 FROM    inventory i
-            JOIN    _new_character_ids nci ON i.character_id = nci.character_id;
+JOIN    _new_character_ids nci ON i.character_id = nci.character_id;
 
 DROP TABLE inventory;
 
 --
--- 5) Re-create the Body and Character tables using the new schema and migrate the existing data
+-- 9) Re-create the Body and Character tables using the new schema and migrate the existing data
 --
 
 -- Intermediate table for body_id/character_id mapping
@@ -238,7 +249,7 @@ SELECT  NULL,
                 'eye_color', eye_color
             ) AS body_json
 FROM    _body_temp b
-            JOIN    _new_character_ids nci ON b.character_id = nci.character_id;
+JOIN    _new_character_ids nci ON b.character_id = nci.character_id;
 
 CREATE TABLE body
 (
@@ -277,10 +288,10 @@ SELECT  c.character_id,
         b.body_id,
         c.alias
 FROM    _character_temp c
-            JOIN    _body_temp_char b ON b.character_id = c.character_id;
+JOIN    _body_temp_char b ON b.character_id = c.character_id;
 
 --
--- 8) Re-create the Stats table using the new schema and migrate the existing data
+-- 10) Re-create the Stats table using the new schema and migrate the existing data
 --
 
 CREATE TABLE stats
@@ -309,7 +320,7 @@ FROM    _stats_temp s
             JOIN    _new_character_ids nci ON s.character_id = nci.character_id;
 
 --
--- 9) Create Character pseudo-containers for existing characters
+-- 11) Create Character pseudo-containers for existing characters
 --
 
 INSERT
@@ -322,7 +333,7 @@ SELECT  c.character_id,
 FROM    character c;
 
 --
--- 10) Create Inventory pseudo-containers for existing characters
+-- 12) Create Inventory pseudo-containers for existing characters
 --
 
 -- Create an entity_id for each character's inventory pseudo-container
@@ -350,7 +361,7 @@ FROM    char c
         + c.rownum));
 
 --
--- 11) Create Loadout pseudo-containers for existing characters
+-- 13) Create Loadout pseudo-containers for existing characters
 --
 
 -- Create an entity_id for each character's loadout pseudo-container
@@ -378,7 +389,7 @@ FROM    char c
         + c.rownum));
 
 --
--- 12) Create a temporary table containing mappings of item name/kind to item definition ID
+-- 14) Create a temporary table containing mappings of item name/kind to item definition ID
 --
 
 CREATE TEMP TABLE _temp_item_defs
@@ -728,7 +739,7 @@ DELETE FROM _temp_item_defs WHERE item_definition_id = 'common.items.debug.culti
 DELETE FROM _temp_item_defs WHERE item_definition_id = 'common.items.debug.cultist_boots';
 
 --
--- 14) Migrate inventory items extracted from the inventory items JSON in the old schema
+-- 15) Migrate inventory items extracted from the inventory items JSON in the old schema
 --
 
 CREATE TEMP TABLE _temp_inventory_items
@@ -826,7 +837,7 @@ FROM    _temp_inventory_items i
         + i.temp_item_id));
 
 --
--- 15) Migrate loadout items extracted from the loadout items JSON in the old schema
+-- 16) Migrate loadout items extracted from the loadout items JSON in the old schema
 --
 
 CREATE TEMP TABLE _temp_loadout_items
@@ -838,6 +849,7 @@ CREATE TEMP TABLE _temp_loadout_items
     position TEXT NOT NULL
 );
 
+-- TODO: Fix this taking 2 minutes on the production database
 WITH item_json AS (
     SELECT  *
     FROM    _loadout_temp,
