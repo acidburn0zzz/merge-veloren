@@ -1,43 +1,46 @@
 use super::{
-    super::{Pipeline, TerrainLocals, TgtColorFmt, TgtDepthStencilFmt},
-    shadow, Globals, Light, Shadow,
-};
-use gfx::{
-    self, gfx_defines, gfx_impl_struct_meta, gfx_pipeline, gfx_pipeline_inner,
-    gfx_vertex_struct_meta, state::ColorMask,
+    super::{TerrainLocals},
 };
 use vek::*;
+use zerocopy::AsBytes;
 
-gfx_defines! {
-    vertex Vertex {
-        pos_norm: u32 = "v_pos_norm",
-    }
 
-    pipeline pipe {
-        vbuf: gfx::VertexBuffer<Vertex> = (),
+#[repr(C)]
+#[derive(Copy, Clone, Debug, AsBytes)]
+struct Vertex {
+             pos_norm: u32,
+     }
 
-        locals: gfx::ConstantBuffer<TerrainLocals> = "u_locals",
-        globals: gfx::ConstantBuffer<Globals> = "u_globals",
-        lights: gfx::ConstantBuffer<Light> = "u_lights",
-        shadows: gfx::ConstantBuffer<Shadow> = "u_shadows",
+// gfx_defines! {
+//     vertex Vertex {
+//         pos_norm: u32 = "v_pos_norm",
+//     }
 
-        point_shadow_maps: gfx::TextureSampler<f32> = "t_point_shadow_maps",
-        directed_shadow_maps: gfx::TextureSampler<f32> = "t_directed_shadow_maps",
+//     pipeline pipe {
+//         vbuf: gfx::VertexBuffer<Vertex> = (),
 
-        alt: gfx::TextureSampler<[f32; 2]> = "t_alt",
-        horizon: gfx::TextureSampler<[f32; 4]> = "t_horizon",
+//         locals: gfx::ConstantBuffer<TerrainLocals> = "u_locals",
+//         globals: gfx::ConstantBuffer<Globals> = "u_globals",
+//         lights: gfx::ConstantBuffer<Light> = "u_lights",
+//         shadows: gfx::ConstantBuffer<Shadow> = "u_shadows",
 
-        noise: gfx::TextureSampler<f32> = "t_noise",
-        waves: gfx::TextureSampler<[f32; 4]> = "t_waves",
+//         point_shadow_maps: gfx::TextureSampler<f32> = "t_point_shadow_maps",
+//         directed_shadow_maps: gfx::TextureSampler<f32> = "t_directed_shadow_maps",
 
-        // Shadow stuff
-        light_shadows: gfx::ConstantBuffer<shadow::Locals> = "u_light_shadows",
+//         alt: gfx::TextureSampler<[f32; 2]> = "t_alt",
+//         horizon: gfx::TextureSampler<[f32; 4]> = "t_horizon",
 
-        tgt_color: gfx::BlendTarget<TgtColorFmt> = ("tgt_color", ColorMask::all(), gfx::preset::blend::ALPHA),
-        tgt_depth_stencil: gfx::DepthTarget<TgtDepthStencilFmt> = gfx::preset::depth::LESS_EQUAL_TEST,
-        // tgt_depth_stencil: gfx::DepthStencilTarget<TgtDepthStencilFmt> = (gfx::preset::depth::LESS_EQUAL_TEST,Stencil::new(Comparison::Always,0xff,(StencilOp::Keep,StencilOp::Keep,StencilOp::Keep))),
-    }
-}
+//         noise: gfx::TextureSampler<f32> = "t_noise",
+//         waves: gfx::TextureSampler<[f32; 4]> = "t_waves",
+
+//         // Shadow stuff
+//         light_shadows: gfx::ConstantBuffer<shadow::Locals> = "u_light_shadows",
+
+//         tgt_color: gfx::BlendTarget<TgtColorFmt> = ("tgt_color", ColorMask::all(), gfx::preset::blend::ALPHA),
+//         tgt_depth_stencil: gfx::DepthTarget<TgtDepthStencilFmt> = gfx::preset::depth::LESS_EQUAL_TEST,
+//         // tgt_depth_stencil: gfx::DepthStencilTarget<TgtDepthStencilFmt> = (gfx::preset::depth::LESS_EQUAL_TEST,Stencil::new(Comparison::Always,0xff,(StencilOp::Keep,StencilOp::Keep,StencilOp::Keep))),
+//     }
+// }
 
 impl Vertex {
     #[allow(clippy::identity_op)] // TODO: Pending review in #587
@@ -61,10 +64,4 @@ impl Vertex {
                 | (norm_bits & 0x7) << 29,
         }
     }
-}
-
-pub struct FluidPipeline;
-
-impl Pipeline for FluidPipeline {
-    type Vertex = Vertex;
 }

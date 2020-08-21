@@ -1,13 +1,12 @@
 use super::RenderError;
 use image::{DynamicImage, GenericImageView};
-use vek::Vec2;
-use wgpu::{util::DeviceExt,Extent3d};
+use wgpu::Extent3d;
 
 /// Represents an image that has been uploaded to the GPU.
 pub struct Texture {
     pub tex: wgpu::TextureView,
     pub sampler: wgpu::Sampler,
-    size: Extent3d
+    size: Extent3d,
 }
 
 impl Texture {
@@ -77,18 +76,14 @@ impl Texture {
         Ok(Self {
             tex,
             sampler: device.create_sampler(&sampler_info),
-            size
+            size,
         })
     }
 
-    pub fn new_dynamic(
-        device: &wgpu::Device,
-        width: u16,
-        height: u16,
-    ) -> Self {
+    pub fn new_dynamic(device: &wgpu::Device, width: u16, height: u16) -> Self {
         let size = wgpu::Extent3d {
-            width: width,
-            height: height,
+            width,
+            height,
             depth: 1,
         };
 
@@ -101,7 +96,7 @@ impl Texture {
             format: wgpu::TextureFormat::Rgba8UnormSrgb,
             usage: wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED,
         });
-        
+
         let sampler_info = wgpu::SamplerDescriptor {
             label: None,
             address_mode_u: wgpu::AddressMode::ClampToEdge,
@@ -124,7 +119,7 @@ impl Texture {
         Ok(Self {
             tex: device.create_texture(&texture_info),
             sampler: device.create_sampler(&sampler_info),
-            size: texture_info.size
+            size: texture_info.size,
         })
     }
 
@@ -137,6 +132,7 @@ impl Texture {
         offset: [u16; 2],
         size: [u16; 2],
         data: &[u8],
+        bytes_per_row: u32,
     ) -> Result<(), RenderError> {
         // TODO: Only works for 2D images
         queue.write_texture(
@@ -146,7 +142,7 @@ impl Texture {
                 origin: wgpu::Origin3d {
                     x: offset[0],
                     y: offset[1],
-                    z: 0
+                    z: 0,
                 },
             },
             data,
@@ -154,19 +150,17 @@ impl Texture {
             // formats that are not Rgba8
             wgpu::TextureDataLayout {
                 offset: 0,
-                bytes_per_row: self.size.x * 4,
+                bytes_per_row,
                 rows_per_image: self.size.y,
             },
             wgpu::Extent3d {
                 width: size[0],
                 height: size[1],
-                depth: 1
+                depth: 1,
             },
         );
     }
 
     /// Get dimensions of the represented image.
-    pub fn get_dimensions(&self) -> Extent3d {
-        self.size
-    }
+    pub fn get_dimensions(&self) -> Extent3d { self.size }
 }

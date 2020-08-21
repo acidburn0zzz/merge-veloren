@@ -1,6 +1,5 @@
 use super::{
-    super::{Mesh, Model, TerrainPipeline, TgtColorFmt, TgtDepthStencilFmt},
-    shadow, Globals, Light, Shadow,
+    super::{Mesh, Model, TerrainPipeline},
 };
 use crate::mesh::greedy::GreedyMesh;
 use core::ops::Range;

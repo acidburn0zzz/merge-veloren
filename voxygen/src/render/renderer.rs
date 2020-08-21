@@ -2,14 +2,15 @@ use super::{
     consts::Consts,
     instances::Instances,
     mesh::Mesh,
-    model::{Model},
+    model::Model,
     pipelines::{
         figure, fluid, lod_terrain, particle, postprocess, shadow, skybox, sprite, terrain, ui,
         GlobalModel, Globals,
     },
     texture::Texture,
-    AaMode, CloudMode, FilterMode, FluidMode, LightingMode, RenderError, RenderMode,
-    ShadowMapMode, ShadowMode, AddressMode,
+    AaMode, AddressMode, CloudMode, FilterMode, FluidMode, LightingMode, RenderError, RenderMode,
+    ShadowMapMode, ShadowMode,
+    Vertex
 };
 use common::assets::{self, watch::ReloadIndicator};
 use core::convert::TryFrom;
@@ -17,68 +18,70 @@ use glsl_include::Context as IncludeContext;
 use tracing::{error, info, warn};
 use vek::*;
 
-/// Represents the format of the pre-processed color target.
-pub type TgtColorFmt = gfx::format::Srgba8;
-/// Represents the format of the pre-processed depth and stencil target.
-pub type TgtDepthStencilFmt = gfx::format::Depth;
+// /// Represents the format of the pre-processed color target.
+// pub type TgtColorFmt = gfx::format::Srgba8;
+// /// Represents the format of the pre-processed depth and stencil target.
+// pub type TgtDepthStencilFmt = gfx::format::Depth;
 
-/// Represents the format of the window's color target.
-pub type WinColorFmt = gfx::format::Srgba8;
-/// Represents the format of the window's depth target.
-pub type WinDepthFmt = gfx::format::Depth;
+// /// Represents the format of the window's color target.
+// pub type WinColorFmt = gfx::format::Srgba8;
+// /// Represents the format of the window's depth target.
+// pub type WinDepthFmt = gfx::format::Depth;
 
-/// Represents the format of the pre-processed shadow depth target.
-pub type ShadowDepthStencilFmt = gfx::format::Depth;
+// /// Represents the format of the pre-processed shadow depth target.
+// pub type ShadowDepthStencilFmt = gfx::format::Depth;
 
-/// A handle to a pre-processed color target.
-pub type TgtColorView = gfx::handle::RenderTargetView<gfx_backend::Resources, TgtColorFmt>;
-/// A handle to a pre-processed depth target.
-pub type TgtDepthStencilView =
-    gfx::handle::DepthStencilView<gfx_backend::Resources, TgtDepthStencilFmt>;
+// /// A handle to a pre-processed color target.
+// pub type TgtColorView = gfx::handle::RenderTargetView<gfx_backend::Resources,
+// TgtColorFmt>; /// A handle to a pre-processed depth target.
+// pub type TgtDepthStencilView =
+//     gfx::handle::DepthStencilView<gfx_backend::Resources,
+// TgtDepthStencilFmt>;
 
-/// A handle to a window color target.
-pub type WinColorView = gfx::handle::RenderTargetView<gfx_backend::Resources, WinColorFmt>;
-/// A handle to a window depth target.
-pub type WinDepthView = gfx::handle::DepthStencilView<gfx_backend::Resources, WinDepthFmt>;
+// /// A handle to a window color target.
+// pub type WinColorView = gfx::handle::RenderTargetView<gfx_backend::Resources,
+// WinColorFmt>; /// A handle to a window depth target.
+// pub type WinDepthView = gfx::handle::DepthStencilView<gfx_backend::Resources,
+// WinDepthFmt>;
 
-/// Represents the format of LOD shadows.
-pub type LodTextureFmt = (gfx::format::R8_G8_B8_A8, gfx::format::Unorm);
+// /// Represents the format of LOD shadows.
+// pub type LodTextureFmt = (gfx::format::R8_G8_B8_A8, gfx::format::Unorm);
 
-/// Represents the format of LOD altitudes.
-pub type LodAltFmt = (gfx::format::R16_G16, gfx::format::Unorm);
+// /// Represents the format of LOD altitudes.
+// pub type LodAltFmt = (gfx::format::R16_G16, gfx::format::Unorm);
 
-/// Represents the format of LOD map colors.
-pub type LodColorFmt = (gfx::format::R8_G8_B8_A8, gfx::format::Srgb);
+// /// Represents the format of LOD map colors.
+// pub type LodColorFmt = (gfx::format::R8_G8_B8_A8, gfx::format::Srgb);
 
-/// Represents the format of greedy meshed color-light textures.
-pub type ColLightFmt = (gfx::format::R8_G8_B8_A8, gfx::format::Srgb);
+// /// Represents the format of greedy meshed color-light textures.
+// pub type ColLightFmt = (gfx::format::R8_G8_B8_A8, gfx::format::Srgb);
 
-/// A handle to a shadow depth target.
-pub type ShadowDepthStencilView =
-    gfx::handle::DepthStencilView<gfx_backend::Resources, ShadowDepthStencilFmt>;
-/// A handle to a shadow depth target as a resource.
-pub type ShadowResourceView = gfx::handle::ShaderResourceView<
-    gfx_backend::Resources,
-    <ShadowDepthStencilFmt as gfx::format::Formatted>::View,
->;
+// /// A handle to a shadow depth target.
+// pub type ShadowDepthStencilView =
+//     gfx::handle::DepthStencilView<gfx_backend::Resources,
+// ShadowDepthStencilFmt>; /// A handle to a shadow depth target as a resource.
+// pub type ShadowResourceView = gfx::handle::ShaderResourceView<
+//     gfx_backend::Resources,
+//     <ShadowDepthStencilFmt as gfx::format::Formatted>::View,
+// >;
 
-/// A handle to a render color target as a resource.
-pub type TgtColorRes = gfx::handle::ShaderResourceView<
-    gfx_backend::Resources,
-    <TgtColorFmt as gfx::format::Formatted>::View,
->;
+// /// A handle to a render color target as a resource.
+// pub type TgtColorRes = gfx::handle::ShaderResourceView<
+//     gfx_backend::Resources,
+//     <TgtColorFmt as gfx::format::Formatted>::View,
+// >;
 
-/// A handle to a greedy meshed color-light texture as a resorce.
-pub type ColLightRes = gfx::handle::ShaderResourceView<
-    gfx_backend::Resources,
-    <ColLightFmt as gfx::format::Formatted>::View,
->;
-/// A type representing data that can be converted to an immutable texture map
-/// of ColLight data (used for texture atlases created during greedy meshing).
-pub type ColLightInfo = (
-    Vec<<<ColLightFmt as gfx::format::Formatted>::Surface as gfx::format::SurfaceTyped>::DataType>,
-    Vec2<u16>,
-);
+// /// A handle to a greedy meshed color-light texture as a resorce.
+// pub type ColLightRes = gfx::handle::ShaderResourceView<
+//     gfx_backend::Resources,
+//     <ColLightFmt as gfx::format::Formatted>::View,
+// >;
+// /// A type representing data that can be converted to an immutable texture
+// map /// of ColLight data (used for texture atlases created during greedy
+// meshing). pub type ColLightInfo = (
+//     Vec<<<ColLightFmt as gfx::format::Formatted>::Surface as
+// gfx::format::SurfaceTyped>::DataType>,     Vec2<u16>,
+// );
 
 /// A type that holds shadow map data.  Since shadow mapping may not be
 /// supported on all platforms, we try to keep it separate.
@@ -91,9 +94,9 @@ pub struct ShadowMapRenderer {
     point_depth_stencil_view: wgpu::TextureView,
     point_sampler: wgpu::Sampler,
 
-    point_pipeline: GfxPipeline<shadow::pipe::Init<'static>>,
-    terrain_directed_pipeline: GfxPipeline<shadow::pipe::Init<'static>>,
-    figure_directed_pipeline: GfxPipeline<shadow::figure_pipe::Init<'static>>,
+    point_pipeline: wgpu::RenderPipeline,
+    terrain_directed_pipeline: wgpu::RenderPipeline,
+    figure_directed_pipeline: wgpu::RenderPipeline,
 }
 
 /// A type that encapsulates rendering state. `Renderer` is central to Voxygen's
@@ -104,6 +107,7 @@ pub struct Renderer {
     device: wgpu::Device,
     queue: wgpu::Queue,
     swap_chain: wgpu::SwapChain,
+    sc_desc: wgpu::SwapChainDescriptor,
 
     win_depth_view: wgpu::TextureView,
 
@@ -114,20 +118,20 @@ pub struct Renderer {
 
     shadow_map: Option<ShadowMapRenderer>,
 
-    skybox_pipeline: GfxPipeline<skybox::pipe::Init<'static>>,
-    figure_pipeline: GfxPipeline<figure::pipe::Init<'static>>,
-    terrain_pipeline: GfxPipeline<terrain::pipe::Init<'static>>,
-    fluid_pipeline: GfxPipeline<fluid::pipe::Init<'static>>,
-    sprite_pipeline: GfxPipeline<sprite::pipe::Init<'static>>,
-    particle_pipeline: GfxPipeline<particle::pipe::Init<'static>>,
-    ui_pipeline: GfxPipeline<ui::pipe::Init<'static>>,
-    lod_terrain_pipeline: GfxPipeline<lod_terrain::pipe::Init<'static>>,
-    postprocess_pipeline: GfxPipeline<postprocess::pipe::Init<'static>>,
-    player_shadow_pipeline: GfxPipeline<figure::pipe::Init<'static>>,
+    skybox_pipeline: wgpu::RenderPipeline,
+    figure_pipeline: wgpu::RenderPipeline,
+    terrain_pipeline: wgpu::RenderPipeline,
+    fluid_pipeline: wgpu::RenderPipeline,
+    sprite_pipeline: wgpu::RenderPipeline,
+    particle_pipeline: wgpu::RenderPipeline,
+    ui_pipeline: wgpu::RenderPipeline,
+    lod_terrain_pipeline: wgpu::RenderPipeline,
+    postprocess_pipeline: wgpu::RenderPipeline,
+    player_shadow_pipeline: wgpu::RenderPipeline,
 
     shader_reload_indicator: ReloadIndicator,
 
-    noise_tex: Texture<(gfx::format::R8, gfx::format::Unorm)>,
+    noise_tex: Texture,
 
     mode: RenderMode,
 }
@@ -187,13 +191,15 @@ impl Renderer {
             "selected graphics device"
         );
 
-        let swap_chain = device.create_swap_chain(&surface, &wgpu::SwapChainDescriptor {
+        let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8UnormSrgb,
             width: dims.0,
             height: dims.1,
             present_mode: wgpu::PresentMode::Immediate,
-        });
+        };
+
+        let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
         let mut shader_reload_indicator = ReloadIndicator::new();
         let shadow_views = Self::create_shadow_views(
@@ -290,6 +296,7 @@ impl Renderer {
             device,
             queue,
             swap_chain,
+            sc_desc,
 
             win_depth_view,
 
@@ -322,29 +329,15 @@ impl Renderer {
     /// Get references to the internal render target views that get rendered to
     /// before post-processing.
     #[allow(dead_code)]
-    pub fn tgt_views(&self) -> (&TgtColorView, &TgtDepthStencilView) {
+    pub fn tgt_views(&self) -> (&wgpu::TextureView, &wgpu::TextureView) {
         (&self.tgt_color_view, &self.tgt_depth_stencil_view)
     }
 
     /// Get references to the internal render target views that get displayed
     /// directly by the window.
     #[allow(dead_code)]
-    pub fn win_views(&self) -> (&WinColorView, &WinDepthView) {
-        (&self.win_color_view, &self.win_depth_view)
-    }
-
-    /// Get mutable references to the internal render target views that get
-    /// rendered to before post-processing.
-    #[allow(dead_code)]
-    pub fn tgt_views_mut(&mut self) -> (&mut TgtColorView, &mut TgtDepthStencilView) {
-        (&mut self.tgt_color_view, &mut self.tgt_depth_stencil_view)
-    }
-
-    /// Get mutable references to the internal render target views that get
-    /// displayed directly by the window.
-    #[allow(dead_code)]
-    pub fn win_views_mut(&mut self) -> (&mut WinColorView, &mut WinDepthView) {
-        (&mut self.win_color_view, &mut self.win_depth_view)
+    pub fn win_views(&self) -> &wgpu::TextureView {
+        &self.win_depth_view
     }
 
     /// Change the render mode.
@@ -515,9 +508,7 @@ impl Renderer {
         // (Attempt to) apply resolution factor to shadow map resolution.
         let resolution_factor = mode.resolution.clamped(0.25, 4.0);
 
-        // This value is temporary as there are plans to include a way to get this in
-        // wgpu this is just a sane standard for now
-        let max_texture_size = 8000;
+        let max_texture_size = Self::max_texture_size_raw(device);
         // Limit to max texture size, rather than erroring.
         let size = Vec2::new(size.0, size.1).map(|e| {
             let size = f32::from(e) * resolution_factor;
@@ -681,7 +672,7 @@ impl Renderer {
     /// impact is relatively small, so there is no reason not to enable it where
     /// available.
     #[allow(unsafe_code)]
-    fn enable_seamless_cube_maps(device: &mut gfx_backend::Device) {
+    fn enable_seamless_cube_maps() {
         todo!()
         // unsafe {
         //     // NOTE: Currently just fail silently rather than complain if the
@@ -801,7 +792,7 @@ impl Renderer {
     }
 
     /// Create a new set of constants with the provided values.
-    pub fn create_consts<T: Copy + gfx::traits::Pod>(
+    pub fn create_consts<T: Copy + zerocopy::AsBytes>(
         &mut self,
         vals: &[T],
     ) -> Result<Consts<T>, RenderError> {
@@ -811,7 +802,7 @@ impl Renderer {
     }
 
     /// Update a set of constants with the provided values.
-    pub fn update_consts<T: Copy + gfx::traits::Pod>(
+    pub fn update_consts<T: Copy + zerocopy::AsBytes>(
         &mut self,
         consts: &mut Consts<T>,
         vals: &[T],
@@ -820,7 +811,7 @@ impl Renderer {
     }
 
     /// Create a new set of instances with the provided values.
-    pub fn create_instances<T: Copy + gfx::traits::Pod>(
+    pub fn create_instances<T: Copy + zerocopy::AsBytes>(
         &mut self,
         vals: &[T],
     ) -> Result<Instances<T>, RenderError> {
@@ -830,23 +821,23 @@ impl Renderer {
     }
 
     /// Create a new model from the provided mesh.
-    pub fn create_model<P: Pipeline>(&mut self, mesh: &Mesh<P>) -> Result<Model<P>, RenderError> {
+    pub fn create_model<V: Vertex>(&mut self, mesh: &Mesh<V>) -> Result<Model<V>, RenderError> {
         Ok(Model::new(&mut self.factory, mesh))
     }
 
     /// Create a new dynamic model with the specified size.
-    pub fn create_dynamic_model<P: Pipeline>(
+    pub fn create_dynamic_model<V: Vertex>(
         &mut self,
         size: usize,
-    ) -> Result<DynamicModel<P>, RenderError> {
-        DynamicModel::new(&mut self.factory, size)
+    ) -> Result<Model<V>, RenderError> {
+        Model::new(&self.device, size)
     }
 
     /// Update a dynamic model with a mesh and a offset.
-    pub fn update_model<P: Pipeline>(
+    pub fn update_model<V: Vertex>(
         &mut self,
-        model: &DynamicModel<P>,
-        mesh: &Mesh<P>,
+        model: &Model<V>,
+        mesh: &Mesh<V>,
         offset: usize,
     ) -> Result<(), RenderError> {
         model.update(&mut self.encoder, mesh, offset)
@@ -856,88 +847,53 @@ impl Renderer {
     pub fn max_texture_size(&self) -> u16 { Self::max_texture_size_raw(&self.factory) }
 
     /// Return the maximum supported texture size from the factory.
-    fn max_texture_size_raw(factory: &gfx_backend::Factory) -> u16 {
-        /// NOTE: OpenGL requirement.
-        const MAX_TEXTURE_SIZE_MIN: u16 = 1024;
-        #[cfg(target_os = "macos")]
-        /// NOTE: Because Macs lie about their max supported texture size.
-        const MAX_TEXTURE_SIZE_MAX: u16 = 8192;
-        #[cfg(not(target_os = "macos"))]
-        /// NOTE: Apparently Macs aren't the only machines that lie.
-        ///
-        /// TODO: Find a way to let graphics cards that don't lie do better.
-        const MAX_TEXTURE_SIZE_MAX: u16 = 8192;
-        // NOTE: Many APIs for textures require coordinates to fit in u16, which is why
-        // we perform this conversion.
-        u16::try_from(factory.get_capabilities().max_texture_size)
-            .unwrap_or(MAX_TEXTURE_SIZE_MIN)
-            .min(MAX_TEXTURE_SIZE_MAX)
+    fn max_texture_size_raw(device: &wgpu::Device) -> u16 {
+        // This value is temporary as there are plans to include a way to get this in
+        // wgpu this is just a sane standard for now
+        8192
     }
 
     /// Create a new immutable texture from the provided image.
-    pub fn create_texture_immutable_raw<F: gfx::format::Formatted>(
+    pub fn create_texture_with_data_raw(
         &mut self,
-        kind: gfx::texture::Kind,
-        mipmap: gfx::texture::Mipmap,
-        data: &[&[<F::Surface as gfx::format::SurfaceTyped>::DataType]],
-        sampler_info: gfx::texture::SamplerInfo,
-    ) -> Result<Texture<F>, RenderError>
-    where
-        F::Surface: gfx::format::TextureSurface,
-        F::Channel: gfx::format::TextureChannel,
-        <F::Surface as gfx::format::SurfaceTyped>::DataType: Copy,
+        texture_info: wgpu::TextureDescriptor,
+        sampler_info: wgpu::SamplerDescriptor,
+        bytes_per_row: u32,
+        size: [u16;2],
+        data: &[u8],
+    ) -> Texture
     {
-        Texture::new_immutable_raw(&mut self.factory, kind, mipmap, data, sampler_info)
+        let tex = Texture::new_raw(&self.device, texture_info,sampler_info);
+
+        tex.update(&self.device, &self.queue, [0;2], size, data, bytes_per_row);
+
+        tex
     }
 
     /// Create a new raw texture.
-    pub fn create_texture_raw<F: gfx::format::Formatted>(
+    pub fn create_texture_raw(
         &mut self,
-        kind: gfx::texture::Kind,
-        max_levels: u8,
-        bind: gfx::memory::Bind,
-        usage: gfx::memory::Usage,
-        levels: (u8, u8),
-        swizzle: gfx::format::Swizzle,
-        sampler_info: gfx::texture::SamplerInfo,
-    ) -> Result<Texture<F>, RenderError>
-    where
-        F::Surface: gfx::format::TextureSurface,
-        F::Channel: gfx::format::TextureChannel,
-        <F::Surface as gfx::format::SurfaceTyped>::DataType: Copy,
+        texture_info: wgpu::TextureDescriptor,
+        sampler_info: wgpu::SamplerDescriptor,
+    ) -> Texture
     {
-        Texture::new_raw(
-            &mut self.device,
-            &mut self.factory,
-            kind,
-            max_levels,
-            bind,
-            usage,
-            levels,
-            swizzle,
-            sampler_info,
-        )
+        Texture::new_raw(&self.device, texture_info,sampler_info)
     }
 
     /// Create a new texture from the provided image.
-    pub fn create_texture<F: gfx::format::Formatted>(
+    pub fn create_texture(
         &mut self,
         image: &image::DynamicImage,
-        filter_method: Option<FilterMethod>,
-        wrap_mode: Option<WrapMode>,
-        border: Option<gfx::texture::PackedColor>,
-    ) -> Result<Texture<F>, RenderError>
-    where
-        F::Surface: gfx::format::TextureSurface,
-        F::Channel: gfx::format::TextureChannel,
-        <F::Surface as gfx::format::SurfaceTyped>::DataType: Copy,
+        filter_method: Option<FilterMode>,
+        addresse_mode: Option<AddressMode>
+    ) -> Texture
     {
-        Texture::new(&mut self.factory, image, filter_method, wrap_mode, border)
+        Texture::new(&self.device, &self.queue, image, filter_method, addresse_mode)
     }
 
     /// Create a new dynamic texture (gfx::memory::Usage::Dynamic) with the
     /// specified dimensions.
-    pub fn create_dynamic_texture(&mut self, dims: Vec2<u16>) -> Result<Texture, RenderError> {
+    pub fn create_dynamic_texture(&mut self, dims: Vec2<u16>) -> Texture {
         Texture::new_dynamic(&mut self.factory, dims.x, dims.y)
     }
 
@@ -948,8 +904,9 @@ impl Renderer {
         offset: [u16; 2],
         size: [u16; 2],
         data: &[[u8; 4]],
-    ) -> Result<(), RenderError> {
-        texture.update(&mut self.encoder, offset, size, data)
+        bytes_per_row: u32,
+    ) {
+        texture.update(&mut self.encoder, offset, size, data,bytes_per_row)
     }
 
     /// Creates a download buffer, downloads the win_color_view, and converts to
@@ -1684,10 +1641,6 @@ impl Renderer {
     }
 }
 
-struct GfxPipeline<P: gfx::pso::PipelineInit> {
-    pso: gfx::pso::PipelineState<gfx_backend::Resources, P::Meta>,
-}
-
 /// Creates all the pipelines used to render.
 #[allow(clippy::type_complexity)] // TODO: Pending review in #587
 fn create_pipelines(
@@ -1697,19 +1650,19 @@ fn create_pipelines(
     shader_reload_indicator: &mut ReloadIndicator,
 ) -> Result<
     (
-        GfxPipeline<skybox::pipe::Init<'static>>,
-        GfxPipeline<figure::pipe::Init<'static>>,
-        GfxPipeline<terrain::pipe::Init<'static>>,
-        GfxPipeline<fluid::pipe::Init<'static>>,
-        GfxPipeline<sprite::pipe::Init<'static>>,
-        GfxPipeline<particle::pipe::Init<'static>>,
-        GfxPipeline<ui::pipe::Init<'static>>,
-        GfxPipeline<lod_terrain::pipe::Init<'static>>,
-        GfxPipeline<postprocess::pipe::Init<'static>>,
-        GfxPipeline<figure::pipe::Init<'static>>,
-        Option<GfxPipeline<shadow::pipe::Init<'static>>>,
-        Option<GfxPipeline<shadow::pipe::Init<'static>>>,
-        Option<GfxPipeline<shadow::figure_pipe::Init<'static>>>,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        wgpu::RenderPipeline,
+        Option<wgpu::RenderPipeline>,
+        Option<wgpu::RenderPipeline>,
+        Option<wgpu::RenderPipeline>,
     ),
     RenderError,
 > {
