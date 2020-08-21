@@ -9,12 +9,11 @@ default-run = "veloren-voxygen"
 # autobins = false
 
 [features]
-gl = ["gfx_device_gl", "gfx_gl"]
 singleplayer = ["server"]
 tweak = ["const-tweaker"]
 hot-anim = ["anim/use-dyn-lib"]
 
-default = ["gl", "singleplayer", "msgbox"]
+default = ["singleplayer", "msgbox"]
 
 [dependencies]
 common = { package = "veloren-common", path = "../common" }
@@ -23,11 +22,8 @@ client = { package = "veloren-client", path = "../client" }
 anim = { package = "veloren-voxygen-anim", path = "src/anim", default-features = false }
 
 # Graphics
-gfx = "0.18.2"
-gfx_device_gl = { version = "0.16.2", optional = true }
-gfx_gl = { version = "0.6.1", optional = true }
-old_school_gfx_glutin_ext = "0.24"
-glutin = "0.24.1"
+wgpu = "0.6.0"
+zerocopy = "0.3.0"
 winit = { version = "0.22.2", features = ["serde"] }
 conrod_core = { git = "https://gitlab.com/veloren/conrod.git" }
 conrod_winit = { git = "https://gitlab.com/veloren/conrod.git" }
@@ -47,6 +43,7 @@ gilrs = { version = "0.7", features = ["serde"] }
 server = { package = "veloren-server", path = "../server", optional = true }
 
 # Utility
+futures = "0.3"
 glsl-include = "0.3.1"
 failure = "0.1.6"
 dot_vox = "4.0"
