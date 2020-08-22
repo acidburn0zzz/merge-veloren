@@ -259,7 +259,7 @@ pub fn handle_destroy(server: &mut Server, entity: EcsEntity, cause: HealthSourc
             item_drops.remove(entity);
             item_drop.0
         } else {
-            comp::Item::new_from_asset_expect(chosen)
+            comp::Item::new_from_asset_expect(drop)
         };
 
         let _ = state.ecs().write_storage().insert(entity, item);
