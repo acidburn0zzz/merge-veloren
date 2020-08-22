@@ -1,8 +1,10 @@
 use crate::comp;
 use common::character::CharacterId;
 
+use crate::persistence::conversions::ItemModelPair;
 use crossbeam::channel;
 use diesel::Connection;
+use std::sync::atomic::Ordering;
 use tracing::{error, info};
 
 pub type CharacterUpdateData = (comp::Stats, comp::Inventory, comp::Loadout);
@@ -77,25 +79,44 @@ fn execute_batch_update(
     updates: impl Iterator<Item = (CharacterId, CharacterUpdateData)>,
     db_dir: &str,
 ) {
-    let connection = super::establish_connection(db_dir);
+    let connection = match super::establish_connection(db_dir) {
+        Err(e) => {
+            error!(?e, "Database connection failed");
+            return;
+        },
+        Ok(conn) => conn,
+    };
 
-    if let Err(e) = connection.and_then(|connection| {
-        connection.transaction::<_, diesel::result::Error, _>(|| {
-            updates.for_each(|(character_id, (stats, inventory, loadout))| {
-                // Create a nested transaction (savepoint) per character update so that a single
-                // error for a particular character doesn't prevent all other characters being
-                // saved
-                if let Err(e) = connection.transaction::<_, super::error::Error, _>(|| {
-                    super::character::update(character_id, stats, inventory, loadout, &connection)
-                }) {
-                    error!(?character_id, ?e, "Persistence update failed for character");
-                }
-            });
+    let mut inserted_items = Vec::<ItemModelPair>::new();
 
-            Ok(())
-        })
+    if let Err(e) = connection.transaction::<_, super::error::Error, _>(|| {
+        for (character_id, (stats, inventory, loadout)) in updates {
+            inserted_items.append(&mut super::character::update(
+                character_id,
+                stats,
+                inventory,
+                loadout,
+                &connection,
+            )?);
+        }
+
+        Ok(())
     }) {
-        error!(?e, "Error during stats batch update transaction");
+        error!(?e, "Error during character batch update transaction");
+    } else {
+        // Once the transaction for updating all characters has succeeded, update the
+        // item_id Arc of the item components. This results in the original
+        // item_id on the Item instance on the main game thread being updated.
+        // This must not be done until the transaction succeeds otherwise items
+        // could be duplicated if the transaction of a character who drops an item
+        // fails and the transaction of a character who picks the item up
+        // succeeds.
+        for inserted_item in inserted_items.iter() {
+            inserted_item
+                .comp
+                .item_id
+                .store(inserted_item.new_item_id as u64, Ordering::Relaxed);
+        }
     }
 }
 

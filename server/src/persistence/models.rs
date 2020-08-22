@@ -31,7 +31,7 @@ pub struct Character {
     pub alias: String,
 }
 
-#[derive(Debug, Insertable, PartialEq, Queryable, AsChangeset)]
+#[derive(Clone, Debug, Insertable, PartialEq, Queryable, AsChangeset)]
 #[table_name = "item"]
 pub struct NewItem {
     pub item_id: Option<i64>,
@@ -41,7 +41,9 @@ pub struct NewItem {
     pub position: Option<String>,
 }
 
-#[derive(Debug, Queryable)]
+#[primary_key(item_id)]
+#[table_name = "item"]
+#[derive(Debug, Queryable, AsChangeset)]
 pub struct Item {
     pub item_id: i64,
     pub parent_container_item_id: i64,

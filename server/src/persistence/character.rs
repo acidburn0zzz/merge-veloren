@@ -16,7 +16,7 @@ use crate::{
             convert_character_from_database, convert_inventory_from_database_items,
             convert_inventory_to_database_items, convert_loadout_from_database_items,
             convert_loadout_to_database_items, convert_stats_from_database,
-            convert_stats_to_database,
+            convert_stats_to_database, ItemModelPair,
         },
         error::Error::DatabaseError,
         PersistedComponents,
@@ -24,7 +24,8 @@ use crate::{
 };
 use common::character::{CharacterId, CharacterItem, MAX_CHARACTERS_PER_PLAYER};
 use diesel::prelude::*;
-use std::sync::atomic::Ordering;
+use lazy_static::lazy_static;
+use std::{collections::HashMap, sync::Mutex};
 use tracing::{error, info};
 
 pub(crate) type EntityId = i64;
@@ -33,6 +34,19 @@ const CHARACTER_PSEUDO_CONTAINER_DEF_ID: &str = "veloren.core.pseudo_containers.
 const INVENTORY_PSEUDO_CONTAINER_DEF_ID: &str = "veloren.core.pseudo_containers.inventory";
 const LOADOUT_PSEUDO_CONTAINER_DEF_ID: &str = "veloren.core.pseudo_containers.loadout";
 const WORLD_PSEUDO_CONTAINER_ID: EntityId = 1;
+
+#[derive(Clone, Copy)]
+struct CharacterContainers {
+    inventory_container_id: EntityId,
+    loadout_container_id: EntityId,
+}
+
+// Cache of pseudo-container IDs per character to avoid further lookups after
+// login
+lazy_static! {
+    static ref CHARACTER_CONTAINER_IDS: Mutex<HashMap<CharacterId, CharacterContainers>> =
+        Mutex::new(HashMap::new());
+}
 
 /// Load stored data for a character.
 ///
@@ -46,20 +60,14 @@ pub fn load_character_data(
     use schema::{body::dsl::*, character::dsl::*, item::dsl::*, stats::dsl::*};
     let connection = establish_connection(db_dir)?;
 
-    // TODO: Store the character's pseudo-container IDs during login so we don't
-    // have to fetch them each save?
-    let inventory_container_id =
-        get_pseudo_container_id(&connection, char_id, INVENTORY_PSEUDO_CONTAINER_DEF_ID)?;
-
-    let loadout_container_id =
-        get_pseudo_container_id(&connection, char_id, LOADOUT_PSEUDO_CONTAINER_DEF_ID)?;
+    let character_containers = get_pseudo_containers(&connection, char_id)?;
 
     let inventory_items = item
-        .filter(parent_container_item_id.eq(inventory_container_id))
+        .filter(parent_container_item_id.eq(character_containers.inventory_container_id))
         .load::<Item>(&connection)?;
 
     let loadout_items = item
-        .filter(parent_container_item_id.eq(loadout_container_id))
+        .filter(parent_container_item_id.eq(character_containers.loadout_container_id))
         .load::<Item>(&connection)?;
 
     let (character_data, stats_data) = character
@@ -309,6 +317,34 @@ fn get_new_entity_id(conn: &SqliteConnection) -> Result<EntityId, diesel::result
     Ok(new_entity_id)
 }
 
+/// Fetches the pseudo_container IDs for a character, caching them in
+/// CHARACTER_CONTAINER_IDS after the first lookup.
+fn get_pseudo_containers(
+    connection: &SqliteConnection,
+    character_id: CharacterId,
+) -> Result<CharacterContainers, Error> {
+    let mut ids = CHARACTER_CONTAINER_IDS.lock().unwrap();
+    if let Some(containers) = ids.get(&character_id) {
+        return Ok(*containers);
+    }
+
+    let character_containers = CharacterContainers {
+        loadout_container_id: get_pseudo_container_id(
+            connection,
+            character_id,
+            LOADOUT_PSEUDO_CONTAINER_DEF_ID,
+        )?,
+        inventory_container_id: get_pseudo_container_id(
+            connection,
+            character_id,
+            INVENTORY_PSEUDO_CONTAINER_DEF_ID,
+        )?,
+    };
+    ids.insert(character_id, character_containers);
+
+    Ok(character_containers)
+}
+
 fn get_pseudo_container_id(
     connection: &SqliteConnection,
     character_id: CharacterId,
@@ -344,73 +380,67 @@ pub fn update(
     inventory: comp::Inventory,
     loadout: comp::Loadout,
     connection: &SqliteConnection,
-) -> Result<(), Error> {
+) -> Result<Vec<ItemModelPair>, Error> {
     use super::schema::{item::dsl::*, stats::dsl::*};
 
-    // TODO: Store the character's pseudo-container IDs during login so we don't
-    // have to fetch them each save?
-    let inventory_container_id =
-        get_pseudo_container_id(connection, char_id, INVENTORY_PSEUDO_CONTAINER_DEF_ID)?;
+    let pseudo_containers = get_pseudo_containers(connection, char_id)?;
 
-    let loadout_container_id =
-        get_pseudo_container_id(connection, char_id, LOADOUT_PSEUDO_CONTAINER_DEF_ID)?;
-
-    let mut item_pairs = convert_inventory_to_database_items(inventory, inventory_container_id);
-    item_pairs.extend(convert_loadout_to_database_items(
+    let mut inserts =
+        convert_inventory_to_database_items(inventory, pseudo_containers.inventory_container_id);
+    inserts.extend(convert_loadout_to_database_items(
         loadout,
-        loadout_container_id,
+        pseudo_containers.loadout_container_id,
     ));
 
+    // Move any items that already have an item_id to the update list
+    let updates = inserts
+        .drain_filter(|item_pair| item_pair.model.item_id.is_some())
+        .collect::<Vec<ItemModelPair>>();
+
     // Fetch all existing items from the database for the character so that we can
-    // use it to keep track of which items still exist and which don't and
-    // should be deleted from the database.
+    // use it to determine which items to delete (because they no longer exist in
+    // the character's inventory or loadout)
     let mut existing_items = item
         .filter(
             parent_container_item_id
-                .eq(inventory_container_id)
-                .or(parent_container_item_id.eq(loadout_container_id)),
+                .eq(pseudo_containers.inventory_container_id)
+                .or(parent_container_item_id.eq(pseudo_containers.loadout_container_id)),
         )
         .load::<Item>(connection)?;
+    // Any items that exist in the database and don't exist in the updates must have
+    // been removed from the player and need deleting.
+    existing_items.retain(|x| {
+        !updates
+            .iter()
+            .any(|y| y.model.item_id.unwrap() == x.item_id)
+    });
 
-    // TODO: Refactor this, batch into multiple inserts/updates etc
-    for mut item_pair in item_pairs.into_iter() {
-        if let Some(model_item_id) = item_pair.model.item_id {
-            // Remove each item that is saved from the list of items to delete
-            existing_items.retain(|x| x.item_id != model_item_id);
-
-            diesel::update(item.filter(item_id.eq(model_item_id)))
-                .set(item_pair.model)
-                .execute(connection)?;
-        } else {
-            let id = get_new_entity_id(connection)?;
-            item_pair.model.item_id = Some(id);
-
-            // TODO: Fix this cast.
-            // TODO: Set this for all items only after the sub-transaction for this
-            // character has succeeded
-            // Set the item_id inside the Arc to the new
-            // entity_id - this results in the original item_id on the Item
-            // instance on the main game thread being updated.
-            item_pair.comp.item_id.store(id as u64, Ordering::Relaxed);
-
-            diesel::insert_into(item)
-                .values(item_pair.model)
-                .execute(connection)?;
-        }
+    for item_pair in updates.iter() {
+        // This unwrap is safe because updates only contains models with Some(item_id)
+        diesel::update(item.filter(item_id.eq(item_pair.model.item_id.unwrap())))
+            .set(&item_pair.model)
+            .execute(connection)?;
     }
 
-    // Any items left in existing_items after saving the character's inventory and
-    // loadout must no longer exist (consumed, dropped, etc) so should be
-    // deleted from the database.
-    for existing_item in existing_items {
-        // TODO: Single delete statement using all item IDs in existing_items
-        diesel::delete(item.filter(item_id.eq(existing_item.item_id))).execute(connection)?;
+    for mut item_pair in inserts.iter_mut() {
+        let id = get_new_entity_id(connection)?;
+        item_pair.model.item_id = Some(id);
+        item_pair.new_item_id = id;
+        diesel::insert_into(item)
+            .values(item_pair.model.clone())
+            .execute(connection)?;
     }
+
+    let delete_ids = existing_items
+        .iter()
+        .map(|x| x.item_id)
+        .collect::<Vec<i64>>();
+    diesel::delete(item.filter(item_id.eq_any(delete_ids))).execute(connection)?;
 
     let db_stats = convert_stats_to_database(char_id, &char_stats);
     diesel::update(stats.filter(character_id.eq(char_id)))
         .set(db_stats)
         .execute(connection)?;
 
-    Ok(())
+    Ok(inserts)
 }

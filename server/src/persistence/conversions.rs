@@ -11,9 +11,11 @@ use std::sync::{
 };
 use tracing::warn;
 
+#[derive(PartialEq)]
 pub struct ItemModelPair {
     pub comp: common::comp::item::Item,
     pub model: NewItem,
+    pub new_item_id: EntityId,
 }
 
 pub fn convert_inventory_to_database_items(
@@ -37,6 +39,7 @@ pub fn convert_inventory_to_database_items(
                     stack_size: item.kind.stack_size().map(|x| x as i32),
                 },
                 comp: item,
+                new_item_id: 0,
             }
         })
         .collect()
@@ -78,6 +81,7 @@ pub fn convert_loadout_to_database_items(
                 stack_size: None, // Armor/weapons cannot have stack sizes
             },
             comp: item.clone(), // TODO don't clone?
+            new_item_id: 0,
         }
     })
     .collect()
