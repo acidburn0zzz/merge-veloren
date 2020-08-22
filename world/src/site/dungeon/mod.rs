@@ -8,6 +8,7 @@ use crate::{
     IndexRef,
 };
 use common::{
+    assets,
     astar::Astar,
     comp::{self, item::ItemAsset},
     generation::{ChunkSupplement, EntityInfo},
