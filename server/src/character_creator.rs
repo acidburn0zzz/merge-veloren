@@ -1,4 +1,4 @@
-use crate::persistence::character::CharacterLoader;
+use crate::persistence::character_loader::CharacterLoader;
 use common::{
     comp::{Body, Inventory, Stats},
     loadout_builder::LoadoutBuilder,

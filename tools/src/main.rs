@@ -3,10 +3,9 @@ use structopt::StructOpt;
 
 use common::comp;
 use comp::item::{
-    ItemKind,
     armor::{ArmorKind, Protection},
     tool::ToolKind,
-    ItemAsset,
+    ItemKind,
 };
 
 #[derive(StructOpt)]
@@ -138,18 +137,14 @@ fn all_items() -> Result<(), Box<dyn Error>> {
     for item in comp::item::Item::new_from_asset_glob("common.items.*")
         .expect("Failed to iterate over item folders!")
     {
-        let kind =  match item.kind.clone() {
+        let kind = match item.kind.clone() {
             ItemKind::Armor(armor) => get_armor_kind_kind(&armor.kind),
             ItemKind::Lantern(lantern) => lantern.kind,
             ItemKind::Tool(tool) => get_tool_kind_kind(&tool.kind),
-            _ => "".to_owned()
+            _ => "".to_owned(),
         };
 
-        wtr.write_record(&[
-            item.item_definition_id(),
-            item.name(),
-            &kind
-        ])?;
+        wtr.write_record(&[item.item_definition_id(), item.name(), &kind])?;
     }
 
     wtr.flush()?;

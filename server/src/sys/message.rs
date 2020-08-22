@@ -1,7 +1,7 @@
 use super::SysTimer;
 use crate::{
     alias_validator::AliasValidator, character_creator, client::Client,
-    login_provider::LoginProvider, persistence::character::CharacterLoader, ServerSettings,
+    login_provider::LoginProvider, persistence::character_loader::CharacterLoader, ServerSettings,
     CLIENT_TIMEOUT,
 };
 use common::{

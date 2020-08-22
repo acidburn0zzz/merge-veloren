@@ -48,7 +48,10 @@ use futures_timer::Delay;
 use futures_util::{select, FutureExt};
 use metrics::{ServerMetrics, TickMetrics};
 use network::{Network, Pid, ProtocolAddr};
-use persistence::character::{CharacterLoader, CharacterLoaderResponseType, CharacterUpdater};
+use persistence::{
+    character_loader::{CharacterLoader, CharacterLoaderResponseType},
+    character_updater::CharacterUpdater,
+};
 use specs::{join::Join, Builder, Entity as EcsEntity, RunNow, SystemData, WorldExt};
 use std::{
     i32,
@@ -122,7 +125,7 @@ impl Server {
             .insert(CharacterLoader::new(settings.persistence_db_dir.clone()));
         state
             .ecs_mut()
-            .insert(persistence::character::CharacterUpdater::new(
+            .insert(persistence::character_updater::CharacterUpdater::new(
                 settings.persistence_db_dir.clone(),
             ));
         state
@@ -461,7 +464,7 @@ impl Server {
         // Get character-related database responses and notify the requesting client
         self.state
             .ecs()
-            .read_resource::<persistence::character::CharacterLoader>()
+            .read_resource::<persistence::character_loader::CharacterLoader>()
             .messages()
             .for_each(|query_result| match query_result.result {
                 CharacterLoaderResponseType::CharacterList(result) => match result {

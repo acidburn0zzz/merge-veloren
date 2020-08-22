@@ -25,7 +25,7 @@ impl From<&comp::body::humanoid::Body> for HumanoidBody {
             accessory: body.accessory,
             hair_color: body.hair_color,
             skin: body.skin,
-            eye_color: body.eye_color
+            eye_color: body.eye_color,
         }
     }
 }
