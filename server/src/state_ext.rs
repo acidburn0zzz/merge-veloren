@@ -1,5 +1,5 @@
 use crate::{
-    client::Client, persistence::character::PersistedComponents, settings::ServerSettings,
+    client::Client, persistence::PersistedComponents, settings::ServerSettings,
     sys::sentinel::DeletedEntities, SpawnPoint,
 };
 use common::{

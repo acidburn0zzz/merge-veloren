@@ -16,7 +16,7 @@ pub enum Error {
     DatabaseError(diesel::result::Error),
     // Unable to load body or stats for a character
     CharacterDataError,
-    SerializationError(serde_json::Error)
+    SerializationError(serde_json::Error),
 }
 
 impl fmt::Display for Error {
@@ -27,7 +27,7 @@ impl fmt::Display for Error {
             Self::DatabaseConnectionError(error) => error.to_string(),
             Self::DatabaseMigrationError(error) => error.to_string(),
             Self::CharacterDataError => String::from("Error while loading character data"),
-            Self::SerializationError(error) => error.to_string()
+            Self::SerializationError(error) => error.to_string(),
         })
     }
 }

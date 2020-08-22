@@ -70,7 +70,7 @@ pub struct Stats {
 pub struct NewBody {
     pub body_id: Option<i32>,
     pub variant: String,
-    pub body_data: String
+    pub body_data: String,
 }
 
 #[derive(Associations, Identifiable, Queryable, Debug)]
@@ -79,7 +79,7 @@ pub struct NewBody {
 pub struct Body {
     pub body_id: i32,
     pub variant: String,
-    pub body_data: String
+    pub body_data: String,
 }
 
 /// A wrapper type for the SkillSet of a character used to serialise to and from

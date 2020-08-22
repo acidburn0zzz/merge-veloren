@@ -6,8 +6,9 @@
 //! - [`diesel-cli`](https://github.com/diesel-rs/diesel/tree/master/diesel_cli/)
 //!   for generating and testing migrations
 
-pub mod character;
-
+pub(in crate::persistence) mod character;
+pub mod character_loader;
+pub mod character_updater;
 mod conversions;
 mod error;
 mod json_models;
@@ -16,10 +17,14 @@ mod schema;
 
 extern crate diesel;
 
+use common::comp;
 use diesel::{connection::SimpleConnection, prelude::*};
 use diesel_migrations::embed_migrations;
 use std::{env, fs, path::PathBuf};
 use tracing::warn;
+
+/// A tuple of the components that are persisted to the DB for each character
+pub type PersistedComponents = (comp::Body, comp::Stats, comp::Inventory, comp::Loadout);
 
 // See: https://docs.rs/diesel_migrations/1.4.0/diesel_migrations/macro.embed_migrations.html
 // This macro is called at build-time, and produces the necessary migration info
