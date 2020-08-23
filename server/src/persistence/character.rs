@@ -262,22 +262,68 @@ pub fn create_character(
 }
 
 /// Delete a character. Returns the updated character list.
-pub fn delete_character(uuid: &str, char_id: CharacterId, db_dir: &str) -> CharacterListResult {
-    use schema::character::dsl::*;
+pub fn delete_character(
+    requesting_player_uuid: &str,
+    char_id: CharacterId,
+    db_dir: &str,
+) -> CharacterListResult {
+    use schema::{body::dsl::*, character::dsl::*, stats::dsl::*};
 
     let connection = establish_connection(db_dir)?;
     connection.transaction::<_, diesel::result::Error, _>(|| {
+        // Load the character to delete - ensures that the requesting player
+        // owns the character and gives us the body_id to delete
+        let character_data = character
+            .filter(
+                schema::character::dsl::character_id
+                    .eq(char_id)
+                    .and(player_uuid.eq(requesting_player_uuid)),
+            )
+            .first::<Character>(&connection)?;
+
+        // Delete stats
+        diesel::delete(stats.filter(schema::stats::dsl::character_id.eq(char_id)))
+            .execute(&connection)?;
+
+        // Delete all items, recursively walking all containers starting from the
+        // "character" pseudo-container that is the root for all items owned by
+        // a character.
+        diesel::sql_query(format!(
+            "
+        WITH RECURSIVE
+        parents AS (
+            SELECT  *
+            FROM    item
+            WHERE   item.item_id = {} -- Item with character id is the character pseudo-container
+            UNION ALL
+            SELECT  item.*
+            FROM    item,
+                    parents
+            WHERE   item.parent_container_item_id = parents.item_id
+        )
+        DELETE
+        FROM    item
+        WHERE   item_id IN (SELECT item_id FROM parents)",
+            char_id
+        ))
+        .execute(&connection)?;
+
+        // Delete character
         diesel::delete(
             character
-                .filter(character_id.eq(char_id))
-                .filter(player_uuid.eq(uuid)),
+                .filter(schema::character::dsl::character_id.eq(char_id))
+                .filter(player_uuid.eq(requesting_player_uuid)),
         )
         .execute(&connection)?;
+
+        // Delete body
+        diesel::delete(body.filter(schema::body::dsl::body_id.eq(character_data.body_id)))
+            .execute(&connection)?;
 
         Ok(())
     })?;
 
-    load_character_list(uuid, db_dir)
+    load_character_list(requesting_player_uuid, db_dir)
 }
 
 /// Before creating a character, we ensure that the limit on the number of
