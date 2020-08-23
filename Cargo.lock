@@ -4355,7 +4355,7 @@ version = "0.1.0"
 dependencies = [
  "csv",
  "structopt",
- "veloren-common",
+ "veloren_common",
 ]
 
 [[package]]
@@ -4640,17 +4640,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "veloren-chat-cli"
+name = "veloren_chat_cli"
 version = "0.7.0"
 dependencies = [
  "tracing",
  "tracing-subscriber",
- "veloren-client",
- "veloren-common",
+ "veloren_client",
+ "veloren_common",
 ]
 
 [[package]]
-name = "veloren-client"
+name = "veloren_client"
 version = "0.7.0"
 dependencies = [
  "authc",
@@ -4667,12 +4667,12 @@ dependencies = [
  "tracing",
  "uvth 3.1.1",
  "vek 0.12.0",
- "veloren-common",
+ "veloren_common",
  "veloren_network",
 ]
 
 [[package]]
-name = "veloren-common"
+name = "veloren_common"
 version = "0.7.0"
 dependencies = [
  "arraygen",
@@ -4704,7 +4704,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "veloren-server"
+name = "veloren_network"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "bincode",
+ "crossbeam-channel 0.4.2",
+ "futures 0.3.5",
+ "lazy_static",
+ "lz4-compress",
+ "prometheus",
+ "rand 0.7.3",
+ "serde",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
+ "uvth 4.0.1",
+]
+
+[[package]]
+name = "veloren_server"
 version = "0.7.0"
 dependencies = [
  "authc",
@@ -4732,23 +4751,23 @@ dependencies = [
  "tracing",
  "uvth 3.1.1",
  "vek 0.12.0",
- "veloren-common",
- "veloren-world",
+ "veloren_common",
  "veloren_network",
+ "veloren_world",
 ]
 
 [[package]]
-name = "veloren-server-cli"
+name = "veloren_server_cli"
 version = "0.7.0"
 dependencies = [
  "tracing",
  "tracing-subscriber",
- "veloren-common",
- "veloren-server",
+ "veloren_common",
+ "veloren_server",
 ]
 
 [[package]]
-name = "veloren-voxygen"
+name = "veloren_voxygen"
 version = "0.7.0"
 dependencies = [
  "backtrace",
@@ -4794,17 +4813,17 @@ dependencies = [
  "treeculler",
  "uvth 3.1.1",
  "vek 0.12.0",
- "veloren-client",
- "veloren-common",
- "veloren-server",
- "veloren-voxygen-anim",
- "veloren-world",
+ "veloren_client",
+ "veloren_common",
+ "veloren_server",
+ "veloren_voxygen_anim",
+ "veloren_world",
  "winit",
  "winres",
 ]
 
 [[package]]
-name = "veloren-voxygen-anim"
+name = "veloren_voxygen_anim"
 version = "0.7.0"
 dependencies = [
  "find_folder",
@@ -4813,11 +4832,11 @@ dependencies = [
  "notify",
  "tracing",
  "vek 0.12.0",
- "veloren-common",
+ "veloren_common",
 ]
 
 [[package]]
-name = "veloren-world"
+name = "veloren_world"
 version = "0.7.0"
 dependencies = [
  "arr_macro",
@@ -4842,26 +4861,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "vek 0.12.0",
- "veloren-common",
-]
-
-[[package]]
-name = "veloren_network"
-version = "0.1.0"
-dependencies = [
- "async-std",
- "bincode",
- "crossbeam-channel 0.4.2",
- "futures 0.3.5",
- "lazy_static",
- "lz4-compress",
- "prometheus",
- "rand 0.7.3",
- "serde",
- "tracing",
- "tracing-futures",
- "tracing-subscriber",
- "uvth 4.0.1",
+ "veloren_common",
 ]
 
 [[package]]

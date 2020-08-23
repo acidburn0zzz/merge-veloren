@@ -1,5 +1,5 @@
 [package]
-name = "veloren-server"
+name = "veloren_server"
 version = "0.7.0"
 authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 edition = "2018"
@@ -9,8 +9,8 @@ worldgen = []
 default = ["worldgen"]
 
 [dependencies]
-common = { package = "veloren-common", path = "../common" }
-world = { package = "veloren-world", path = "../world" }
+common = { package = "veloren_common", path = "../common" }
+world = { package = "veloren_world", path = "../world" }
 network = { package = "veloren_network", path = "../network", features = ["metrics"], default-features = false }
 
 specs-idvs = { git = "https://gitlab.com/veloren/specs-idvs.git", branch = "specs-git" }

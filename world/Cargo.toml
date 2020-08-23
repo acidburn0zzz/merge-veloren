@@ -1,12 +1,12 @@
 [package]
-name = "veloren-world"
+name = "veloren_world"
 version = "0.7.0"
 authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 bincode = "1.2.0"
-common = { package = "veloren-common", path = "../common" }
+common = { package = "veloren_common", path = "../common" }
 bitvec = "0.17.4"
 fxhash = "0.2.1"
 image = { version = "0.23.8", default-features = false, features = ["png"] }
