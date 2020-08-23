@@ -709,17 +709,20 @@ INSERT INTO _temp_item_defs VALUES('common.items.weapons.tool.shovel-0','Shovel'
 INSERT INTO _temp_item_defs VALUES('common.items.weapons.tool.shovel-1','Shovel','Shovel1');
 
 -- Accounts for spelling mistake in "Ornimented Greatsword" legacy items
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.greatsword_2h_orn-0','Ornimented Greatsword','Sword');
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.greatsword_2h_orn-1','Ornimented Greatsword','Sword');
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.greatsword_2h_orn-2','Ornimented Greatsword','Sword');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.greatsword_2h_orn-0','Ornimented Greatsword','GreatswordOrn0');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.greatsword_2h_orn-1','Ornimented Greatsword','GreatswordOrn1');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.greatsword_2h_orn-2','Ornimented Greatsword','GreatswordOrn2');
 
 -- Accounts for spelling mistake in "Ornimented Longsword" legacy items
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-0','Ornimented Longsword','Sword');
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-1','Ornimented Longsword','Sword');
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-2','Ornimented Longsword','Sword');
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-3','Ornimented Longsword','Sword');
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-4','Ornimented Longsword','Sword');
-INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-5','Ornimented Longsword','Sword');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-0','Ornimented Longsword','LongOrn0');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-1','Ornimented Longsword','LongOrn1');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-2','Ornimented Longsword','LongOrn2');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-3','Ornimented Longsword','LongOrn3');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-4','Ornimented Longsword','LongOrn4');
+INSERT INTO _temp_item_defs VALUES('common.items.weapons.sword.long_2h_orn-5','Ornimented Longsword','LongOrn5');
+
+-- Accounts for legacy "Hunting Pants" item with Kind = Green
+INSERT INTO _temp_item_defs VALUES('common.items.armor.pants.hunting','Hunting Pants','Green');
 
 -- Accounts for renamed "Powerful Potion" item
 INSERT INTO _temp_item_defs VALUES('common.items.boss_drops.potions','Powerful Potion','');
@@ -751,62 +754,62 @@ CREATE TEMP TABLE _temp_inventory_items
     stack_size INTEGER
 );
 
-WITH items AS (
-    WITH item_json AS (
-        WITH slots AS (
-            SELECT character_id,
-                   value AS slot_json
-            FROM _inventory_temp,
-                json_tree(_inventory_temp.items)
-            WHERE key = 'slots'
-        )
-        SELECT character_id,
-               value
-        FROM slots,
+WITH slots AS (
+    SELECT  character_id,
+            value AS slot_json
+    FROM    _inventory_temp,
+            json_tree(_inventory_temp.items)
+    WHERE   key = 'slots'
+),
+item_json AS (
+    SELECT  character_id,
+            value
+    FROM    slots,
             json_each(slots.slot_json)
-        WHERE type = 'object'
-    )
-    SELECT i.character_id,
-           value,
-           json_extract(i.value, '$.name') AS item_name,
-           COALESCE(
-                   json_extract(value, '$.kind.Consumable.amount'),
-                   json_extract(value, '$.kind.Ingredient.amount'),
-                   json_extract(value, '$.kind.Throwable.amount'),
-                   json_extract(value, '$.kind.Utility.amount')
-               ) AS amount,
-           COALESCE(
-                   json_extract(value, '$.kind.Tool.kind.Sword'),
-                   json_extract(value, '$.kind.Tool.kind.Axe'),
-                   json_extract(value, '$.kind.Tool.kind.Hammer'),
-                   json_extract(value, '$.kind.Tool.kind.Bow'),
-                   json_extract(value, '$.kind.Tool.kind.Dagger'),
-                   json_extract(value, '$.kind.Tool.kind.Staff'),
-                   json_extract(value, '$.kind.Tool.kind.Shield'),
-                   json_extract(value, '$.kind.Tool.kind.Debug'),
-                   json_extract(value, '$.kind.Tool.kind.Farming'),
-                   json_extract(value, '$.kind.Tool.kind.Empty'),
-                   json_extract(value, '$.kind.Armor.kind.Shoulder'),
-                   json_extract(value, '$.kind.Armor.kind.Chest'),
-                   json_extract(value, '$.kind.Armor.kind.Belt'),
-                   json_extract(value, '$.kind.Armor.kind.Hand'),
-                   json_extract(value, '$.kind.Armor.kind.Pants'),
-                   json_extract(value, '$.kind.Armor.kind.Foot'),
-                   json_extract(value, '$.kind.Armor.kind.Back'),
-                   json_extract(value, '$.kind.Armor.kind.Ring'),
-                   json_extract(value, '$.kind.Armor.kind.Neck'),
-                   json_extract(value, '$.kind.Armor.kind.Head'),
-                   json_extract(value, '$.kind.Armor.kind.Tabard'),
-                   json_extract(value, '$.kind.Lantern.kind')
-               ) AS weapon_armor_kind
+    WHERE   type = 'object'
+),
+items AS (
+    SELECT  i.character_id,
+            value,
+            json_extract(i.value, '$.name') AS item_name,
+            COALESCE(
+                    json_extract(value, '$.kind.Consumable.amount'),
+                    json_extract(value, '$.kind.Ingredient.amount'),
+                    json_extract(value, '$.kind.Throwable.amount'),
+                    json_extract(value, '$.kind.Utility.amount')
+            ) AS amount,
+            COALESCE(
+                    json_extract(value, '$.kind.Tool.kind.Sword'),
+                    json_extract(value, '$.kind.Tool.kind.Axe'),
+                    json_extract(value, '$.kind.Tool.kind.Hammer'),
+                    json_extract(value, '$.kind.Tool.kind.Bow'),
+                    json_extract(value, '$.kind.Tool.kind.Dagger'),
+                    json_extract(value, '$.kind.Tool.kind.Staff'),
+                    json_extract(value, '$.kind.Tool.kind.Shield'),
+                    json_extract(value, '$.kind.Tool.kind.Debug'),
+                    json_extract(value, '$.kind.Tool.kind.Farming'),
+                    json_extract(value, '$.kind.Tool.kind.Empty'),
+                    json_extract(value, '$.kind.Armor.kind.Shoulder'),
+                    json_extract(value, '$.kind.Armor.kind.Chest'),
+                    json_extract(value, '$.kind.Armor.kind.Belt'),
+                    json_extract(value, '$.kind.Armor.kind.Hand'),
+                    json_extract(value, '$.kind.Armor.kind.Pants'),
+                    json_extract(value, '$.kind.Armor.kind.Foot'),
+                    json_extract(value, '$.kind.Armor.kind.Back'),
+                    json_extract(value, '$.kind.Armor.kind.Ring'),
+                    json_extract(value, '$.kind.Armor.kind.Neck'),
+                    json_extract(value, '$.kind.Armor.kind.Head'),
+                    json_extract(value, '$.kind.Armor.kind.Tabard'),
+                    json_extract(value, '$.kind.Lantern.kind')
+            ) AS weapon_armor_kind
     FROM item_json i
 ),
-     inventory_entity AS (
-         SELECT parent_container_item_id AS character_id,
-                item_id                  as inventory_item_id
-         FROM item i
-         WHERE item_definition_id = 'veloren.core.pseudo_containers.inventory'
-     )
+inventory_entity AS (
+    SELECT  parent_container_item_id AS character_id,
+            item_id                  AS inventory_item_id
+    FROM    item i
+    WHERE   item_definition_id = 'veloren.core.pseudo_containers.inventory'
+)
 INSERT INTO _temp_inventory_items
 SELECT  NULL,
         inv.inventory_item_id AS parent_container_item_id,
@@ -849,50 +852,49 @@ CREATE TEMP TABLE _temp_loadout_items
     position TEXT NOT NULL
 );
 
--- TODO: Fix this taking 2 minutes on the production database
 WITH item_json AS (
     SELECT  *
     FROM    _loadout_temp,
-        json_each(items)
+            json_each(items)
     WHERE   value IS NOT NULL),
-     items AS (
-         SELECT  character_id,
-                 key AS position,
-                 COALESCE(
-                         json_extract(i.value, '$.name'),
-                         json_extract(i.value, '$.item.name')) AS item_name,
-                 COALESCE(
-                         json_extract(value, '$.item.kind.Tool.kind.Sword'),
-                         json_extract(value, '$.item.kind.Tool.kind.Axe'),
-                         json_extract(value, '$.item.kind.Tool.kind.Hammer'),
-                         json_extract(value, '$.item.kind.Tool.kind.Bow'),
-                         json_extract(value, '$.item.kind.Tool.kind.Dagger'),
-                         json_extract(value, '$.item.kind.Tool.kind.Staff'),
-                         json_extract(value, '$.item.kind.Tool.kind.Shield'),
-                         json_extract(value, '$.item.kind.Tool.kind.Debug'),
-                         json_extract(value, '$.item.kind.Tool.kind.Farming'),
-                         json_extract(value, '$.item.kind.Tool.kind.Empty'),
-                         json_extract(value, '$.kind.Armor.kind.Shoulder'),
-                         json_extract(value, '$.kind.Armor.kind.Chest'),
-                         json_extract(value, '$.kind.Armor.kind.Belt'),
-                         json_extract(value, '$.kind.Armor.kind.Hand'),
-                         json_extract(value, '$.kind.Armor.kind.Pants'),
-                         json_extract(value, '$.kind.Armor.kind.Foot'),
-                         json_extract(value, '$.kind.Armor.kind.Back'),
-                         json_extract(value, '$.kind.Armor.kind.Ring'),
-                         json_extract(value, '$.kind.Armor.kind.Neck'),
-                         json_extract(value, '$.kind.Armor.kind.Head'),
-                         json_extract(value, '$.kind.Armor.kind.Tabard'),
-                         json_extract(value, '$.kind.Lantern.kind')
-                     ) AS weapon_armor_kind
-         FROM    item_json i
-     ),
-     loadout_entity AS (
-         SELECT  parent_container_item_id AS character_id,
-                 item_id                  as loadout_item_id
-         FROM    item i
-         WHERE   item_definition_id = 'veloren.core.pseudo_containers.loadout'
-     )
+items AS (
+    SELECT  character_id,
+            key AS position,
+            COALESCE(
+                    json_extract(i.value, '$.name'),
+                    json_extract(i.value, '$.item.name')) AS item_name,
+            COALESCE(
+                    json_extract(value, '$.item.kind.Tool.kind.Sword'),
+                    json_extract(value, '$.item.kind.Tool.kind.Axe'),
+                    json_extract(value, '$.item.kind.Tool.kind.Hammer'),
+                    json_extract(value, '$.item.kind.Tool.kind.Bow'),
+                    json_extract(value, '$.item.kind.Tool.kind.Dagger'),
+                    json_extract(value, '$.item.kind.Tool.kind.Staff'),
+                    json_extract(value, '$.item.kind.Tool.kind.Shield'),
+                    json_extract(value, '$.item.kind.Tool.kind.Debug'),
+                    json_extract(value, '$.item.kind.Tool.kind.Farming'),
+                    json_extract(value, '$.item.kind.Tool.kind.Empty'),
+                    json_extract(value, '$.kind.Armor.kind.Shoulder'),
+                    json_extract(value, '$.kind.Armor.kind.Chest'),
+                    json_extract(value, '$.kind.Armor.kind.Belt'),
+                    json_extract(value, '$.kind.Armor.kind.Hand'),
+                    json_extract(value, '$.kind.Armor.kind.Pants'),
+                    json_extract(value, '$.kind.Armor.kind.Foot'),
+                    json_extract(value, '$.kind.Armor.kind.Back'),
+                    json_extract(value, '$.kind.Armor.kind.Ring'),
+                    json_extract(value, '$.kind.Armor.kind.Neck'),
+                    json_extract(value, '$.kind.Armor.kind.Head'),
+                    json_extract(value, '$.kind.Armor.kind.Tabard'),
+                    json_extract(value, '$.kind.Lantern.kind')
+                ) AS weapon_armor_kind
+    FROM    item_json i
+),
+loadout_entity AS (
+    SELECT  parent_container_item_id AS character_id,
+            item_id                  as loadout_item_id
+    FROM    item i
+    WHERE   item_definition_id = 'veloren.core.pseudo_containers.loadout'
+)
 INSERT
 INTO    _temp_loadout_items
 SELECT  NULL,
