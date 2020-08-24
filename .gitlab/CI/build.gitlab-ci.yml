@@ -26,7 +26,7 @@ coverage:
   stage: build
   script:
     - ln -s /dockercache/cache-tarpaulin target
-    - cargo tarpaulin -v
+    - cargo tarpaulin --debug
   retry:
     max: 2
 
