@@ -24,9 +24,9 @@ impl<V: Vertex> Model<V> {
         }
     }
 
-    pub fn new_dynamic(device: &wgpu::Device,size: usize) -> Self {
+    pub fn new_dynamic(device: &wgpu::Device, size: usize) -> Self {
         Self {
-            vbuf: Buffer::new(device,size, wgpu::BufferUsage::VERTEX),
+            vbuf: Buffer::new(device, size, wgpu::BufferUsage::VERTEX),
         }
     }
 

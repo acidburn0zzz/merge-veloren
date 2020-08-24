@@ -9,8 +9,7 @@ use super::{
     },
     texture::Texture,
     AaMode, AddressMode, CloudMode, FilterMode, FluidMode, LightingMode, RenderError, RenderMode,
-    ShadowMapMode, ShadowMode,
-    Vertex
+    ShadowMapMode, ShadowMode, Vertex,
 };
 use common::assets::{self, watch::ReloadIndicator};
 use core::convert::TryFrom;
@@ -76,12 +75,9 @@ use vek::*;
 //     gfx_backend::Resources,
 //     <ColLightFmt as gfx::format::Formatted>::View,
 // >;
-// /// A type representing data that can be converted to an immutable texture
-// map /// of ColLight data (used for texture atlases created during greedy
-// meshing). pub type ColLightInfo = (
-//     Vec<<<ColLightFmt as gfx::format::Formatted>::Surface as
-// gfx::format::SurfaceTyped>::DataType>,     Vec2<u16>,
-// );
+/// A type representing data that can be converted to an immutable texture map
+/// of ColLight data (used for texture atlases created during greedy meshing).
+pub type ColLightInfo = (Vec<[u8; 4]>, Vec2<u16>);
 
 /// A type that holds shadow map data.  Since shadow mapping may not be
 /// supported on all platforms, we try to keep it separate.
@@ -173,7 +169,7 @@ impl Renderer {
             .request_device(
                 wgpu::DeviceDescriptor {
                     // TODO
-                    features: Features::DEPTH_CLAMPING,
+                    features: Features::DEPTH_CLAMPING | Features::ADDRESS_MODE_CLAMP_TO_BORDER,
                     limits: Limits::default(),
                     shader_validation: true,
                 },
@@ -336,9 +332,7 @@ impl Renderer {
     /// Get references to the internal render target views that get displayed
     /// directly by the window.
     #[allow(dead_code)]
-    pub fn win_views(&self) -> &wgpu::TextureView {
-        &self.win_depth_view
-    }
+    pub fn win_views(&self) -> &wgpu::TextureView { &self.win_depth_view }
 
     /// Change the render mode.
     pub fn set_render_mode(&mut self, mode: RenderMode) -> Result<(), RenderError> {
@@ -859,13 +853,18 @@ impl Renderer {
         texture_info: wgpu::TextureDescriptor,
         sampler_info: wgpu::SamplerDescriptor,
         bytes_per_row: u32,
-        size: [u16;2],
         data: &[u8],
-    ) -> Texture
-    {
-        let tex = Texture::new_raw(&self.device, texture_info,sampler_info);
+    ) -> Texture {
+        let tex = Texture::new_raw(&self.device, texture_info, sampler_info);
 
-        tex.update(&self.device, &self.queue, [0;2], size, data, bytes_per_row);
+        tex.update(
+            &self.device,
+            &self.queue,
+            [0; 2],
+            [texture_info.size.x, texture_info.size.y],
+            data,
+            bytes_per_row,
+        );
 
         tex
     }
@@ -875,29 +874,39 @@ impl Renderer {
         &mut self,
         texture_info: wgpu::TextureDescriptor,
         sampler_info: wgpu::SamplerDescriptor,
-    ) -> Texture
-    {
-        Texture::new_raw(&self.device, texture_info,sampler_info)
+    ) -> Texture {
+        Texture::new_raw(&self.device, texture_info, sampler_info)
     }
 
     /// Create a new texture from the provided image.
+    ///
+    /// Currently only supports Rgba8Srgb
     pub fn create_texture(
         &mut self,
         image: &image::DynamicImage,
         filter_method: Option<FilterMode>,
-        addresse_mode: Option<AddressMode>
-    ) -> Texture
-    {
-        Texture::new(&self.device, &self.queue, image, filter_method, addresse_mode)
+        address_mode: Option<AddressMode>,
+    ) -> Texture {
+        Texture::new(
+            &self.device,
+            &self.queue,
+            image,
+            filter_method,
+            address_mode,
+        )
     }
 
-    /// Create a new dynamic texture (gfx::memory::Usage::Dynamic) with the
+    /// Create a new dynamic texture with the
     /// specified dimensions.
+    ///
+    /// Currently only supports Rgba8Srgb
     pub fn create_dynamic_texture(&mut self, dims: Vec2<u16>) -> Texture {
         Texture::new_dynamic(&mut self.factory, dims.x, dims.y)
     }
 
     /// Update a texture with the provided offset, size, and data.
+    ///
+    /// Currently only supports Rgba8Srgb
     pub fn update_texture(
         &mut self,
         texture: &Texture,
@@ -906,7 +915,7 @@ impl Renderer {
         data: &[[u8; 4]],
         bytes_per_row: u32,
     ) {
-        texture.update(&mut self.encoder, offset, size, data,bytes_per_row)
+        texture.update(&mut self.encoder, offset, size, data, bytes_per_row)
     }
 
     /// Creates a download buffer, downloads the win_color_view, and converts to

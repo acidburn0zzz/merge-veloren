@@ -1,15 +1,5 @@
-use super::{
-    super::{TerrainLocals},
-};
 use vek::*;
 use zerocopy::AsBytes;
-
-
-#[repr(C)]
-#[derive(Copy, Clone, Debug, AsBytes)]
-struct Vertex {
-             pos_norm: u32,
-     }
 
 // gfx_defines! {
 //     vertex Vertex {
@@ -25,7 +15,8 @@ struct Vertex {
 //         shadows: gfx::ConstantBuffer<Shadow> = "u_shadows",
 
 //         point_shadow_maps: gfx::TextureSampler<f32> = "t_point_shadow_maps",
-//         directed_shadow_maps: gfx::TextureSampler<f32> = "t_directed_shadow_maps",
+//         directed_shadow_maps: gfx::TextureSampler<f32> =
+// "t_directed_shadow_maps",
 
 //         alt: gfx::TextureSampler<[f32; 2]> = "t_alt",
 //         horizon: gfx::TextureSampler<[f32; 4]> = "t_horizon",
@@ -34,13 +25,22 @@ struct Vertex {
 //         waves: gfx::TextureSampler<[f32; 4]> = "t_waves",
 
 //         // Shadow stuff
-//         light_shadows: gfx::ConstantBuffer<shadow::Locals> = "u_light_shadows",
+//         light_shadows: gfx::ConstantBuffer<shadow::Locals> =
+// "u_light_shadows",
 
-//         tgt_color: gfx::BlendTarget<TgtColorFmt> = ("tgt_color", ColorMask::all(), gfx::preset::blend::ALPHA),
-//         tgt_depth_stencil: gfx::DepthTarget<TgtDepthStencilFmt> = gfx::preset::depth::LESS_EQUAL_TEST,
-//         // tgt_depth_stencil: gfx::DepthStencilTarget<TgtDepthStencilFmt> = (gfx::preset::depth::LESS_EQUAL_TEST,Stencil::new(Comparison::Always,0xff,(StencilOp::Keep,StencilOp::Keep,StencilOp::Keep))),
-//     }
+//         tgt_color: gfx::BlendTarget<TgtColorFmt> = ("tgt_color",
+// ColorMask::all(), gfx::preset::blend::ALPHA),         tgt_depth_stencil:
+// gfx::DepthTarget<TgtDepthStencilFmt> = gfx::preset::depth::LESS_EQUAL_TEST,
+//         // tgt_depth_stencil: gfx::DepthStencilTarget<TgtDepthStencilFmt> =
+// (gfx::preset::depth::LESS_EQUAL_TEST,Stencil::new(Comparison::Always,0xff,
+// (StencilOp::Keep,StencilOp::Keep,StencilOp::Keep))),     }
 // }
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, AsBytes)]
+pub struct Vertex {
+    pos_norm: u32,
+}
 
 impl Vertex {
     #[allow(clippy::identity_op)] // TODO: Pending review in #587

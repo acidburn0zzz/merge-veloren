@@ -1,49 +1,53 @@
-use super::{
-    super::{ColLightFmt, Pipeline, TgtColorFmt, TgtDepthStencilFmt},
-    shadow, Globals, Light, Shadow,
-};
-use gfx::{
-    self, gfx_constant_struct_meta, gfx_defines, gfx_impl_struct_meta, gfx_pipeline,
-    gfx_pipeline_inner, gfx_vertex_struct_meta,
-};
 use vek::*;
+use zerocopy::AsBytes;
 
-gfx_defines! {
-    vertex Vertex {
-        pos_norm: u32 = "v_pos_norm",
-        atlas_pos: u32 = "v_atlas_pos",
-    }
+// gfx_defines! {
+//     vertex Vertex {
+//         pos_norm: u32 = "v_pos_norm",
+//         atlas_pos: u32 = "v_atlas_pos",
+//     }
 
-    constant Locals {
-        model_offs: [f32; 3] = "model_offs",
-        load_time: f32 = "load_time",
-        atlas_offs: [i32; 4] = "atlas_offs",
-    }
+//     constant Locals {
+//         model_offs: [f32; 3] = "model_offs",
+//         load_time: f32 = "load_time",
+//         atlas_offs: [i32; 4] = "atlas_offs",
+//     }
 
-    pipeline pipe {
-        vbuf: gfx::VertexBuffer<Vertex> = (),
-        col_lights: gfx::TextureSampler<[f32; 4]> = "t_col_light",
+//     pipeline pipe {
+//         vbuf: gfx::VertexBuffer<Vertex> = (),
+//         col_lights: gfx::TextureSampler<[f32; 4]> = "t_col_light",
 
-        locals: gfx::ConstantBuffer<Locals> = "u_locals",
-        globals: gfx::ConstantBuffer<Globals> = "u_globals",
-        lights: gfx::ConstantBuffer<Light> = "u_lights",
-        shadows: gfx::ConstantBuffer<Shadow> = "u_shadows",
+//         locals: gfx::ConstantBuffer<Locals> = "u_locals",
+//         globals: gfx::ConstantBuffer<Globals> = "u_globals",
+//         lights: gfx::ConstantBuffer<Light> = "u_lights",
+//         shadows: gfx::ConstantBuffer<Shadow> = "u_shadows",
 
-        point_shadow_maps: gfx::TextureSampler<f32> = "t_point_shadow_maps",
-        directed_shadow_maps: gfx::TextureSampler<f32> = "t_directed_shadow_maps",
+//         point_shadow_maps: gfx::TextureSampler<f32> = "t_point_shadow_maps",
+//         directed_shadow_maps: gfx::TextureSampler<f32> =
+// "t_directed_shadow_maps",
 
-        alt: gfx::TextureSampler<[f32; 2]> = "t_alt",
-        horizon: gfx::TextureSampler<[f32; 4]> = "t_horizon",
+//         alt: gfx::TextureSampler<[f32; 2]> = "t_alt",
+//         horizon: gfx::TextureSampler<[f32; 4]> = "t_horizon",
 
-        noise: gfx::TextureSampler<f32> = "t_noise",
+//         noise: gfx::TextureSampler<f32> = "t_noise",
 
-        // Shadow stuff
-        light_shadows: gfx::ConstantBuffer<shadow::Locals> = "u_light_shadows",
+//         // Shadow stuff
+//         light_shadows: gfx::ConstantBuffer<shadow::Locals> =
+// "u_light_shadows",
 
-        tgt_color: gfx::RenderTarget<TgtColorFmt> = "tgt_color",
-        tgt_depth_stencil: gfx::DepthTarget<TgtDepthStencilFmt> = gfx::preset::depth::LESS_EQUAL_WRITE,
-        // tgt_depth_stencil: gfx::DepthStencilTarget<TgtDepthStencilFmt> = (gfx::preset::depth::LESS_EQUAL_WRITE,Stencil::new(Comparison::Always,0xff,(StencilOp::Keep,StencilOp::Keep,StencilOp::Keep))),
-    }
+//         tgt_color: gfx::RenderTarget<TgtColorFmt> = "tgt_color",
+//         tgt_depth_stencil: gfx::DepthTarget<TgtDepthStencilFmt> =
+// gfx::preset::depth::LESS_EQUAL_WRITE,         // tgt_depth_stencil:
+// gfx::DepthStencilTarget<TgtDepthStencilFmt> =
+// (gfx::preset::depth::LESS_EQUAL_WRITE,Stencil::new(Comparison::Always,0xff,
+// (StencilOp::Keep,StencilOp::Keep,StencilOp::Keep))),     }
+// }
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, AsBytes)]
+pub struct Vertex {
+    pos_norm: u32,
+    atlas_pos: u32,
 }
 
 impl Vertex {
@@ -98,18 +102,20 @@ impl Vertex {
         }
     }
 
-    pub fn make_col_light(
-        light: u8,
-        col: Rgb<u8>,
-    ) -> <<ColLightFmt as gfx::format::Formatted>::Surface as gfx::format::SurfaceTyped>::DataType
-    {
-        [col.r, col.g, col.b, light]
-    }
+    pub fn make_col_light(light: u8, col: Rgb<u8>) -> [u8; 3] { [col.r, col.g, col.b, light] }
 
     /// Set the bone_idx for an existing figure vertex.
     pub fn set_bone_idx(&mut self, bone_idx: u8) {
         self.pos_norm = (self.pos_norm & !(0xF << 27)) | ((bone_idx as u32 & 0xF) << 27);
     }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, AsBytes)]
+pub struct Locals {
+    model_offs: [f32; 3],
+    load_time: f32,
+    atlas_offs: [i32; 4],
 }
 
 impl Locals {
@@ -120,10 +126,4 @@ impl Locals {
             atlas_offs: [0; 4],
         }
     }
-}
-
-pub struct TerrainPipeline;
-
-impl Pipeline for TerrainPipeline {
-    type Vertex = Vertex;
 }

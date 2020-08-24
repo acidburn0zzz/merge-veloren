@@ -5211,8 +5211,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "549160f188eef412ac978499ddf0ceadad4c9159bb1160f9e6b9d4cc8ee977dc"
+source = "git+https://github.com/gfx-rs/wgpu-rs.git#7396e92fcb81f1a2599b98c941869a174d3f6c3d"
 dependencies = [
  "arrayvec 0.5.1",
  "futures 0.3.5",
@@ -5234,8 +5233,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a5558a9607100816a033b0d06a2d6d06e8bf6fb294803d1dea871e9a479eec0"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0bb6bb8647a652e82c795fdc27a282e131d7cba3#0bb6bb8647a652e82c795fdc27a282e131d7cba3"
 dependencies = [
  "arrayvec 0.5.1",
  "bitflags",
@@ -5261,8 +5259,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fb82203cfaa5165e6eb9f1daca5b0ba8a2b8d632f6c9a7f9b10463b145deb2b"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0bb6bb8647a652e82c795fdc27a282e131d7cba3#0bb6bb8647a652e82c795fdc27a282e131d7cba3"
 dependencies = [
  "bitflags",
 ]

@@ -55,8 +55,8 @@ pub struct Globals {
 #[repr(C)]
 #[derive(Copy, Clone, Debug, AsBytes)]
 pub struct Light {
-            pos: [f32; 4] ,
-     col: [f32; 4] ,
+    pos: [f32; 4],
+    col: [f32; 4],
 }
 
 #[repr(C)]
@@ -226,13 +226,13 @@ pub struct GlobalModel {
 //         cam_pos: [f32; 4] = "cam_pos",
 //         focus_off: [f32; 4] = "focus_off",
 //         focus_pos: [f32; 4] = "focus_pos",
-//         /// NOTE: view_distance.x is the horizontal view distance, view_distance.y is the LOD
-//         /// detail, view_distance.z is the
-//         /// minimum height over any land chunk (i.e. the sea level), and view_distance.w is the
-//         /// maximum height over this minimum height.
+//         /// NOTE: view_distance.x is the horizontal view distance,
+// view_distance.y is the LOD         /// detail, view_distance.z is the
+//         /// minimum height over any land chunk (i.e. the sea level), and
+// view_distance.w is the         /// maximum height over this minimum height.
 //         ///
-//         /// TODO: Fix whatever alignment issue requires these uniforms to be aligned.
-//         view_distance: [f32; 4] = "view_distance",
+//         /// TODO: Fix whatever alignment issue requires these uniforms to be
+// aligned.         view_distance: [f32; 4] = "view_distance",
 //         time_of_day: [f32; 4] = "time_of_day", // TODO: Make this f64.
 //         sun_dir: [f32; 4] = "sun_dir",
 //         moon_dir: [f32; 4] = "moon_dir",

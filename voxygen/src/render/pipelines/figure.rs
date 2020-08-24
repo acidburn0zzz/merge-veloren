@@ -1,5 +1,6 @@
 use super::{
-    super::{Mesh, Model, TerrainPipeline},
+    super::{Mesh, Model},
+    terrain::Vertex,
 };
 use crate::mesh::greedy::GreedyMesh;
 use core::ops::Range;
@@ -114,7 +115,7 @@ impl FigureLayout {
 }
 
 pub struct FigureModel {
-    pub opaque: Model<TerrainPipeline>,
+    pub opaque: Model<Vertex>,
     /* TODO: Consider using mipmaps instead of storing multiple texture atlases for different
      * LOD levels. */
 }
@@ -131,7 +132,7 @@ impl FigureModel {
     }
 }
 
-pub type BoneMeshes = (Mesh<TerrainPipeline>, (anim::vek::Aabb<f32>, Range<usize>));
+pub type BoneMeshes = (Mesh<Vertex>, (anim::vek::Aabb<f32>, Range<usize>));
 
 // gfx_defines! {
 //     constant Locals {

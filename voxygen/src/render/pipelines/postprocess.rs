@@ -1,45 +1,36 @@
-use super::{
-    super::{Mesh, Pipeline, Tri, WinColorFmt, WinDepthFmt},
-    Globals,
-};
-use gfx::{
-    self, gfx_constant_struct_meta, gfx_defines, gfx_impl_struct_meta, gfx_pipeline,
-    gfx_pipeline_inner, gfx_vertex_struct_meta,
-};
+use super::super::{Mesh, Tri};
+use zerocopy::AsBytes;
 
-gfx_defines! {
-    vertex Vertex {
-        pos: [f32; 2] = "v_pos",
-    }
+// gfx_defines! {
+//     vertex Vertex {
+//         pos: [f32; 2] = "v_pos",
+//     }
 
-    constant Locals {
-        nul: [f32; 4] = "nul",
-    }
+//     constant Locals {
+//         nul: [f32; 4] = "nul",
+//     }
 
-    pipeline pipe {
-        vbuf: gfx::VertexBuffer<Vertex> = (),
+//     pipeline pipe {
+//         vbuf: gfx::VertexBuffer<Vertex> = (),
 
-        locals: gfx::ConstantBuffer<Locals> = "u_locals",
-        globals: gfx::ConstantBuffer<Globals> = "u_globals",
+//         locals: gfx::ConstantBuffer<Locals> = "u_locals",
+//         globals: gfx::ConstantBuffer<Globals> = "u_globals",
 
-        src_sampler: gfx::TextureSampler<<WinColorFmt as gfx::format::Formatted>::View> = "src_color",
+//         src_sampler: gfx::TextureSampler<<WinColorFmt as
+// gfx::format::Formatted>::View> = "src_color",
 
-        tgt_color: gfx::RenderTarget<WinColorFmt> = "tgt_color",
-        tgt_depth: gfx::DepthTarget<WinDepthFmt> = gfx::preset::depth::PASS_TEST,
-    }
+//         tgt_color: gfx::RenderTarget<WinColorFmt> = "tgt_color",
+//         tgt_depth: gfx::DepthTarget<WinDepthFmt> =
+// gfx::preset::depth::PASS_TEST,     }
+// }
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, AsBytes)]
+pub struct Vertex {
+    pub pos: [f32; 2],
 }
 
-impl Locals {
-    pub fn default() -> Self { Self { nul: [0.0; 4] } }
-}
-
-pub struct PostProcessPipeline;
-
-impl Pipeline for PostProcessPipeline {
-    type Vertex = Vertex;
-}
-
-pub fn create_mesh() -> Mesh<PostProcessPipeline> {
+pub fn create_mesh() -> Mesh<Vertex> {
     let mut mesh = Mesh::new();
 
     #[rustfmt::skip]
