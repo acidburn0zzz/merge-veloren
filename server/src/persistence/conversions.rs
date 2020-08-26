@@ -3,13 +3,12 @@ use crate::persistence::{
     models::{Body, Character, Item, NewItem, Stats},
 };
 
-use crate::persistence::json_models::HumanoidBody;
+use crate::persistence::{error::Error, json_models::HumanoidBody};
 use common::{character::CharacterId, comp::*, loadout_builder};
 use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc,
 };
-use tracing::warn;
 
 #[derive(PartialEq)]
 pub struct ItemModelPair {
@@ -25,23 +24,28 @@ pub fn convert_inventory_to_database_items(
     inventory
         .slots
         .into_iter()
-        .filter_map(|x| x)
-        .map(|item| {
-            ItemModelPair {
-                model: NewItem {
-                    item_definition_id: item.item_definition_id().to_owned(),
-                    position: None, // TODO
-                    parent_container_item_id: inventory_container_id,
-                    item_id: match item.item_id.load(Ordering::Relaxed) {
-                        x if x > 0 => Some(x as EntityId),
-                        _ => None,
+        .enumerate()
+        .map(|(slot, item)| {
+            if let Some(item) = item {
+                Some(ItemModelPair {
+                    model: NewItem {
+                        item_definition_id: item.item_definition_id().to_owned(),
+                        position: Some(slot.to_string()),
+                        parent_container_item_id: inventory_container_id,
+                        item_id: match item.item_id.load(Ordering::Relaxed) {
+                            x if x > 0 => Some(x as EntityId),
+                            _ => None,
+                        },
+                        stack_size: item.kind.stack_size().map(|x| x as i32),
                     },
-                    stack_size: item.kind.stack_size().map(|x| x as i32),
-                },
-                comp: item,
-                new_item_id: 0,
+                    comp: item,
+                    new_item_id: 0,
+                })
+            } else {
+                None
             }
         })
+        .filter_map(|x| x)
         .collect()
 }
 
@@ -65,10 +69,10 @@ pub fn convert_loadout_to_database_items(
         loadout.head.map(|x| ("head", x)),
         loadout.tabard.map(|x| ("tabard", x)),
     ]
-    .iter()
-    .filter(|x| x.is_some())
-    .map(|x| {
-        let (slot, item) = x.as_ref().unwrap();
+    .into_iter()
+    .filter_map(|x| x)
+    .map(move |x| {
+        let (slot, item) = x;
         ItemModelPair {
             model: NewItem {
                 item_definition_id: item.item_definition_id().to_owned(),
@@ -80,7 +84,7 @@ pub fn convert_loadout_to_database_items(
                 },
                 stack_size: None, // Armor/weapons cannot have stack sizes
             },
-            comp: item.clone(), // TODO don't clone?
+            comp: item,
             new_item_id: 0,
         }
     })
@@ -110,65 +114,91 @@ pub fn convert_stats_to_database(character_id: CharacterId, stats: &common::comp
     }
 }
 
-pub fn convert_inventory_from_database_items(database_items: &[Item]) -> Inventory {
+pub fn convert_inventory_from_database_items(database_items: &[Item]) -> Result<Inventory, Error> {
     let mut inventory = Inventory::new_empty();
-    let item_iter = database_items.iter().map(|db_item| {
-        // TODO: Don't use expect, propagate an error instead to catch missing
-        // migrations
-        let mut item =
-            common::comp::Item::new_from_asset_expect(db_item.item_definition_id.as_str());
-        item.item_id = Arc::new(AtomicU64::new(db_item.item_id as u64));
-        if let Some(amount) = db_item.stack_size {
-            if item.set_amount(amount as u32).is_err() {
-                warn!(?item, "Error setting amount for item");
-            };
-        }
-        item
-    });
+    for db_item in database_items.iter() {
+        let mut item = common::comp::Item::new_from_asset(db_item.item_definition_id.as_str())
+            .map_err(|_| {
+                Error::ConversionError(format!(
+                    "Error loading item asset: {}",
+                    db_item.item_definition_id
+                ))
+            })?;
 
-    if let Err(e) = inventory.push_all(item_iter) {
-        match e {
-            common::comp::inventory::Error::Full(_) => {
-                warn!("Unable to push items to inventory during database load, inventory full");
-            },
+        // Item ID
+        item.item_id = Arc::new(AtomicU64::new(db_item.item_id as u64));
+
+        // Stack Size
+        if let Some(amount) = db_item.stack_size {
+            item.set_amount(amount as u32)
+                .map_err(|_| Error::ConversionError("Error setting amount for item".to_owned()))?;
         }
-    };
-    inventory
+
+        // Insert item into inventory
+        if let Some(slot_str) = &db_item.position {
+            // Slot position
+            let slot = slot_str.parse::<usize>().map_err(|_| {
+                Error::ConversionError(format!("Failed to parse item position: {}", slot_str))
+            })?;
+
+            match inventory.insert(slot, item).map_err(|_| {
+                // If this happens there were too many items in the database for the current
+                // inventory size
+                Error::ConversionError("Error inserting item into inventory".to_string())
+            })? {
+                Some(_) => {
+                    // If inventory.insert returns an item, it means it was swapped for an item that
+                    // already occupied the slot. Multiple items being stored in the database for
+                    // the same slot is an error.
+                    Err(Error::ConversionError(
+                        "Inserted an item into the same slot twice".to_string(),
+                    ))
+                },
+                _ => Ok(()),
+            }
+        } else {
+            Err(Error::ConversionError(
+                "Item without slot position".to_string(),
+            ))
+        }?
+    }
+
+    Ok(inventory)
 }
 
-pub fn convert_loadout_from_database_items(database_items: &[Item]) -> Loadout {
+pub fn convert_loadout_from_database_items(database_items: &[Item]) -> Result<Loadout, Error> {
     let mut loadout = loadout_builder::LoadoutBuilder::new();
     for db_item in database_items.iter() {
         let mut item =
             common::comp::Item::new_from_asset_expect(db_item.item_definition_id.as_str());
         item.item_id = Arc::new(AtomicU64::new(db_item.item_id as u64));
-        let item_opt = Some(item);
         if let Some(position) = &db_item.position {
             match position.as_str() {
-                "active_item" => {
-                    loadout = loadout.active_item(Some(slot::item_config(item_opt.unwrap())))
+                "active_item" => loadout = loadout.active_item(Some(slot::item_config(item))),
+                "second_item" => loadout = loadout.second_item(Some(slot::item_config(item))),
+                "lantern" => loadout = loadout.lantern(Some(item)),
+                "shoulder" => loadout = loadout.shoulder(Some(item)),
+                "chest" => loadout = loadout.chest(Some(item)),
+                "belt" => loadout = loadout.belt(Some(item)),
+                "hand" => loadout = loadout.hand(Some(item)),
+                "pants" => loadout = loadout.pants(Some(item)),
+                "foot" => loadout = loadout.foot(Some(item)),
+                "back" => loadout = loadout.back(Some(item)),
+                "ring" => loadout = loadout.ring(Some(item)),
+                "neck" => loadout = loadout.neck(Some(item)),
+                "head" => loadout = loadout.head(Some(item)),
+                "tabard" => loadout = loadout.tabard(Some(item)),
+                _ => {
+                    return Err(Error::ConversionError(format!(
+                        "Unknown loadout position on item: {}",
+                        position.as_str()
+                    )));
                 },
-                "second_item" => {
-                    loadout = loadout.second_item(Some(slot::item_config(item_opt.unwrap())))
-                },
-                "lantern" => loadout = loadout.lantern(item_opt),
-                "shoulder" => loadout = loadout.shoulder(item_opt),
-                "chest" => loadout = loadout.chest(item_opt),
-                "belt" => loadout = loadout.belt(item_opt),
-                "hand" => loadout = loadout.hand(item_opt),
-                "pants" => loadout = loadout.pants(item_opt),
-                "foot" => loadout = loadout.foot(item_opt),
-                "back" => loadout = loadout.back(item_opt),
-                "ring" => loadout = loadout.ring(item_opt),
-                "neck" => loadout = loadout.neck(item_opt),
-                "head" => loadout = loadout.head(item_opt),
-                "tabard" => loadout = loadout.tabard(item_opt),
-                _ => warn!(?db_item.item_id, ?db_item.position, "Unknown loadout position on item"),
             }
         }
     }
 
-    loadout.build()
+    Ok(loadout.build())
 }
 
 pub fn convert_body_from_database(
