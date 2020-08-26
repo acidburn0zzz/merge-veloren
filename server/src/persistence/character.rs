@@ -86,8 +86,8 @@ pub fn load_character_data(
     Ok((
         convert_body_from_database(&char_body)?,
         convert_stats_from_database(&stats_data, character_data.alias),
-        convert_inventory_from_database_items(&inventory_items),
-        convert_loadout_from_database_items(&loadout_items),
+        convert_inventory_from_database_items(&inventory_items)?,
+        convert_loadout_from_database_items(&loadout_items)?,
     ))
 }
 
@@ -107,57 +107,41 @@ pub fn load_character_list(player_uuid_: &str, db_dir: &str) -> CharacterListRes
         .filter(player_uuid.eq(player_uuid_))
         .inner_join(stats)
         .order(schema::character::dsl::character_id.desc())
-        .load::<(Character, Stats)>(&connection);
+        .load::<(Character, Stats)>(&connection)?;
 
-    match result {
-        Ok(data) => Ok(data
-            .iter()
-            .map(|(character_data, char_stats)| {
-                // TODO: Database failures here should skip the character, not crash the server
-                let char = convert_character_from_database(character_data);
+    result
+        .iter()
+        .map(|(character_data, char_stats)| {
+            let char = convert_character_from_database(character_data);
 
-                let bodyx = body
-                    .filter(schema::body::dsl::body_id.eq(character_data.body_id))
-                    .first::<Body>(&connection)
-                    .expect("failed to fetch body for character");
+            let db_body = body
+                .filter(schema::body::dsl::body_id.eq(character_data.body_id))
+                .first::<Body>(&connection)?;
 
-                let char_body = convert_body_from_database(&bodyx)
-                    .expect("failed to convert body for character");
+            let char_body = convert_body_from_database(&db_body)?;
 
-                let loadout_container_id = get_pseudo_container_id(
-                    &connection,
-                    char.id.unwrap(),
-                    LOADOUT_PSEUDO_CONTAINER_DEF_ID,
-                )
-                .expect("failed to get loadout container for character");
-                let loadout_items = item
-                    .filter(parent_container_item_id.eq(loadout_container_id))
-                    .load::<Item>(&connection)
-                    .expect("failed to fetch loadout items for character");
+            let loadout_container_id = get_pseudo_container_id(
+                &connection,
+                char.id.unwrap(), // Character fetched from db will always have an ID
+                LOADOUT_PSEUDO_CONTAINER_DEF_ID,
+            )?;
 
-                let loadout = convert_loadout_from_database_items(&loadout_items);
+            let loadout_items = item
+                .filter(parent_container_item_id.eq(loadout_container_id))
+                .load::<Item>(&connection)?;
 
-                CharacterItem {
-                    character: char,
-                    body: char_body,
-                    level: char_stats.level as usize,
-                    loadout,
-                }
+            let loadout = convert_loadout_from_database_items(&loadout_items)?;
+
+            Ok(CharacterItem {
+                character: char,
+                body: char_body,
+                level: char_stats.level as usize,
+                loadout,
             })
-            .collect()),
-        Err(e) => {
-            error!(?e, ?player_uuid, "Failed to load character list for player");
-            Err(Error::CharacterDataError)
-        },
-    }
+        })
+        .collect()
 }
 
-/// Create a new character with provided comp::Character and comp::Body data.
-///
-/// Note that sqlite does not support returning the inserted data after a
-/// successful insert. To workaround, we wrap this in a transaction which
-/// inserts, queries for the newly created character id, then uses the character
-/// id for subsequent insertions
 pub fn create_character(
     uuid: &str,
     character_alias: &str,
@@ -369,7 +353,10 @@ fn get_pseudo_containers(
     connection: &SqliteConnection,
     character_id: CharacterId,
 ) -> Result<CharacterContainers, Error> {
-    let mut ids = CHARACTER_CONTAINER_IDS.lock().unwrap();
+    let mut ids = CHARACTER_CONTAINER_IDS.lock().expect(
+        "Failed to acquire mutex lock for CHARACTER_CONTAINER_IDS cache - if persistence is still \
+         single threaded this should be impossible",
+    );
     if let Some(containers) = ids.get(&character_id) {
         return Ok(*containers);
     }
@@ -456,6 +443,7 @@ pub fn update(
     // Any items that exist in the database and don't exist in the updates must have
     // been removed from the player and need deleting.
     existing_items.retain(|x| {
+        // This unwrap is safe because updates only contains models with Some(item_id)
         !updates
             .iter()
             .any(|y| y.model.item_id.unwrap() == x.item_id)

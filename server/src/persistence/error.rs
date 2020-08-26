@@ -17,6 +17,7 @@ pub enum Error {
     // Unable to load body or stats for a character
     CharacterDataError,
     SerializationError(serde_json::Error),
+    ConversionError(String),
 }
 
 impl fmt::Display for Error {
@@ -28,6 +29,7 @@ impl fmt::Display for Error {
             Self::DatabaseMigrationError(error) => error.to_string(),
             Self::CharacterDataError => String::from("Error while loading character data"),
             Self::SerializationError(error) => error.to_string(),
+            Self::ConversionError(error) => error.to_string(),
         })
     }
 }
