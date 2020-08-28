@@ -1653,7 +1653,7 @@ impl Renderer {
 /// Creates all the pipelines used to render.
 #[allow(clippy::type_complexity)] // TODO: Pending review in #587
 fn create_pipelines(
-    factory: &mut gfx_backend::Factory,
+    factory: &wgpu::Device,
     mode: &RenderMode,
     has_shadow_views: bool,
     shader_reload_indicator: &mut ReloadIndicator,
@@ -1707,7 +1707,7 @@ fn create_pipelines(
         r#"
 {}
 
-#define VOXYGEN_COMPUTATION_PREERENCE {}
+#define VOXYGEN_COMPUTATION_PREFERENCE {}
 #define FLUID_MODE {}
 #define CLOUD_MODE {}
 #define LIGHTING_ALGORITHM {}
@@ -1716,7 +1716,7 @@ fn create_pipelines(
 "#,
         constants,
         // TODO: Configurable vertex/fragment shader preference.
-        "VOXYGEN_COMPUTATION_PREERENCE_FRAGMENT",
+        "VOXYGEN_COMPUTATION_PREFERENCE_FRAGMENT",
         match mode.fluid {
             FluidMode::Cheap => "FLUID_MODE_CHEAP",
             FluidMode::Shiny => "FLUID_MODE_SHINY",
@@ -1760,17 +1760,27 @@ fn create_pipelines(
     )
     .unwrap();
 
-    let mut include_ctx = IncludeContext::new();
-    include_ctx.include("constants.glsl", &constants);
-    include_ctx.include("globals.glsl", &globals);
-    include_ctx.include("shadows.glsl", &shadows);
-    include_ctx.include("sky.glsl", &sky);
-    include_ctx.include("light.glsl", &light);
-    include_ctx.include("srgb.glsl", &srgb);
-    include_ctx.include("random.glsl", &random);
-    include_ctx.include("lod.glsl", &lod);
-    include_ctx.include("anti-aliasing.glsl", &anti_alias);
-    include_ctx.include("cloud.glsl", &cloud);
+    let mut compiler = shaderc::Compiler::new().ok_or(RenderError::ErrorInitializingCompiler)?;
+    let mut options = shaderc::CompileOptions::new().ok_or(RenderError::ErrorInitializingCompiler)?;
+    options.set_optimization_level(shaderc::OptimizationLevel::Performance);
+    options.set_include_callback(move |name,_,shader_name,_| {
+        Ok(shaderc::ResolvedInclude {
+            resolved_name: name,
+            content: match name {
+                "constants.glsl" => constants,
+                "globals.glsl" => globals,
+                "shadows.glsl" => shadows,
+                "sky.glsl" => sky,
+                "light.glsl" => light,
+                "srgb.glsl" => srgb,
+                "random.glsl" => &random,
+                "lod.glsl" => &lod,
+                "anti-aliasing.glsl" => &anti_alias,
+                "cloud.glsl" => &cloud,
+                other => return Err(format!("Include {} is not defined",other))
+            }
+        } )
+    });
 
     let figure_vert =
         assets::load_watched::<String>("voxygen.shaders.figure-vert", shader_reload_indicator)
@@ -2036,35 +2046,11 @@ fn create_pipelines(
 }
 
 /// Create a new pipeline from the provided vertex shader and fragment shader.
-fn create_pipeline<P: gfx::pso::PipelineInit>(
-    factory: &mut gfx_backend::Factory,
-    pipe: P,
-    vs: &str,
-    fs: &str,
-    ctx: &IncludeContext,
-    cull_face: gfx::state::CullFace,
-) -> Result<GfxPipeline<P>, RenderError> {
-    let vs = ctx.expand(vs)?;
-    let fs = ctx.expand(fs)?;
-
-    let program = factory.link_program(vs.as_bytes(), fs.as_bytes())?;
-
-    let result = Ok(GfxPipeline {
-        pso: factory.create_pipeline_from_program(
-            &program,
-            gfx::Primitive::TriangleList,
-            gfx::state::Rasterizer {
-                front_face: gfx::state::FrontFace::CounterClockwise,
-                cull_face,
-                method: gfx::state::RasterMethod::Fill,
-                offset: None,
-                samples: Some(gfx::state::MultiSample),
-            },
-            pipe,
-        )?,
-    });
-
-    result
+fn create_pipeline(
+    device: &wgpu::Device,
+    desc: &wgpu::RenderPipelineDescriptor
+) -> wgpu::RenderPipeline {
+    device.create_render_pipeline(desc)
 }
 
 /// Create a new shadow map pipeline.
