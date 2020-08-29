@@ -54,11 +54,7 @@ impl Inventory {
                 amount: new_amount,
             } => {
                 for slot in &mut self.slots {
-                    if slot
-                        .as_ref()
-                        .map(|s| s == &item)
-                        .unwrap_or(false)
-                    {
+                    if slot.as_ref().map(|s| s == &item).unwrap_or(false) {
                         if let Some(Item {
                             kind: ItemKind::Utility { kind, amount },
                             ..
@@ -81,11 +77,7 @@ impl Inventory {
                 ..
             } => {
                 for slot in &mut self.slots {
-                    if slot
-                        .as_ref()
-                        .map(|s| s == &item)
-                        .unwrap_or(false)
-                    {
+                    if slot.as_ref().map(|s| s == &item).unwrap_or(false) {
                         if let Some(Item {
                             kind: ItemKind::Consumable { kind, amount, .. },
                             ..
@@ -108,11 +100,7 @@ impl Inventory {
                 ..
             } => {
                 for slot in &mut self.slots {
-                    if slot
-                        .as_ref()
-                        .map(|s| s == &item)
-                        .unwrap_or(false)
-                    {
+                    if slot.as_ref().map(|s| s == &item).unwrap_or(false) {
                         if let Some(Item {
                             kind: ItemKind::Throwable { kind, amount, .. },
                             ..
@@ -134,11 +122,7 @@ impl Inventory {
                 amount: new_amount,
             } => {
                 for slot in &mut self.slots {
-                    if slot
-                        .as_ref()
-                        .map(|s| s == &item)
-                        .unwrap_or(false)
-                    {
+                    if slot.as_ref().map(|s| s == &item).unwrap_or(false) {
                         if let Some(Item {
                             kind: ItemKind::Ingredient { kind, amount },
                             ..
