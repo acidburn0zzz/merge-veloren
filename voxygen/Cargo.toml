@@ -14,7 +14,7 @@ hot-anim = ["anim/use-dyn-lib"]
 singleplayer = ["server"]
 tweak = ["const-tweaker"]
 
-default = ["gl", "msgbox"]
+default = ["gl", "singleplayer", "msgbox"]
 
 [dependencies]
 client = {package = "veloren-client", path = "../client"}
