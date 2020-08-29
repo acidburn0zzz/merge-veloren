@@ -1868,7 +1868,6 @@ ShinyGem: Some((
     ],
     wind_sway: 0.0,
 )),
-
 // Drop Gate Parts
 DropGate: Some((
     variations: [
@@ -1890,7 +1889,44 @@ DropGateBottom: Some((
     ],
     wind_sway: 0.0,
 )),
-
+// Tent
+Tent: Some((
+    variations: [
+        (
+            model: "voxygen.voxel.object.tent",
+            offset: (-18.5, -19.5, 0.0),
+            lod_axes: (1.0, 1.0, 1.0),
+        ),
+        (
+            model: "voxygen.voxel.object.tent_bedroll",
+            offset: (-18.5, -19.5, 0.0),
+            lod_axes: (1.0, 1.0, 1.0),
+        ),
+    ],
+    wind_sway: 0.0,
+)),
+// Bedroll
+Bedroll: Some((
+    variations: [
+        (
+             model: "voxygen.voxel.object.bedroll",
+            offset: (-11.0, -19.5, 0.0),
+            lod_axes: (1.0, 1.0, 1.0),
+        ),
+    ],
+    wind_sway: 0.0,
+)),
+// Cauldron
+Cauldron: Some((
+    variations: [
+        (
+             model: "voxygen.voxel.object.cauldron",
+            offset: (-10.0, -10.0, 0.0),
+            lod_axes: (1.0, 1.0, 1.0),
+        ),
+    ],
+    wind_sway: 0.0,
+)),
 // Snow covered Grass
 GrassSnow: Some((
     variations: [

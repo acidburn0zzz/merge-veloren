@@ -93,6 +93,9 @@ make_case_elim!(
         DropGate = 0x50,
         DropGateBottom = 0x51,
         GrassSnow = 0x52,
+        Tent = 0x53,
+        Bedroll = 0x54,
+        Cauldron = 0x55,
     }
 );
 
@@ -200,6 +203,9 @@ impl BlockKind {
             BlockKind::DropGate => false,
             BlockKind::DropGateBottom => false,
             BlockKind::GrassSnow => true,
+            BlockKind::Tent => true,
+            BlockKind::Bedroll => true,
+            BlockKind::Cauldron => false,
             _ => false,
         }
     }
@@ -296,6 +302,9 @@ impl BlockKind {
             BlockKind::DropGate => false,
             BlockKind::DropGateBottom => false,
             BlockKind::GrassSnow => false,
+            BlockKind::Tent => false,
+            BlockKind::Bedroll => false,
+            BlockKind::Cauldron => false,
             _ => true,
         }
     }
@@ -373,6 +382,9 @@ impl BlockKind {
             BlockKind::DropGate => true,
             BlockKind::DropGateBottom => false,
             BlockKind::GrassSnow => false,
+            BlockKind::Tent => false,
+            BlockKind::Bedroll => true,
+            BlockKind::Cauldron => true,
             _ => true,
         }
     }
@@ -418,6 +430,9 @@ impl BlockKind {
             BlockKind::WardrobeSingle => 3.0,
             BlockKind::WardrobeDouble => 3.0,
             BlockKind::Pot => 0.90,
+            BlockKind::Tent => 3.0,
+            BlockKind::Bedroll => 0.4,
+            BlockKind::Cauldron => 1.27,
             _ => 1.0,
         }
     }
@@ -502,6 +517,9 @@ impl Block {
             | BlockKind::Chest
             | BlockKind::DropGate
             | BlockKind::DropGateBottom
+            | BlockKind::Tent
+            | BlockKind::Bedroll
+            | BlockKind::Cauldron
             | BlockKind::Door => Some(self.color[0] & 0b111),
             _ => None,
         }
