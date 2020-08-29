@@ -109,6 +109,7 @@ pub struct Item {
     item_definition_id: Option<String>, //TODO: Intern these strings?
     name: String,
     description: String,
+    #[derivative(PartialEq = "ignore")]
     pub kind: ItemKind,
 }
 
@@ -201,10 +202,6 @@ impl Item {
                 "null_item_definition"
             },
         }
-    }
-
-    pub fn is_same_item_def_as(&self, other: &Item) -> bool {
-        self.item_definition_id() == other.item_definition_id()
     }
 
     pub fn name(&self) -> &str { &self.name }

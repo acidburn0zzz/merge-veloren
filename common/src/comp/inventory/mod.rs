@@ -56,7 +56,7 @@ impl Inventory {
                 for slot in &mut self.slots {
                     if slot
                         .as_ref()
-                        .map(|s| s.item_definition_id() == item.item_definition_id())
+                        .map(|s| s == &item)
                         .unwrap_or(false)
                     {
                         if let Some(Item {
@@ -83,7 +83,7 @@ impl Inventory {
                 for slot in &mut self.slots {
                     if slot
                         .as_ref()
-                        .map(|s| s.is_same_item_def_as(&item))
+                        .map(|s| s == &item)
                         .unwrap_or(false)
                     {
                         if let Some(Item {
@@ -110,7 +110,7 @@ impl Inventory {
                 for slot in &mut self.slots {
                     if slot
                         .as_ref()
-                        .map(|s| s.is_same_item_def_as(&item))
+                        .map(|s| s == &item)
                         .unwrap_or(false)
                     {
                         if let Some(Item {
@@ -136,7 +136,7 @@ impl Inventory {
                 for slot in &mut self.slots {
                     if slot
                         .as_ref()
-                        .map(|s| s.is_same_item_def_as(&item))
+                        .map(|s| s == &item)
                         .unwrap_or(false)
                     {
                         if let Some(Item {
@@ -240,7 +240,7 @@ impl Inventory {
                 amount: new_amount, ..
             } => match self.slots.get_mut(cell) {
                 Some(Some(slot_item)) => {
-                    if slot_item.is_same_item_def_as(&item) {
+                    if slot_item == &item {
                         if let Item {
                             kind: ItemKind::Utility { amount, .. },
                             ..
@@ -267,7 +267,7 @@ impl Inventory {
                 amount: new_amount, ..
             } => match self.slots.get_mut(cell) {
                 Some(Some(slot_item)) => {
-                    if slot_item.is_same_item_def_as(&item) {
+                    if slot_item == &item {
                         if let Item {
                             kind: ItemKind::Ingredient { amount, .. },
                             ..
@@ -294,7 +294,7 @@ impl Inventory {
                 amount: new_amount, ..
             } => match self.slots.get_mut(cell) {
                 Some(Some(slot_item)) => {
-                    if slot_item.is_same_item_def_as(&item) {
+                    if slot_item == &item {
                         if let Item {
                             kind: ItemKind::Consumable { amount, .. },
                             ..
@@ -321,7 +321,7 @@ impl Inventory {
                 amount: new_amount, ..
             } => match self.slots.get_mut(cell) {
                 Some(Some(slot_item)) => {
-                    if slot_item.is_same_item_def_as(&item) {
+                    if slot_item == &item {
                         if let Item {
                             kind: ItemKind::Throwable { amount, .. },
                             ..
