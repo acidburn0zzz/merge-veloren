@@ -2,8 +2,8 @@ use crate::{client::Client, comp::quadruped_small, Server, SpawnPoint, StateExt}
 use common::{
     assets::Asset,
     comp::{
-        self, item::ItemAsset, object, Alignment, Body, Damage, DamageSource, Group, HealthChange,
-        HealthSource, Player, Pos, Stats,
+        self, object, Alignment, Body, Damage, DamageSource, Group, HealthChange, HealthSource,
+        Player, Pos, Stats,
     },
     lottery::Lottery,
     msg::{PlayerListUpdate, ServerMsg},

@@ -1,5 +1,4 @@
 use super::*;
-use crate::assets::Asset;
 use lazy_static::lazy_static;
 lazy_static! {
     static ref TEST_ITEMS: Vec<Item> = vec![

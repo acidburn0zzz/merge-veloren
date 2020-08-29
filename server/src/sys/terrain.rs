@@ -1,10 +1,9 @@
 use super::SysTimer;
 use crate::{chunk_generator::ChunkGenerator, client::Client, Tick};
 use common::{
-    assets::Asset,
     comp::{
         self, bird_medium,
-        item::{self, ItemAsset},
+        item::{self},
         Alignment, CharacterAbility, ItemConfig, Player, Pos,
     },
     event::{EventBus, ServerEvent},

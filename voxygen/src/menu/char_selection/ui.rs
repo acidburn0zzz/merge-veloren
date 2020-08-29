@@ -11,9 +11,9 @@ use crate::{
 };
 use client::Client;
 use common::{
-    assets::load_expect,
+    assets::Asset,
     character::{Character, CharacterId, CharacterItem, MAX_CHARACTERS_PER_PLAYER},
-    comp::{self, humanoid},
+    comp::{self, humanoid, item::ItemAsset},
     LoadoutBuilder,
 };
 use conrod_core::{
@@ -382,7 +382,7 @@ impl CharSelectionUi {
             Mode::Create { loadout, tool, .. } => {
                 loadout.active_item = tool.map(|tool| comp::ItemConfig {
                     // FIXME: Error gracefully.
-                    item: (*ItemAsset::load_expect(tool)).clone(),
+                    item: ItemAsset::load_expect_cloned(tool),
                     ability1: None,
                     ability2: None,
                     ability3: None,
