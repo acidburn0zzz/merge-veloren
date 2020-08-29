@@ -3,7 +3,6 @@ use crate::{
     Server,
 };
 use common::{
-    assets::Asset,
     comp::{self, item},
     msg::ServerMsg,
     sync::{Uid, WorldSyncExt},

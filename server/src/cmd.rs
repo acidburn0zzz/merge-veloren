@@ -6,7 +6,7 @@ use crate::{client::Client, Server, StateExt};
 use chrono::{NaiveTime, Timelike};
 use common::{
     cmd::{ChatCommand, CHAT_COMMANDS, CHAT_SHORTCUTS},
-    comp::{self, item::ItemAsset, ChatType, Item, LightEmitter, WaypointArea},
+    comp::{self, ChatType, Item, LightEmitter, WaypointArea},
     event::{EventBus, ServerEvent},
     msg::{Notification, PlayerListUpdate, ServerMsg},
     npc::{self, get_npc_name},

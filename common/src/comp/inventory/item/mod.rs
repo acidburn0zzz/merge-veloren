@@ -14,11 +14,7 @@ use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage};
 use specs_idvs::IdvStorage;
-use std::{
-    fs::File,
-    io::BufReader,
-    sync::{atomic::AtomicU64, Arc},
-};
+use std::sync::{atomic::AtomicU64, Arc};
 use tracing::warn;
 use vek::Rgb;
 
@@ -143,7 +139,7 @@ impl Item {
     /// Creates a Vec containing one of each item that matches the provided
     /// asset glob pattern
     pub fn new_from_asset_glob(asset_glob: &str) -> Result<Vec<Self>, Error> {
-        let items = assets::load_glob_cloned::<Item>(asset_glob)?;
+        let items = ItemAsset::load_glob_cloned(asset_glob)?;
 
         Ok(items
             .into_iter()

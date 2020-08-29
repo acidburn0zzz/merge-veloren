@@ -8,9 +8,9 @@ use crate::{
     IndexRef,
 };
 use common::{
-    assets,
+    assets::Asset,
     astar::Astar,
-    comp::{self, item::ItemAsset},
+    comp::{self},
     generation::{ChunkSupplement, EntityInfo},
     lottery::Lottery,
     npc,

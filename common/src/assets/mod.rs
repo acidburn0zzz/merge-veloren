@@ -121,40 +121,6 @@ pub trait Asset: Sized {
         }
     }
 
-// Finds all files matching the provided glob specifier - includes files from
-// subdirectories
-fn get_glob_matches(specifier: &str) -> Result<Vec<String>, Error> {
-    let specifier = specifier.trim_end_matches(".*");
-    read_dir(specifier).map(|dir| {
-        dir.filter_map(|direntry| {
-            direntry.ok().and_then(|dir_entry| {
-                if dir_entry.path().is_dir() {
-                    let sub_dir_glob = format!(
-                        "{}.{}.*",
-                        specifier.to_string(),
-                        dir_entry.file_name().to_string_lossy()
-                    );
-                    Some(get_glob_matches(&sub_dir_glob).ok()?)
-                } else {
-                    Some(vec![format!(
-                        "{}.{}",
-                        specifier,
-                        dir_entry
-                            .file_name()
-                            .to_string_lossy()
-                            .rsplitn(2, '.')
-                            .last()
-                            .map(|s| s.to_owned())
-                            .unwrap()
-                    )])
-                }
-            })
-        })
-        .flat_map(|x| x)
-        .collect::<Vec<_>>()
-    })
-}
-
     fn load_glob(specifier: &str) -> Result<Arc<Vec<Arc<Self::Output>>>, Error>
     where
         Self::Output: Send + Sync + 'static,
@@ -192,23 +158,18 @@ fn get_glob_matches(specifier: &str) -> Result<Vec<String>, Error> {
         }
     }
 
-pub fn load_glob_cloned<Self::Output: Asset + Clone + 'static>(
-    specifier: &str,
-) -> Result<Vec<(Self::Output, String)>, Error> {
-    match get_glob_matches(specifier) {
-        Ok(glob_matches) => Ok(glob_matches
-            .into_iter()
-            .map(|name| {
-                let full_specifier = &specifier.replace("*", &name);
-                (
-                    load_expect_cloned::<Self::Output>(full_specifier),
-                    full_specifier.to_string(),
-                )
-            })
-            .collect::<Vec<_>>()),
-        Err(error) => Err(error),
+    fn load_glob_cloned(specifier: &str) -> Result<Vec<(Self::Output, String)>, Error>
+    where
+        Self::Output: Clone + Send + Sync + 'static,
+    {
+        match get_glob_matches(specifier) {
+            Ok(glob_matches) => Ok(glob_matches
+                .into_iter()
+                .map(|name| (Self::load_expect_cloned(&name), name))
+                .collect::<Vec<_>>()),
+            Err(error) => Err(error),
+        }
     }
-}
 
     /// Function used to load assets from the filesystem or the cache.
     /// Example usage:
@@ -501,4 +462,38 @@ pub fn read_dir(specifier: &str) -> Result<ReadDir, Error> {
     } else {
         Err(Error::NotFound(dir_name.to_string_lossy().into_owned()))
     }
+}
+
+// Finds all files matching the provided glob specifier - includes files from
+// subdirectories
+fn get_glob_matches(specifier: &str) -> Result<Vec<String>, Error> {
+    let specifier = specifier.trim_end_matches(".*");
+    read_dir(specifier).map(|dir| {
+        dir.filter_map(|direntry| {
+            direntry.ok().and_then(|dir_entry| {
+                if dir_entry.path().is_dir() {
+                    let sub_dir_glob = format!(
+                        "{}.{}.*",
+                        specifier.to_string(),
+                        dir_entry.file_name().to_string_lossy()
+                    );
+                    Some(get_glob_matches(&sub_dir_glob).ok()?)
+                } else {
+                    Some(vec![format!(
+                        "{}.{}",
+                        specifier,
+                        dir_entry
+                            .file_name()
+                            .to_string_lossy()
+                            .rsplitn(2, '.')
+                            .last()
+                            .map(|s| s.to_owned())
+                            .unwrap()
+                    )])
+                }
+            })
+        })
+        .flat_map(|x| x)
+        .collect::<Vec<_>>()
+    })
 }
