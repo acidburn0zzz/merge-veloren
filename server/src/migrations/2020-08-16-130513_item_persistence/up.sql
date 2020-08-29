@@ -751,7 +751,8 @@ CREATE TEMP TABLE _temp_inventory_items
         PRIMARY KEY AUTOINCREMENT NOT NULL,
     parent_container_item_id INTEGER NOT NULL,
     item_definition_id TEXT NOT NULL,
-    stack_size INTEGER
+    stack_size INTEGER,
+    position TEXT NOT NULL
 );
 
 WITH slots AS (
@@ -763,6 +764,7 @@ WITH slots AS (
 ),
 item_json AS (
     SELECT  character_id,
+            key as position,
             value
     FROM    slots,
             json_each(slots.slot_json)
@@ -771,6 +773,7 @@ item_json AS (
 items AS (
     SELECT  i.character_id,
             value,
+            position,
             json_extract(i.value, '$.name') AS item_name,
             COALESCE(
                     json_extract(value, '$.kind.Consumable.amount'),
@@ -814,10 +817,11 @@ INSERT INTO _temp_inventory_items
 SELECT  NULL,
         inv.inventory_item_id AS parent_container_item_id,
         d.item_definition_id,
-        amount
+        amount,
+        position
 FROM    items i
-            JOIN    inventory_entity inv ON (inv.character_id = i.character_id)
-            JOIN    _temp_item_defs d ON ((i.weapon_armor_kind = d.kind AND i.item_name = d.item_name) OR (i.weapon_armor_kind IS NULL AND i.item_name = d.item_name));
+JOIN    inventory_entity inv ON (inv.character_id = i.character_id)
+JOIN    _temp_item_defs d ON ((i.weapon_armor_kind = d.kind AND i.item_name = d.item_name) OR (i.weapon_armor_kind IS NULL AND i.item_name = d.item_name));
 
 -- Create an entity_id for each inventory item
 INSERT
@@ -832,7 +836,7 @@ SELECT  e.entity_id,
         i.parent_container_item_id,
         i.item_definition_id,
         i.stack_size,
-        NULL --position
+        i.position
 FROM    _temp_inventory_items i
             JOIN    entity e ON (e.entity_id = (
             (SELECT MAX(entity_id) FROM entity)
