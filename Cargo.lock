@@ -4724,7 +4724,6 @@ dependencies = [
  "authc",
  "criterion",
  "crossbeam",
- "derivative",
  "dot_vox",
  "enum-iterator",
  "find_folder",

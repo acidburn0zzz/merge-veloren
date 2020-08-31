@@ -15,7 +15,6 @@ use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage};
 use specs_idvs::IdvStorage;
 use std::sync::{atomic::AtomicU64, Arc};
-use tracing::warn;
 use vek::Rgb;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -100,17 +99,21 @@ impl ItemKind {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Derivative)]
-#[derivative(PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     #[serde(skip)]
-    #[derivative(PartialEq = "ignore")]
     pub item_id: Arc<AtomicU64>,
-    item_definition_id: Option<String>, //TODO: Intern these strings?
+    #[serde(skip)]
+    item_definition_id: String, //TODO: Intern these strings?
     name: String,
     description: String,
-    #[derivative(PartialEq = "ignore")]
     pub kind: ItemKind,
+}
+
+impl PartialEq for Item {
+    fn eq(&self, other: &Self) -> bool {
+        self.item_definition_id == other.item_definition_id
+    }
 }
 
 pub type ItemAsset = Ron<Item>;
@@ -121,7 +124,7 @@ impl Item {
     pub fn empty() -> Self {
         Self {
             item_id: Arc::new(AtomicU64::new(0)),
-            item_definition_id: None,
+            item_definition_id: "empty_item".to_owned(),
             name: "Empty Item".to_owned(),
             description: "This item may grant abilities, but is invisible".to_owned(),
             kind: ItemKind::Tool(Tool::empty()),
@@ -132,7 +135,7 @@ impl Item {
     /// Panics if the asset does not exist.
     pub fn new_from_asset_expect(asset_specifier: &str) -> Self {
         let mut item = ItemAsset::load_expect_cloned(asset_specifier);
-        item.item_definition_id = Some(asset_specifier.to_owned());
+        item.item_definition_id = asset_specifier.to_owned();
         item.reset_item_id();
         item
     }
@@ -145,7 +148,7 @@ impl Item {
         Ok(items
             .into_iter()
             .map(|(mut item, asset_specifier)| {
-                item.item_definition_id = Some(asset_specifier);
+                item.item_definition_id = asset_specifier;
                 item.reset_item_id();
                 item
             })
@@ -160,7 +163,7 @@ impl Item {
         let asset_specifier = asset.replace('\\', ".");
 
         let mut item = ItemAsset::load_cloned(asset)?;
-        item.item_definition_id = Some(asset_specifier);
+        item.item_definition_id = asset_specifier;
         item.reset_item_id();
         Ok(item)
     }
@@ -195,13 +198,7 @@ impl Item {
     }
 
     pub fn item_definition_id(&self) -> &str {
-        match &self.item_definition_id {
-            Some(x) => x.as_str(),
-            _ => {
-                warn!("Tried to get item_definition_id from item without one set.");
-                "null_item_definition"
-            },
-        }
+        &self.item_definition_id
     }
 
     pub fn name(&self) -> &str { &self.name }
