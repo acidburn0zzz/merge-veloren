@@ -111,9 +111,7 @@ pub struct Item {
 }
 
 impl PartialEq for Item {
-    fn eq(&self, other: &Self) -> bool {
-        self.item_definition_id == other.item_definition_id
-    }
+    fn eq(&self, other: &Self) -> bool { self.item_definition_id == other.item_definition_id }
 }
 
 pub type ItemAsset = Ron<Item>;
@@ -197,9 +195,7 @@ impl Item {
         }
     }
 
-    pub fn item_definition_id(&self) -> &str {
-        &self.item_definition_id
-    }
+    pub fn item_definition_id(&self) -> &str { &self.item_definition_id }
 
     pub fn name(&self) -> &str { &self.name }
 
