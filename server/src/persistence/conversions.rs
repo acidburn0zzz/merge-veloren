@@ -5,10 +5,8 @@ use crate::persistence::{
 
 use crate::persistence::{error::Error, json_models::HumanoidBody};
 use common::{character::CharacterId, comp::*, loadout_builder};
-use std::sync::{
-    atomic::{AtomicU64, Ordering},
-    Arc,
-};
+use std::num::NonZeroU64;
+use std::convert::TryFrom;
 
 #[derive(PartialEq)]
 pub struct ItemModelPair {
@@ -32,8 +30,8 @@ pub fn convert_inventory_to_database_items(
                         item_definition_id: item.item_definition_id().to_owned(),
                         position: Some(slot.to_string()),
                         parent_container_item_id: inventory_container_id,
-                        item_id: match item.item_id.load(Ordering::Relaxed) {
-                            x if x > 0 => Some(x as EntityId),
+                        item_id: match item.item_id.load() {
+                            Some(item_id)  => Some(u64::from(item_id) as EntityId),
                             _ => None,
                         },
                         stack_size: item.kind.stack_size().map(|x| x as i32),
@@ -78,8 +76,8 @@ pub fn convert_loadout_to_database_items(
                 item_definition_id: item.item_definition_id().to_owned(),
                 position: Some((*slot).to_owned()),
                 parent_container_item_id: loadout_container_id,
-                item_id: match item.item_id.load(Ordering::Relaxed) {
-                    x if x > 0 => Some(x as EntityId),
+                item_id: match item.item_id.load() {
+                    Some(item_id) => Some(u64::from(item_id) as EntityId),
                     _ => None,
                 },
                 stack_size: None, // Armor/weapons cannot have stack sizes
@@ -126,7 +124,8 @@ pub fn convert_inventory_from_database_items(database_items: &[Item]) -> Result<
             })?;
 
         // Item ID
-        item.item_id = Arc::new(AtomicU64::new(db_item.item_id as u64));
+        item.item_id.store(Some(NonZeroU64::try_from(db_item.item_id as u64)
+            .map_err(|_| Error::ConversionError("Item with zero item_id".to_owned()))?));
 
         // Stack Size
         if let Some(amount) = db_item.stack_size {
@@ -169,9 +168,9 @@ pub fn convert_inventory_from_database_items(database_items: &[Item]) -> Result<
 pub fn convert_loadout_from_database_items(database_items: &[Item]) -> Result<Loadout, Error> {
     let mut loadout = loadout_builder::LoadoutBuilder::new();
     for db_item in database_items.iter() {
-        let mut item =
-            common::comp::Item::new_from_asset_expect(db_item.item_definition_id.as_str());
-        item.item_id = Arc::new(AtomicU64::new(db_item.item_id as u64));
+        let item = common::comp::Item::new_from_asset_expect(db_item.item_definition_id.as_str());
+        item.item_id.store(Some(NonZeroU64::try_from(db_item.item_id as u64)
+            .map_err(|_| Error::ConversionError("Item with zero item_id".to_owned()))?));
         if let Some(position) = &db_item.position {
             match position.as_str() {
                 "active_item" => loadout = loadout.active_item(Some(slot::item_config(item))),
