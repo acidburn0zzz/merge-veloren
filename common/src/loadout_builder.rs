@@ -1,7 +1,4 @@
-use crate::comp::{
-    item::{Item, ItemKind},
-    Body, CharacterAbility, ItemConfig, Loadout,
-};
+use crate::comp::{item::Item, Body, CharacterAbility, ItemConfig, Loadout};
 use std::time::Duration;
 
 /// Builder for character Loadouts, containing weapon and armour items belonging
@@ -99,23 +96,7 @@ impl LoadoutBuilder {
     /// abilities or their timings is desired, you should create and provide
     /// the item config directly to the [active_item](#method.active_item)
     /// method
-    pub fn default_item_config_from_item(item: Item) -> Option<ItemConfig> {
-        if let ItemKind::Tool(tool) = &item.kind {
-            let mut abilities = tool.get_abilities();
-            let mut ability_drain = abilities.drain(..);
-
-            return Some(ItemConfig {
-                item,
-                ability1: ability_drain.next(),
-                ability2: ability_drain.next(),
-                ability3: ability_drain.next(),
-                block_ability: Some(CharacterAbility::BasicBlock),
-                dodge_ability: Some(CharacterAbility::Roll),
-            });
-        }
-
-        None
-    }
+    pub fn default_item_config_from_item(item: Item) -> ItemConfig { ItemConfig::from(item) }
 
     /// Get an item's (weapon's) default
     /// [ItemConfig](../comp/struct.ItemConfig.html)
@@ -123,7 +104,7 @@ impl LoadoutBuilder {
     /// the default abilities for that item via the
     /// [default_item_config_from_item](#method.default_item_config_from_item)
     /// function
-    pub fn default_item_config_from_str(item_ref: &str) -> Option<ItemConfig> {
+    pub fn default_item_config_from_str(item_ref: &str) -> ItemConfig {
         Self::default_item_config_from_item(Item::new_from_asset_expect(item_ref))
     }
 

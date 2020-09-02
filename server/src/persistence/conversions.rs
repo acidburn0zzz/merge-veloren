@@ -178,8 +178,8 @@ pub fn convert_loadout_from_database_items(database_items: &[Item]) -> Result<Lo
             )?));
         if let Some(position) = &db_item.position {
             match position.as_str() {
-                "active_item" => loadout = loadout.active_item(Some(slot::item_config(item))),
-                "second_item" => loadout = loadout.second_item(Some(slot::item_config(item))),
+                "active_item" => loadout = loadout.active_item(Some(ItemConfig::from(item))),
+                "second_item" => loadout = loadout.second_item(Some(ItemConfig::from(item))),
                 "lantern" => loadout = loadout.lantern(Some(item)),
                 "shoulder" => loadout = loadout.shoulder(Some(item)),
                 "chest" => loadout = loadout.chest(Some(item)),

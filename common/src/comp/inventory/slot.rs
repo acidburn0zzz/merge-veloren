@@ -1,6 +1,6 @@
 use crate::{
     comp,
-    comp::{item, item::armor},
+    comp::{item, item::armor, ItemConfig},
 };
 use comp::{Inventory, Loadout};
 use serde::{Deserialize, Serialize};
@@ -82,30 +82,6 @@ impl ArmorSlot {
     }
 }
 
-// TODO: There are plans to save the selected abilities for each tool even
-// when they are not equipped, when that is implemented this helper function
-// should no longer be needed
-
-/// Create an ItemConfig for an item. Apply abilities to item.
-// TODO: Duplicate of loadout_builder::default_item_config_from_item
-pub fn item_config(item: item::Item) -> comp::ItemConfig {
-    let mut abilities = if let item::ItemKind::Tool(tool) = &item.kind {
-        tool.get_abilities()
-    } else {
-        Vec::new()
-    }
-    .into_iter();
-
-    comp::ItemConfig {
-        item,
-        ability1: abilities.next(),
-        ability2: abilities.next(),
-        ability3: abilities.next(),
-        block_ability: Some(comp::CharacterAbility::BasicBlock),
-        dodge_ability: Some(comp::CharacterAbility::Roll),
-    }
-}
-
 /// Replace an equipment slot with an item. Return the item that was in the
 /// slot, if any. Doesn't update the inventory.
 fn loadout_replace(
@@ -128,10 +104,10 @@ fn loadout_replace(
         EquipSlot::Armor(ArmorSlot::Tabard) => replace(&mut loadout.tabard, item),
         EquipSlot::Lantern => replace(&mut loadout.lantern, item),
         EquipSlot::Mainhand => {
-            replace(&mut loadout.active_item, item.map(item_config)).map(|i| i.item)
+            replace(&mut loadout.active_item, item.map(|i| ItemConfig::from(i))).map(|i| i.item)
         },
         EquipSlot::Offhand => {
-            replace(&mut loadout.second_item, item.map(item_config)).map(|i| i.item)
+            replace(&mut loadout.second_item, item.map(|i| ItemConfig::from(i))).map(|i| i.item)
         },
     }
 }
@@ -378,8 +354,8 @@ mod tests {
 
         let mut loadout = LoadoutBuilder::new()
             .defaults()
-            .active_item(sword.clone())
-            .second_item(sword.clone())
+            .active_item(Some(sword.clone()))
+            .second_item(Some(sword.clone()))
             .build();
 
         assert_eq!(sword, loadout.active_item);
@@ -462,7 +438,7 @@ mod tests {
 
         let mut loadout = LoadoutBuilder::new()
             .defaults()
-            .active_item(sword.clone())
+            .active_item(Some(sword.clone()))
             .build();
 
         // The swap should return the sword
