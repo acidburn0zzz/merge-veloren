@@ -11,9 +11,9 @@ use std::time::Duration;
 /// // Build a loadout with character starter defaults and a specific sword with default sword abilities
 /// let loadout = LoadoutBuilder::new()
 ///     .defaults()
-///     .active_item(LoadoutBuilder::default_item_config_from_str(
+///     .active_item(Some(LoadoutBuilder::default_item_config_from_str(
 ///         "common.items.weapons.sword.zweihander_sword_0"
-///     ))
+///     )))
 ///     .build();
 /// ```
 pub struct LoadoutBuilder(Loadout);
