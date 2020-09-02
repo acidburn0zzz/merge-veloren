@@ -4,9 +4,8 @@ use common::character::CharacterId;
 use crate::persistence::conversions::ItemModelPair;
 use crossbeam::channel;
 use diesel::Connection;
+use std::{convert::TryFrom, num::NonZeroU64};
 use tracing::{error, info};
-use std::num::NonZeroU64;
-use std::convert::TryFrom;
 
 pub type CharacterUpdateData = (comp::Stats, comp::Inventory, comp::Loadout);
 
@@ -113,9 +112,10 @@ fn execute_batch_update(
         // fails and the transaction of a character who picks the item up
         // succeeds.
         for inserted_item in inserted_items.iter() {
-            inserted_item
-                .comp.item_id.store(Some(NonZeroU64::try_from(inserted_item.new_item_id as u64)
-                .expect("An inserted item can never have a zero item_id")));
+            inserted_item.comp.item_id.store(Some(
+                NonZeroU64::try_from(inserted_item.new_item_id as u64)
+                    .expect("An inserted item can never have a zero item_id"),
+            ));
         }
     }
 }

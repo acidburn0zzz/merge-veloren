@@ -10,14 +10,13 @@ use crate::{
     lottery::Lottery,
     terrain::{Block, BlockKind},
 };
+use crossbeam::atomic::AtomicCell;
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage};
 use specs_idvs::IdvStorage;
-use std::sync::Arc;
+use std::{num::NonZeroU64, sync::Arc};
 use vek::Rgb;
-use crossbeam::atomic::AtomicCell;
-use std::num::NonZeroU64;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Throwable {
@@ -175,10 +174,22 @@ impl Item {
         item
     }
 
-    /// Resets the item's item ID to 0, giving it a new identity. Used when
+    /// Resets the item's item ID to None, giving it a new identity. Used when
     /// dropping items into the world so that a new database record is
     /// created when they are picked up again.
-    pub fn reset_item_id(&mut self) { self.item_id = Arc::new(AtomicCell::new(None)); }
+    ///
+    /// NOTE: The creation of a new `Arc` when resetting the item ID is critical
+    /// because every time a new `Item` instance is created, it is cloned from
+    /// a single asset which results in an `Arc` pointing to the same value in
+    /// memory. Therefore, every time an item instance is created this
+    /// method must be called in order to give it a unique identity.
+    pub fn reset_item_id(&mut self) {
+        if let Some(item_id) = Arc::get_mut(&mut self.item_id) {
+            *item_id = AtomicCell::new(None);
+        } else {
+            self.item_id = Arc::new(AtomicCell::new(None));
+        }
+    }
 
     pub fn set_amount(&mut self, give_amount: u32) -> Result<(), assets::Error> {
         use ItemKind::*;
