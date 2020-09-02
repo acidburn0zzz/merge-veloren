@@ -341,7 +341,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
             if let (Some(mut item), Some(pos)) =
                 (item, state.ecs().read_storage::<comp::Pos>().get(entity))
             {
-                item.reset_item_id();
+                item.put_in_world();
                 dropped_items.push((
                     *pos,
                     state

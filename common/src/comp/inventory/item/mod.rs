@@ -183,13 +183,19 @@ impl Item {
     /// a single asset which results in an `Arc` pointing to the same value in
     /// memory. Therefore, every time an item instance is created this
     /// method must be called in order to give it a unique identity.
-    pub fn reset_item_id(&mut self) {
+    fn reset_item_id(&mut self) {
         if let Some(item_id) = Arc::get_mut(&mut self.item_id) {
             *item_id = AtomicCell::new(None);
         } else {
             self.item_id = Arc::new(AtomicCell::new(None));
         }
     }
+
+    /// Removes the unique identity of an item - used when dropping an item on
+    /// the floor. In the future this will need to be changed if we want to
+    /// maintain a unique ID for an item even when it's dropped and picked
+    /// up by another player.
+    pub fn put_in_world(&mut self) { self.reset_item_id() }
 
     pub fn set_amount(&mut self, give_amount: u32) -> Result<(), assets::Error> {
         use ItemKind::*;
