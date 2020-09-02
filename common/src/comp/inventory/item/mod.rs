@@ -14,8 +14,10 @@ use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage};
 use specs_idvs::IdvStorage;
-use std::sync::{atomic::AtomicU64, Arc};
+use std::sync::Arc;
 use vek::Rgb;
+use crossbeam::atomic::AtomicCell;
+use std::num::NonZeroU64;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Throwable {
@@ -102,7 +104,7 @@ impl ItemKind {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     #[serde(skip)]
-    pub item_id: Arc<AtomicU64>,
+    pub item_id: Arc<AtomicCell<Option<NonZeroU64>>>,
     #[serde(skip)]
     item_definition_id: String, //TODO: Intern these strings?
     name: String,
@@ -121,7 +123,7 @@ impl Item {
     // loadout when no weapon is present
     pub fn empty() -> Self {
         Self {
-            item_id: Arc::new(AtomicU64::new(0)),
+            item_id: Arc::new(AtomicCell::new(None)),
             item_definition_id: "empty_item".to_owned(),
             name: "Empty Item".to_owned(),
             description: "This item may grant abilities, but is invisible".to_owned(),
@@ -176,7 +178,7 @@ impl Item {
     /// Resets the item's item ID to 0, giving it a new identity. Used when
     /// dropping items into the world so that a new database record is
     /// created when they are picked up again.
-    pub fn reset_item_id(&mut self) { self.item_id = Arc::new(AtomicU64::new(0)); }
+    pub fn reset_item_id(&mut self) { self.item_id = Arc::new(AtomicCell::new(None)); }
 
     pub fn set_amount(&mut self, give_amount: u32) -> Result<(), assets::Error> {
         use ItemKind::*;
