@@ -14,8 +14,8 @@ pub struct HumanoidBody {
     pub eye_color: u8,
 }
 
-impl From<&comp::body::humanoid::Body> for HumanoidBody {
-    fn from(body: &comp::body::humanoid::Body) -> Self {
+impl From<&comp::humanoid::Body> for HumanoidBody {
+    fn from(body: &comp::humanoid::Body) -> Self {
         HumanoidBody {
             species: body.species as u8,
             body_type: body.body_type as u8,

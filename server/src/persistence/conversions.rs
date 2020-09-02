@@ -4,7 +4,11 @@ use crate::persistence::{
 };
 
 use crate::persistence::{error::Error, json_models::HumanoidBody};
-use common::{character::CharacterId, comp::*, loadout_builder};
+use common::{
+    character::CharacterId,
+    comp::{Body as CompBody, *},
+    loadout_builder,
+};
 use std::{convert::TryFrom, num::NonZeroU64};
 
 #[derive(PartialEq)]
@@ -88,9 +92,7 @@ pub fn convert_loadout_to_database_items(
     .collect()
 }
 
-pub fn convert_body_to_database_json(
-    body: &common::comp::Body,
-) -> Result<String, serde_json::Error> {
+pub fn convert_body_to_database_json(body: &CompBody) -> Result<String, serde_json::Error> {
     let json_model = match body {
         common::comp::Body::Humanoid(humanoid_body) => HumanoidBody::from(humanoid_body),
         _ => unimplemented!("Only humanoid bodies are currently supported for persistence"),
@@ -203,13 +205,11 @@ pub fn convert_loadout_from_database_items(database_items: &[Item]) -> Result<Lo
     Ok(loadout.build())
 }
 
-pub fn convert_body_from_database(
-    body: &Body,
-) -> Result<common::comp::body::Body, serde_json::Error> {
+pub fn convert_body_from_database(body: &Body) -> Result<CompBody, serde_json::Error> {
     Ok(match body.variant.as_str() {
         "humanoid" => {
             let json_model = serde_json::de::from_str::<HumanoidBody>(&body.body_data)?;
-            common::comp::body::Body::Humanoid(common::comp::humanoid::Body {
+            CompBody::Humanoid(common::comp::humanoid::Body {
                 species: common::comp::humanoid::ALL_SPECIES[json_model.species as usize],
                 body_type: common::comp::humanoid::ALL_BODY_TYPES[json_model.body_type as usize],
                 hair_style: json_model.hair_style,

@@ -1,7 +1,7 @@
 mod ability;
 mod admin;
 pub mod agent;
-pub mod body;
+mod body;
 mod character_state;
 mod chat;
 mod controller;
@@ -9,7 +9,7 @@ mod damage;
 mod energy;
 pub mod group;
 mod inputs;
-pub mod inventory;
+mod inventory;
 mod last;
 mod location;
 mod misc;
