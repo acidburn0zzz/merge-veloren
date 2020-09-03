@@ -165,7 +165,7 @@ fn swap_inventory_loadout(
     // Check if loadout slot can hold item
     if inventory
         .get(inventory_slot)
-        .map_or(true, |item| equip_slot.can_hold(&item.kind))
+        .map_or(true, |item| equip_slot.can_hold(&item.kind()))
     {
         // Take item from loadout
         let from_equip = loadout_remove(equip_slot, loadout);
@@ -197,8 +197,8 @@ fn swap_loadout(slot_a: EquipSlot, slot_b: EquipSlot, loadout: &mut Loadout) {
     let item_a = loadout_remove(slot_a, loadout);
     let item_b = loadout_remove(slot_b, loadout);
     // Check if items can go in the other slots
-    if item_a.as_ref().map_or(true, |i| slot_b.can_hold(&i.kind))
-        && item_b.as_ref().map_or(true, |i| slot_a.can_hold(&i.kind))
+    if item_a.as_ref().map_or(true, |i| slot_b.can_hold(&i.kind()))
+        && item_b.as_ref().map_or(true, |i| slot_a.can_hold(&i.kind()))
     {
         // Swap
         loadout_replace(slot_b, item_a, loadout).unwrap_none();
@@ -270,7 +270,7 @@ pub fn equip(slot: usize, inventory: &mut Inventory, loadout: &mut Loadout) {
     use armor::Armor;
     use item::{armor::ArmorKind, ItemKind};
 
-    let equip_slot = inventory.get(slot).and_then(|i| match &i.kind {
+    let equip_slot = inventory.get(slot).and_then(|i| match &i.kind() {
         ItemKind::Tool(_) => Some(EquipSlot::Mainhand),
         ItemKind::Armor(Armor { kind, .. }) => Some(EquipSlot::Armor(match kind {
             ArmorKind::Head(_) => ArmorSlot::Head,

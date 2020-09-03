@@ -108,11 +108,11 @@ pub trait Asset: Sized {
     where
         Self::Output: Send + Sync + 'static,
     {
-        let assets_write = ASSETS.read().unwrap();
-        match assets_write.get(specifier) {
+        let assets_read = ASSETS.read().unwrap();
+        match assets_read.get(specifier) {
             Some(asset) => Ok(Arc::clone(asset).downcast()?),
             None => {
-                drop(assets_write); // Drop the asset hashmap to permit recursive loading
+                drop(assets_read); // Drop the asset hashmap to permit recursive loading
                 let asset = Arc::new(f(Self::parse(load_file(specifier, Self::ENDINGS)?)?));
                 let clone = Arc::clone(&asset);
                 ASSETS.write().unwrap().insert(specifier.to_owned(), clone);
@@ -292,7 +292,7 @@ impl Asset for Value {
     }
 }
 
-/// Load fron an arbitrary RON file.
+/// Load from an arbitrary RON file.
 pub struct Ron<T>(pub PhantomData<T>);
 
 impl<T: Send + Sync + for<'de> Deserialize<'de>> Asset for Ron<T> {

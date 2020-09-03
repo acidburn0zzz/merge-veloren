@@ -167,7 +167,7 @@ pub struct ItemConfig {
 
 impl From<Item> for ItemConfig {
     fn from(item: Item) -> Self {
-        if let ItemKind::Tool(tool) = &item.kind {
+        if let ItemKind::Tool(tool) = &item.kind() {
             let mut abilities = tool.get_abilities();
             let mut ability_drain = abilities.drain(..);
 
@@ -224,7 +224,7 @@ impl Loadout {
             .iter()
             .flat_map(|armor| armor.as_ref())
             .filter_map(|item| {
-                if let ItemKind::Armor(armor) = &item.kind {
+                if let ItemKind::Armor(armor) = &item.kind() {
                     Some(armor.get_protection())
                 } else {
                     None

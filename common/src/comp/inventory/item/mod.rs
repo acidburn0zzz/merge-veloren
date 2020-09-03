@@ -5,7 +5,7 @@ pub mod tool;
 pub use tool::{Hands, Tool, ToolCategory, ToolKind};
 
 use crate::{
-    assets::{self, Asset, Error, Ron},
+    assets::{self, Asset, Error},
     effect::Effect,
     lottery::Lottery,
     terrain::{Block, BlockKind},
@@ -17,6 +17,9 @@ use specs::{Component, FlaggedStorage};
 use specs_idvs::IdvStorage;
 use std::{num::NonZeroU64, sync::Arc};
 use vek::Rgb;
+use std::io::BufReader;
+use std::fs::File;
+use std::num::NonZeroU32;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Throwable {
@@ -63,93 +66,115 @@ pub enum ItemKind {
     Armor(armor::Armor),
     Consumable {
         kind: String,
-        effect: Effect,
-        #[serde(default = "default_amount")]
-        amount: u32,
+        effect: Effect
     },
     Throwable {
-        kind: Throwable,
-        #[serde(default = "default_amount")]
-        amount: u32,
+        kind: Throwable
     },
     Utility {
-        kind: Utility,
-        #[serde(default = "default_amount")]
-        amount: u32,
+        kind: Utility
     },
     Ingredient {
-        kind: String,
-        #[serde(default = "default_amount")]
-        amount: u32,
+        kind: String
     },
 }
 
-impl ItemKind {
-    pub fn stack_size(&self) -> Option<u32> {
-        match self {
-            ItemKind::Consumable {
-                kind: _,
-                effect: _,
-                amount,
-            } => Some(*amount),
-            ItemKind::Throwable { kind: _, amount } => Some(*amount),
-            ItemKind::Utility { kind: _, amount } => Some(*amount),
-            ItemKind::Ingredient { kind: _, amount } => Some(*amount),
-            _ => None,
-        }
-    }
-}
+// TODO: Remove/move to Item
+// impl ItemKind {
+//     pub fn stack_size(&self) -> Option<u32> {
+//         match self {
+//             ItemKind::Consumable {
+//                 kind: _,
+//                 effect: _,
+//                 amount,
+//             } => Some(*amount),
+//             ItemKind::Throwable { kind: _, amount } => Some(*amount),
+//             ItemKind::Utility { kind: _, amount } => Some(*amount),
+//             ItemKind::Ingredient { kind: _, amount } => Some(*amount),
+//             _ => None,
+//         }
+//     }
+// }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     #[serde(skip)]
     pub item_id: Arc<AtomicCell<Option<NonZeroU64>>>,
+    pub inner_item: Arc<InnerItem>,
+    amount: NonZeroU32
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InnerItem {
     #[serde(skip)]
-    item_definition_id: String, //TODO: Intern these strings?
+    item_definition_id: String,
     name: String,
     description: String,
-    pub kind: ItemKind,
+    pub kind: ItemKind
+}
+
+impl InnerItem {
+    pub fn is_stackable(&self) -> bool {
+        match self.kind {
+            ItemKind::Consumable { .. }
+            | ItemKind:: Ingredient { .. }
+            | ItemKind::Throwable { .. }
+            | ItemKind::Utility { .. } => true,
+            _ => false
+        }
+    }
 }
 
 impl PartialEq for Item {
-    fn eq(&self, other: &Self) -> bool { self.item_definition_id == other.item_definition_id }
+    fn eq(&self, other: &Self) -> bool { self.inner_item.item_definition_id == other.inner_item.item_definition_id }
 }
 
-pub type ItemAsset = Ron<Item>;
+//pub type ItemAsset = Ron<Item>;
+
+impl Asset for InnerItem {
+    const ENDINGS: &'static [&'static str] = &["ron"];
+
+    fn parse(buf_reader: BufReader<File>) -> Result<Self, assets::Error> {
+        let item: Result<Self, Error> = ron::de::from_reader(buf_reader).map_err(Error::parse_error);
+
+        item.map(|item| InnerItem {
+            item_definition_id: "whatever".to_owned(),
+            .. item
+        })
+    }
+}
 
 impl Item {
     // TODO: consider alternatives such as default abilities that can be added to a
     // loadout when no weapon is present
     pub fn empty() -> Self {
-        Self {
+        Item::new(InnerItem::load_expect("common.items.weapons.empty.empty"))
+    }
+
+    pub fn new(inner_item: Arc<InnerItem>) -> Self {
+        Item {
             item_id: Arc::new(AtomicCell::new(None)),
-            item_definition_id: "empty_item".to_owned(),
-            name: "Empty Item".to_owned(),
-            description: "This item may grant abilities, but is invisible".to_owned(),
-            kind: ItemKind::Tool(Tool::empty()),
+            inner_item,
+            amount: NonZeroU32::new(0).unwrap()
         }
     }
 
     /// Creates a new instance of an `Item` from the provided asset identifier
     /// Panics if the asset does not exist.
     pub fn new_from_asset_expect(asset_specifier: &str) -> Self {
-        let mut item = ItemAsset::load_expect_cloned(asset_specifier);
-        item.item_definition_id = asset_specifier.to_owned();
-        item.reset_item_id();
-        item
+        let inner_item = InnerItem::load_expect(asset_specifier);
+        Item::new(inner_item)
     }
 
     /// Creates a Vec containing one of each item that matches the provided
     /// asset glob pattern
     pub fn new_from_asset_glob(asset_glob: &str) -> Result<Vec<Self>, Error> {
-        let items = ItemAsset::load_glob_cloned(asset_glob)?;
+        let items = InnerItem::load_glob(asset_glob)?;
 
         Ok(items
             .into_iter()
             .map(|(mut item, asset_specifier)| {
-                item.item_definition_id = asset_specifier;
-                item.reset_item_id();
-                item
+                Item::new(item)
             })
             .collect::<Vec<_>>())
     }
@@ -161,17 +186,13 @@ impl Item {
         // instead of .
         let asset_specifier = asset.replace('\\', ".");
 
-        let mut item = ItemAsset::load_cloned(asset)?;
-        item.item_definition_id = asset_specifier;
-        item.reset_item_id();
-        Ok(item)
+        let mut inner_item = InnerItem::load(asset)?;
+        Ok(Item::new(inner_item))
     }
 
     /// Duplicates an item, creating an exact copy but with a new item ID
     pub fn duplicate(&self) -> Self {
-        let mut item = self.clone();
-        item.reset_item_id();
-        item
+        Item::new(self.inner_item.clone())
     }
 
     /// Resets the item's item ID to None, giving it a new identity. Used when
@@ -197,39 +218,44 @@ impl Item {
     /// up by another player.
     pub fn put_in_world(&mut self) { self.reset_item_id() }
 
+    // pub fn change_amount_expect(&mut self, modifier: i32) {
+    //     let mut current_amount = self.amount as u32;
+    //     current_amount += modifier;
+    //     self.amount = NonZeroU32::try_from(current_amount).expect("invalid amount");
+    // }
+
+    pub fn increase_amount(&mut self, increase_by: u32) {
+        let mut amount = u32::from(self.amount);
+        amount += increase_by;
+        // TODO make this return Result and prevent modifying amount for non-stackables
+        self.amount = NonZeroU32::new(amount).unwrap();
+    }
+    pub fn decrease_amount(&mut self, decrease_by: u32) {
+        let mut amount = u32::from(self.amount);
+        amount -= decrease_by;
+        // TODO make this return Result and prevent modifying amount for non-stackables
+        self.amount = NonZeroU32::new(amount).unwrap(); // TODO make this return Result
+    }
+
     pub fn set_amount(&mut self, give_amount: u32) -> Result<(), assets::Error> {
-        use ItemKind::*;
-        match self.kind {
-            Consumable { ref mut amount, .. }
-            | Throwable { ref mut amount, .. }
-            | Utility { ref mut amount, .. }
-            | Ingredient { ref mut amount, .. } => {
-                *amount = give_amount;
-                Ok(())
-            },
-            Tool { .. } | Lantern { .. } | Armor { .. } => {
-                // Tools and armor don't stack
-                Err(assets::Error::InvalidType)
-            },
+        if self.inner_item.is_stackable() {
+            self.amount = NonZeroU32::new(give_amount)?;
+            Ok(())
+        } else {
+            Err(assets::Error::InvalidType)
         }
     }
 
-    pub fn item_definition_id(&self) -> &str { &self.item_definition_id }
+    pub fn item_definition_id(&self) -> &str { &self.inner_item.item_definition_id }
 
-    pub fn name(&self) -> &str { &self.name }
+    pub fn name(&self) -> &str { &self.inner_item.name }
 
-    pub fn description(&self) -> &str { &self.description }
+    pub fn description(&self) -> &str { &self.inner_item.description }
+
+    pub fn kind(&self) -> &ItemKind { &self.inner_item.kind }
 
     pub fn amount(&self) -> u32 {
-        match &self.kind {
-            ItemKind::Tool(_) => 1,
-            ItemKind::Lantern(_) => 1,
-            ItemKind::Armor { .. } => 1,
-            ItemKind::Consumable { amount, .. } => *amount,
-            ItemKind::Throwable { amount, .. } => *amount,
-            ItemKind::Utility { amount, .. } => *amount,
-            ItemKind::Ingredient { amount, .. } => *amount,
-        }
+        u32::from(self.amount)
     }
 
     pub fn try_reclaim_from_block(block: Block) -> Option<Self> {
@@ -277,7 +303,7 @@ impl Item {
     /// (i.e: one may be substituted for the other in crafting recipes or
     /// item possession checks).
     pub fn superficially_eq(&self, other: &Self) -> bool {
-        match (&self.kind, &other.kind) {
+        match (&self.kind(), &other.kind()) {
             (ItemKind::Tool(a), ItemKind::Tool(b)) => a.superficially_eq(b),
             // TODO: Differentiate between lantern colors?
             (ItemKind::Lantern(_), ItemKind::Lantern(_)) => true,
