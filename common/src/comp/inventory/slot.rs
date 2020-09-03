@@ -141,9 +141,9 @@ fn loadout_insert(
 ///
 /// let mut loadout = LoadoutBuilder::new()
 ///     .defaults()
-///     .active_item(LoadoutBuilder::default_item_config_from_str(
+///     .active_item(Some(LoadoutBuilder::default_item_config_from_str(
 ///         "common.items.weapons.sword.zweihander_sword_0",
-///     ))
+///     )))
 ///     .build();
 ///
 /// let slot = EquipSlot::Mainhand;
