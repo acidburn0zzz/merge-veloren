@@ -104,10 +104,10 @@ fn loadout_replace(
         EquipSlot::Armor(ArmorSlot::Tabard) => replace(&mut loadout.tabard, item),
         EquipSlot::Lantern => replace(&mut loadout.lantern, item),
         EquipSlot::Mainhand => {
-            replace(&mut loadout.active_item, item.map(|i| ItemConfig::from(i))).map(|i| i.item)
+            replace(&mut loadout.active_item, item.map(ItemConfig::from)).map(|i| i.item)
         },
         EquipSlot::Offhand => {
-            replace(&mut loadout.second_item, item.map(|i| ItemConfig::from(i))).map(|i| i.item)
+            replace(&mut loadout.second_item, item.map(ItemConfig::from)).map(|i| i.item)
         },
     }
 }
