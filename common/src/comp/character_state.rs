@@ -62,7 +62,7 @@ pub enum CharacterState {
     DashMelee(dash_melee::Data),
     /// A three-stage attack where each attack pushes player forward
     /// and successive attacks increase in damage, while player holds button.
-    TripleStrike(triple_strike::Data),
+    ComboMelee(combo_melee::Data),
     /// A leap followed by a small aoe ground attack
     LeapMelee(leap_melee::Data),
     /// Spin around, dealing damage to enemies surrounding you
@@ -78,7 +78,7 @@ impl CharacterState {
             | CharacterState::BasicMelee(_)
             | CharacterState::BasicRanged(_)
             | CharacterState::DashMelee(_)
-            | CharacterState::TripleStrike(_)
+            | CharacterState::ComboMelee(_)
             | CharacterState::BasicBlock
             | CharacterState::LeapMelee(_)
             | CharacterState::SpinMelee(_)
@@ -91,7 +91,7 @@ impl CharacterState {
             CharacterState::BasicMelee(_)
             | CharacterState::BasicRanged(_)
             | CharacterState::DashMelee(_)
-            | CharacterState::TripleStrike(_)
+            | CharacterState::ComboMelee(_)
             | CharacterState::LeapMelee(_)
             | CharacterState::SpinMelee(_)
             | CharacterState::ChargedRanged(_)
@@ -103,7 +103,7 @@ impl CharacterState {
             CharacterState::BasicMelee(_)
             | CharacterState::BasicRanged(_)
             | CharacterState::DashMelee(_)
-            | CharacterState::TripleStrike(_)
+            | CharacterState::ComboMelee(_)
             | CharacterState::BasicBlock
             | CharacterState::LeapMelee(_)
             | CharacterState::ChargedRanged(_)

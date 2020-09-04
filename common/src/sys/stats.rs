@@ -110,7 +110,7 @@ impl<'a> System<'a> for Sys {
                 | CharacterState::DashMelee { .. }
                 | CharacterState::LeapMelee { .. }
                 | CharacterState::SpinMelee { .. }
-                | CharacterState::TripleStrike { .. }
+                | CharacterState::ComboMelee { .. }
                 | CharacterState::BasicRanged { .. }
                 | CharacterState::ChargedRanged { .. } => {
                     if energy.get_unchecked().regen_rate != 0.0 {
