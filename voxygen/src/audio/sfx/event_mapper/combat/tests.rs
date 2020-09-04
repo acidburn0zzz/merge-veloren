@@ -1,7 +1,7 @@
 use super::*;
 use crate::audio::sfx::SfxEvent;
 use common::{
-    comp::{item::tool::ToolCategory, CharacterAbilityType, CharacterState, ItemConfig, Loadout},
+    comp::{item::tool::ToolCategory, CharacterAbilityType, CharacterState, Item, ItemConfig, Loadout},
     states,
 };
 use std::time::{Duration, Instant};

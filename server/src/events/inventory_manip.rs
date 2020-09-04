@@ -141,7 +141,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                     let (is_equippable, lantern_opt) =
                         inventory
                             .get(slot)
-                            .map_or((false, None), |i| match &i.kind {
+                            .map_or((false, None), |i| match &i.inner_item.kind {
                                 ItemKind::Tool(_) | ItemKind::Armor { .. } => (true, None),
                                 ItemKind::Lantern(lantern) => (true, Some(lantern)),
                                 _ => (false, None),
@@ -149,7 +149,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                     if is_equippable {
                         if let Some(loadout) = state.ecs().write_storage().get_mut(entity) {
                             if let Some(lantern) = lantern_opt {
-                                swap_lantern(&mut state.ecs().write_storage(), entity, lantern);
+                                swap_lantern(&mut state.ecs().write_storage(), entity, &lantern);
                             }
                             slot::equip(slot, inventory, loadout);
                             Some(comp::InventoryUpdateEvent::Used)
@@ -157,7 +157,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                             None
                         }
                     } else if let Some(item) = inventory.take(slot) {
-                        match &item.kind {
+                        match &item.inner_item.kind {
                             ItemKind::Consumable { kind, effect, .. } => {
                                 maybe_effect = Some(*effect);
                                 Some(comp::InventoryUpdateEvent::Consumed(kind.clone()))

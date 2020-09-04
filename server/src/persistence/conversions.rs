@@ -37,7 +37,7 @@ pub fn convert_inventory_to_database_items(
                             Some(item_id) => Some(u64::from(item_id) as EntityId),
                             _ => None,
                         },
-                        stack_size: item.kind.stack_size().map(|x| x as i32),
+                        stack_size: Some(item.amount() as i32),
                     },
                     comp: item,
                     new_item_id: 0,

@@ -275,7 +275,7 @@ impl Scene {
 
         let active_item_kind = loadout
             .and_then(|l| l.active_item.as_ref())
-            .map(|i| &i.item.kind);
+            .map(|i| &i.item.inner_item.kind);
 
         let active_tool_kind = if let Some(ItemKind::Tool(tool)) = active_item_kind {
             Some(tool.kind.clone())
@@ -285,7 +285,7 @@ impl Scene {
 
         let second_item_kind = loadout
             .and_then(|l| l.second_item.as_ref())
-            .map(|i| &i.item.kind);
+            .map(|i| &i.item.inner_item.kind);
 
         let second_tool_kind = if let Some(ItemKind::Tool(tool)) = second_item_kind {
             Some(tool.kind.clone())

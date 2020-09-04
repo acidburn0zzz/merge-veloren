@@ -133,7 +133,7 @@ impl CharacterCacheKey {
                     shoulder: if let Some(ItemKind::Armor(Armor {
                         kind: ArmorKind::Shoulder(armor),
                         ..
-                    })) = loadout.shoulder.as_ref().map(|i| &i.kind)
+                    })) = loadout.shoulder.as_ref().map(|i| &i.inner_item.kind)
                     {
                         Some(armor.clone())
                     } else {
@@ -142,7 +142,7 @@ impl CharacterCacheKey {
                     chest: if let Some(ItemKind::Armor(Armor {
                         kind: ArmorKind::Chest(armor),
                         ..
-                    })) = loadout.chest.as_ref().map(|i| &i.kind)
+                    })) = loadout.chest.as_ref().map(|i| &i.inner_item.kind)
                     {
                         Some(armor.clone())
                     } else {
@@ -151,7 +151,7 @@ impl CharacterCacheKey {
                     belt: if let Some(ItemKind::Armor(Armor {
                         kind: ArmorKind::Belt(armor),
                         ..
-                    })) = loadout.belt.as_ref().map(|i| &i.kind)
+                    })) = loadout.belt.as_ref().map(|i| &i.inner_item.kind)
                     {
                         Some(armor.clone())
                     } else {
@@ -160,7 +160,7 @@ impl CharacterCacheKey {
                     back: if let Some(ItemKind::Armor(Armor {
                         kind: ArmorKind::Back(armor),
                         ..
-                    })) = loadout.back.as_ref().map(|i| &i.kind)
+                    })) = loadout.back.as_ref().map(|i| &i.inner_item.kind)
                     {
                         Some(armor.clone())
                     } else {
@@ -169,7 +169,7 @@ impl CharacterCacheKey {
                     pants: if let Some(ItemKind::Armor(Armor {
                         kind: ArmorKind::Pants(armor),
                         ..
-                    })) = loadout.pants.as_ref().map(|i| &i.kind)
+                    })) = loadout.pants.as_ref().map(|i| &i.inner_item.kind)
                     {
                         Some(armor.clone())
                     } else {
@@ -179,15 +179,19 @@ impl CharacterCacheKey {
             },
             tool: if are_tools_visible {
                 Some(CharacterToolKey {
-                    active: if let Some(ItemKind::Tool(tool)) =
-                        loadout.active_item.as_ref().map(|i| &i.item.kind)
+                    active: if let Some(ItemKind::Tool(tool)) = loadout
+                        .active_item
+                        .as_ref()
+                        .map(|i| &i.item.inner_item.kind)
                     {
                         Some(tool.kind.clone())
                     } else {
                         None
                     },
-                    second: if let Some(ItemKind::Tool(tool)) =
-                        loadout.second_item.as_ref().map(|i| &i.item.kind)
+                    second: if let Some(ItemKind::Tool(tool)) = loadout
+                        .second_item
+                        .as_ref()
+                        .map(|i| &i.item.inner_item.kind)
                     {
                         Some(tool.kind.clone())
                     } else {
@@ -198,7 +202,7 @@ impl CharacterCacheKey {
                 None
             },
             lantern: if let Some(ItemKind::Lantern(lantern)) =
-                loadout.lantern.as_ref().map(|i| &i.kind)
+                loadout.lantern.as_ref().map(|i| &i.inner_item.kind)
             {
                 Some(lantern.kind.clone())
             } else {
@@ -207,7 +211,7 @@ impl CharacterCacheKey {
             hand: if let Some(ItemKind::Armor(Armor {
                 kind: ArmorKind::Hand(armor),
                 ..
-            })) = loadout.hand.as_ref().map(|i| &i.kind)
+            })) = loadout.hand.as_ref().map(|i| &i.inner_item.kind)
             {
                 Some(armor.clone())
             } else {
@@ -216,7 +220,7 @@ impl CharacterCacheKey {
             foot: if let Some(ItemKind::Armor(Armor {
                 kind: ArmorKind::Foot(armor),
                 ..
-            })) = loadout.foot.as_ref().map(|i| &i.kind)
+            })) = loadout.foot.as_ref().map(|i| &i.inner_item.kind)
             {
                 Some(armor.clone())
             } else {

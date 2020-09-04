@@ -358,17 +358,17 @@ mod tests {
             .second_item(Some(sword.clone()))
             .build();
 
-        assert_eq!(sword, loadout.active_item);
+        assert_eq!(Some(sword.clone()), loadout.active_item);
         unequip(EquipSlot::Mainhand, &mut inv, &mut loadout);
         // We have space in the inventory, so this should have unequipped
         assert_eq!(None, loadout.active_item);
 
         unequip(EquipSlot::Offhand, &mut inv, &mut loadout);
         // There is no more space in the inventory, so this should still be equipped
-        assert_eq!(sword, loadout.second_item);
+        assert_eq!(Some(sword.clone()), loadout.second_item);
 
         // Verify inventory
-        assert_eq!(inv.slots[0], Some(sword.unwrap().item));
+        assert_eq!(inv.slots[0], Some(sword.item));
         assert_eq!(inv.slots.len(), 1);
     }
 
@@ -443,7 +443,7 @@ mod tests {
 
         // The swap should return the sword
         assert_eq!(
-            Some(sword.unwrap().item),
+            Some(sword.item),
             loadout_remove(EquipSlot::Mainhand, &mut loadout,)
         );
 

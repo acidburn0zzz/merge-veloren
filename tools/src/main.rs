@@ -21,7 +21,7 @@ fn armor_stats() -> Result<(), Box<dyn Error>> {
     for item in comp::item::Item::new_from_asset_glob("common.items.armor.*")
         .expect("Failed to iterate over item folders!")
     {
-        match &item.kind {
+        match &item.inner_item.kind {
             comp::item::ItemKind::Armor(armor) => {
                 let protection = match armor.get_protection() {
                     Protection::Invincible => "Invincible".to_string(),
@@ -46,7 +46,7 @@ fn weapon_stats() -> Result<(), Box<dyn Error>> {
     for item in comp::item::Item::new_from_asset_glob("common.items.weapons.*")
         .expect("Failed to iterate over item folders!")
     {
-        match &item.kind {
+        match &item.inner_item.kind {
             comp::item::ItemKind::Tool(tool) => {
                 let power = tool.base_power().to_string();
                 let equip_time = tool.equip_time().subsec_millis().to_string();
@@ -137,7 +137,7 @@ fn all_items() -> Result<(), Box<dyn Error>> {
     for item in comp::item::Item::new_from_asset_glob("common.items.*")
         .expect("Failed to iterate over item folders!")
     {
-        let kind = match item.kind.clone() {
+        let kind = match item.inner_item.kind.clone() {
             ItemKind::Armor(armor) => get_armor_kind_kind(&armor.kind),
             ItemKind::Lantern(lantern) => lantern.kind,
             ItemKind::Tool(tool) => get_tool_kind_kind(&tool.kind),

@@ -19,7 +19,7 @@ pub fn loadout_slot_text<'a>(
 }
 
 pub fn item_text<'a>(item: &'a Item) -> (&'_ str, Cow<'a, str>) {
-    let desc = match &item.kind {
+    let desc = match &item.inner_item.kind {
         ItemKind::Armor(armor) => Cow::Owned(armor_desc(&armor, item.description())),
         ItemKind::Tool(tool) => Cow::Owned(tool_desc(&tool, item.description())),
         /*ItemKind::Consumable(kind, effect, ..) => {

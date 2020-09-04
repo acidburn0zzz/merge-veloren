@@ -6,8 +6,7 @@ use item::Item;
 use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage, HashMapStorage};
 use specs_idvs::IdvStorage;
-use std::ops::Not;
-use std::convert::TryFrom;
+use std::{convert::TryFrom, ops::Not};
 
 // The limit on distance between the entity and a collectible (squared)
 pub const MAX_PICKUP_RANGE_SQR: f32 = 64.0;
@@ -49,7 +48,7 @@ impl Inventory {
         if item.inner_item.is_stackable() {
             for slot in &mut self.slots {
                 if slot.as_ref().map(|s| s == &item).unwrap_or(false) {
-                    let mut slot_item = slot.unwrap();
+                    let slot_item = slot.as_mut().unwrap(); // TODO: remove unwrap
                     slot_item.increase_amount(u32::from(item.amount()));
                     // self.recount_items(); // Why? Item count hasn't changed.
                     return None;
@@ -57,7 +56,8 @@ impl Inventory {
             }
         }
 
-        // No existing item to stack with or item not stackable, put the item in a new slot
+        // No existing item to stack with or item not stackable, put the item in a new
+        // slot
         let item = self.add_to_first_empty(item);
         self.recount_items();
         item
@@ -191,7 +191,7 @@ impl Inventory {
 
             if item.inner_item.is_stackable() && item.amount() > 1 {
                 item.decrease_amount(1);
-                return_item.set_amount(1);
+                return_item.set_amount(1).unwrap(); // TODO: remove unwrap
                 self.recount_items();
                 Some(return_item)
             } else {
@@ -208,7 +208,7 @@ impl Inventory {
             .iter()
             .flatten()
             .filter(|it| it.superficially_eq(item))
-            .map(|it| usize::try_from(it.amount()).unwrap())
+            .map(|it| usize::try_from(it.amount()).unwrap()) // TODO: remove unwrap
             .sum()
     }
 

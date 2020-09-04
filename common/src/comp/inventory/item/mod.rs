@@ -15,11 +15,13 @@ use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage};
 use specs_idvs::IdvStorage;
-use std::{num::NonZeroU64, sync::Arc};
+use std::{
+    fs::File,
+    io::BufReader,
+    num::{NonZeroU32, NonZeroU64},
+    sync::Arc,
+};
 use vek::Rgb;
-use std::io::BufReader;
-use std::fs::File;
-use std::num::NonZeroU32;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Throwable {
@@ -56,8 +58,6 @@ impl Lantern {
     pub fn color(&self) -> Rgb<f32> { self.color.map(|c| c as f32 / 255.0) }
 }
 
-fn default_amount() -> u32 { 1 }
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum ItemKind {
     /// Something wieldable
@@ -66,16 +66,16 @@ pub enum ItemKind {
     Armor(armor::Armor),
     Consumable {
         kind: String,
-        effect: Effect
+        effect: Effect,
     },
     Throwable {
-        kind: Throwable
+        kind: Throwable,
     },
     Utility {
-        kind: Utility
+        kind: Utility,
     },
     Ingredient {
-        kind: String
+        kind: String,
     },
 }
 
@@ -101,7 +101,7 @@ pub struct Item {
     #[serde(skip)]
     pub item_id: Arc<AtomicCell<Option<NonZeroU64>>>,
     pub inner_item: Arc<InnerItem>,
-    amount: NonZeroU32
+    amount: NonZeroU32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -110,23 +110,25 @@ pub struct InnerItem {
     item_definition_id: String,
     name: String,
     description: String,
-    pub kind: ItemKind
+    pub kind: ItemKind,
 }
 
 impl InnerItem {
     pub fn is_stackable(&self) -> bool {
         match self.kind {
             ItemKind::Consumable { .. }
-            | ItemKind:: Ingredient { .. }
+            | ItemKind::Ingredient { .. }
             | ItemKind::Throwable { .. }
             | ItemKind::Utility { .. } => true,
-            _ => false
+            _ => false,
         }
     }
 }
 
 impl PartialEq for Item {
-    fn eq(&self, other: &Self) -> bool { self.inner_item.item_definition_id == other.inner_item.item_definition_id }
+    fn eq(&self, other: &Self) -> bool {
+        self.inner_item.item_definition_id == other.inner_item.item_definition_id
+    }
 }
 
 //pub type ItemAsset = Ron<Item>;
@@ -134,12 +136,13 @@ impl PartialEq for Item {
 impl Asset for InnerItem {
     const ENDINGS: &'static [&'static str] = &["ron"];
 
-    fn parse(buf_reader: BufReader<File>) -> Result<Self, assets::Error> {
-        let item: Result<Self, Error> = ron::de::from_reader(buf_reader).map_err(Error::parse_error);
+    fn parse(buf_reader: BufReader<File>, specifier: &str) -> Result<Self, assets::Error> {
+        let item: Result<Self, Error> =
+            ron::de::from_reader(buf_reader).map_err(Error::parse_error);
 
         item.map(|item| InnerItem {
-            item_definition_id: "whatever".to_owned(),
-            .. item
+            item_definition_id: specifier.to_owned(),
+            ..item
         })
     }
 }
@@ -147,15 +150,13 @@ impl Asset for InnerItem {
 impl Item {
     // TODO: consider alternatives such as default abilities that can be added to a
     // loadout when no weapon is present
-    pub fn empty() -> Self {
-        Item::new(InnerItem::load_expect("common.items.weapons.empty.empty"))
-    }
+    pub fn empty() -> Self { Item::new(InnerItem::load_expect("common.items.weapons.empty.empty")) }
 
     pub fn new(inner_item: Arc<InnerItem>) -> Self {
         Item {
             item_id: Arc::new(AtomicCell::new(None)),
             inner_item,
-            amount: NonZeroU32::new(0).unwrap()
+            amount: NonZeroU32::new(0).unwrap(),
         }
     }
 
@@ -171,29 +172,24 @@ impl Item {
     pub fn new_from_asset_glob(asset_glob: &str) -> Result<Vec<Self>, Error> {
         let items = InnerItem::load_glob(asset_glob)?;
 
-        Ok(items
-            .into_iter()
-            .map(|(mut item, asset_specifier)| {
-                Item::new(item)
-            })
-            .collect::<Vec<_>>())
+        let result = items
+            .iter()
+            .map(|item| Item::new(item.clone()))
+            .collect::<Vec<_>>();
+
+        Ok(result)
     }
 
     /// Creates a new instance of an `Item from the provided asset identifier if
     /// it exists
     pub fn new_from_asset(asset: &str) -> Result<Self, Error> {
-        // Some commands like /give_item provide the asset specifier separated with \
-        // instead of .
-        let asset_specifier = asset.replace('\\', ".");
-
-        let mut inner_item = InnerItem::load(asset)?;
+        println!("Loading item asset: {}", asset);
+        let inner_item = InnerItem::load(asset)?;
         Ok(Item::new(inner_item))
     }
 
     /// Duplicates an item, creating an exact copy but with a new item ID
-    pub fn duplicate(&self) -> Self {
-        Item::new(self.inner_item.clone())
-    }
+    pub fn duplicate(&self) -> Self { Item::new(self.inner_item.clone()) }
 
     /// Resets the item's item ID to None, giving it a new identity. Used when
     /// dropping items into the world so that a new database record is
@@ -221,8 +217,8 @@ impl Item {
     // pub fn change_amount_expect(&mut self, modifier: i32) {
     //     let mut current_amount = self.amount as u32;
     //     current_amount += modifier;
-    //     self.amount = NonZeroU32::try_from(current_amount).expect("invalid amount");
-    // }
+    //     self.amount = NonZeroU32::try_from(current_amount).expect("invalid
+    // amount"); }
 
     pub fn increase_amount(&mut self, increase_by: u32) {
         let mut amount = u32::from(self.amount);
@@ -230,6 +226,7 @@ impl Item {
         // TODO make this return Result and prevent modifying amount for non-stackables
         self.amount = NonZeroU32::new(amount).unwrap();
     }
+
     pub fn decrease_amount(&mut self, decrease_by: u32) {
         let mut amount = u32::from(self.amount);
         amount -= decrease_by;
@@ -239,7 +236,7 @@ impl Item {
 
     pub fn set_amount(&mut self, give_amount: u32) -> Result<(), assets::Error> {
         if self.inner_item.is_stackable() {
-            self.amount = NonZeroU32::new(give_amount)?;
+            self.amount = NonZeroU32::new(give_amount).unwrap(); // TODO: remove unwrap
             Ok(())
         } else {
             Err(assets::Error::InvalidType)
@@ -254,9 +251,7 @@ impl Item {
 
     pub fn kind(&self) -> &ItemKind { &self.inner_item.kind }
 
-    pub fn amount(&self) -> u32 {
-        u32::from(self.amount)
-    }
+    pub fn amount(&self) -> u32 { u32::from(self.amount) }
 
     pub fn try_reclaim_from_block(block: Block) -> Option<Self> {
         let chosen;

@@ -1,6 +1,7 @@
 use crate::{
     assets::{self, Asset},
     comp::{Inventory, Item},
+    comp::item::InnerItem,
 };
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
@@ -65,7 +66,7 @@ impl RecipeBook {
 impl Asset for RecipeBook {
     const ENDINGS: &'static [&'static str] = &["ron"];
 
-    fn parse(buf_reader: BufReader<File>) -> Result<Self, assets::Error> {
+    fn parse(buf_reader: BufReader<File>, _specifier: &str) -> Result<Self, assets::Error> {
         ron::de::from_reader::<
             BufReader<File>,
             HashMap<String, ((String, usize), Vec<(String, usize)>)>,
