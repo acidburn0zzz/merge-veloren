@@ -139,7 +139,7 @@ impl SessionState {
                                 message: self
                                     .voxygen_i18n
                                     .get("hud.chat.loot_msg")
-                                    .replace("{item}", item.name().to_string().as_str()),
+                                    .replace("{item}", &item.item_def.name.to_string().as_str()),
                                 chat_type: ChatType::Loot,
                             });
                         },

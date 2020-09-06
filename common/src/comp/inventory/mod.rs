@@ -45,7 +45,7 @@ impl Inventory {
     /// Adds a new item to the first fitting group of the inventory or starts a
     /// new group. Returns the item again if no space was found.
     pub fn push(&mut self, item: Item) -> Option<Item> {
-        if item.inner_item.is_stackable() {
+        if item.item_def.is_stackable() {
             for slot in &mut self.slots {
                 if slot.as_ref().map(|s| s == &item).unwrap_or(false) {
                     let slot_item = slot.as_mut().unwrap(); // TODO: remove unwrap
@@ -135,7 +135,7 @@ impl Inventory {
     /// Checks if inserting item exists in given cell. Inserts an item if it
     /// exists.
     pub fn insert_or_stack(&mut self, cell: usize, item: Item) -> Result<Option<Item>, Item> {
-        if item.inner_item.is_stackable() {
+        if item.item_def.is_stackable() {
             match self.slots.get_mut(cell) {
                 Some(Some(slot_item)) => {
                     if slot_item == &item {
@@ -189,7 +189,7 @@ impl Inventory {
         if let Some(Some(item)) = self.slots.get_mut(cell) {
             let mut return_item = item.duplicate();
 
-            if item.inner_item.is_stackable() && item.amount() > 1 {
+            if item.item_def.is_stackable() && item.amount() > 1 {
                 item.decrease_amount(1);
                 return_item.set_amount(1).unwrap(); // TODO: remove unwrap
                 self.recount_items();

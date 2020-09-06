@@ -30,7 +30,7 @@ pub enum ItemKey {
 }
 impl From<&Item> for ItemKey {
     fn from(item: &Item) -> Self {
-        match &item.inner_item.kind {
+        match &item.item_def.kind {
             ItemKind::Tool(Tool { kind, .. }) => ItemKey::Tool(kind.clone()),
             ItemKind::Lantern(Lantern { kind, .. }) => ItemKey::Lantern(kind.clone()),
             ItemKind::Armor(Armor { kind, .. }) => ItemKey::Armor(kind.clone()),

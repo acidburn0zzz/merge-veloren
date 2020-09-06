@@ -79,41 +79,24 @@ pub enum ItemKind {
     },
 }
 
-// TODO: Remove/move to Item
-// impl ItemKind {
-//     pub fn stack_size(&self) -> Option<u32> {
-//         match self {
-//             ItemKind::Consumable {
-//                 kind: _,
-//                 effect: _,
-//                 amount,
-//             } => Some(*amount),
-//             ItemKind::Throwable { kind: _, amount } => Some(*amount),
-//             ItemKind::Utility { kind: _, amount } => Some(*amount),
-//             ItemKind::Ingredient { kind: _, amount } => Some(*amount),
-//             _ => None,
-//         }
-//     }
-// }
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     #[serde(skip)]
     pub item_id: Arc<AtomicCell<Option<NonZeroU64>>>,
-    pub inner_item: Arc<InnerItem>,
+    pub item_def: Arc<ItemDef>,
     amount: NonZeroU32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct InnerItem {
+pub struct ItemDef {
     #[serde(skip)]
     item_definition_id: String,
-    name: String,
-    description: String,
+    pub name: String,
+    pub description: String,
     pub kind: ItemKind,
 }
 
-impl InnerItem {
+impl ItemDef {
     pub fn is_stackable(&self) -> bool {
         match self.kind {
             ItemKind::Consumable { .. }
@@ -127,21 +110,23 @@ impl InnerItem {
 
 impl PartialEq for Item {
     fn eq(&self, other: &Self) -> bool {
-        self.inner_item.item_definition_id == other.inner_item.item_definition_id
+        self.item_def.item_definition_id == other.item_def.item_definition_id
     }
 }
 
-//pub type ItemAsset = Ron<Item>;
-
-impl Asset for InnerItem {
+impl Asset for ItemDef {
     const ENDINGS: &'static [&'static str] = &["ron"];
 
     fn parse(buf_reader: BufReader<File>, specifier: &str) -> Result<Self, assets::Error> {
         let item: Result<Self, Error> =
             ron::de::from_reader(buf_reader).map_err(Error::parse_error);
 
-        item.map(|item| InnerItem {
-            item_definition_id: specifier.to_owned(),
+        // Some commands like /give_item provide the asset specifier separated with \
+        // instead of .
+        let specifier = specifier.replace('\\', ".");
+
+        item.map(|item| ItemDef {
+            item_definition_id: specifier,
             ..item
         })
     }
@@ -150,27 +135,27 @@ impl Asset for InnerItem {
 impl Item {
     // TODO: consider alternatives such as default abilities that can be added to a
     // loadout when no weapon is present
-    pub fn empty() -> Self { Item::new(InnerItem::load_expect("common.items.weapons.empty.empty")) }
+    pub fn empty() -> Self { Item::new(ItemDef::load_expect("common.items.weapons.empty.empty")) }
 
-    pub fn new(inner_item: Arc<InnerItem>) -> Self {
+    pub fn new(inner_item: Arc<ItemDef>) -> Self {
         Item {
             item_id: Arc::new(AtomicCell::new(None)),
-            inner_item,
-            amount: NonZeroU32::new(0).unwrap(),
+            item_def: inner_item,
+            amount: NonZeroU32::new(1).unwrap(),
         }
     }
 
     /// Creates a new instance of an `Item` from the provided asset identifier
     /// Panics if the asset does not exist.
     pub fn new_from_asset_expect(asset_specifier: &str) -> Self {
-        let inner_item = InnerItem::load_expect(asset_specifier);
+        let inner_item = ItemDef::load_expect(asset_specifier);
         Item::new(inner_item)
     }
 
     /// Creates a Vec containing one of each item that matches the provided
     /// asset glob pattern
     pub fn new_from_asset_glob(asset_glob: &str) -> Result<Vec<Self>, Error> {
-        let items = InnerItem::load_glob(asset_glob)?;
+        let items = ItemDef::load_glob(asset_glob)?;
 
         let result = items
             .iter()
@@ -183,13 +168,12 @@ impl Item {
     /// Creates a new instance of an `Item from the provided asset identifier if
     /// it exists
     pub fn new_from_asset(asset: &str) -> Result<Self, Error> {
-        println!("Loading item asset: {}", asset);
-        let inner_item = InnerItem::load(asset)?;
+        let inner_item = ItemDef::load(asset)?;
         Ok(Item::new(inner_item))
     }
 
     /// Duplicates an item, creating an exact copy but with a new item ID
-    pub fn duplicate(&self) -> Self { Item::new(self.inner_item.clone()) }
+    pub fn duplicate(&self) -> Self { Item::new(self.item_def.clone()) }
 
     /// Resets the item's item ID to None, giving it a new identity. Used when
     /// dropping items into the world so that a new database record is
@@ -235,7 +219,8 @@ impl Item {
     }
 
     pub fn set_amount(&mut self, give_amount: u32) -> Result<(), assets::Error> {
-        if self.inner_item.is_stackable() {
+        // TODO: database tries to set_amount = 1 for every item because its saved as amount = 1
+        if self.item_def.is_stackable() {
             self.amount = NonZeroU32::new(give_amount).unwrap(); // TODO: remove unwrap
             Ok(())
         } else {
@@ -243,13 +228,11 @@ impl Item {
         }
     }
 
-    pub fn item_definition_id(&self) -> &str { &self.inner_item.item_definition_id }
+    pub fn item_definition_id(&self) -> &str { &self.item_def.item_definition_id }
 
-    pub fn name(&self) -> &str { &self.inner_item.name }
+    pub fn name(&self) -> &str { &self.item_def.name }
 
-    pub fn description(&self) -> &str { &self.inner_item.description }
-
-    pub fn kind(&self) -> &ItemKind { &self.inner_item.kind }
+    pub fn kind(&self) -> &ItemKind { &self.item_def.kind }
 
     pub fn amount(&self) -> u32 { u32::from(self.amount) }
 

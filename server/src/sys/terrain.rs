@@ -123,7 +123,7 @@ impl<'a> System<'a> for Sys {
                 // non-linearly depend on their level
 
                 let active_item = if let Some(item::ItemKind::Tool(tool)) =
-                    main_tool.as_ref().map(|i| &i.inner_item.kind)
+                    main_tool.as_ref().map(|i| &i.item_def.kind)
                 {
                     let mut abilities = tool.get_abilities();
                     let mut ability_drain = abilities.drain(..);

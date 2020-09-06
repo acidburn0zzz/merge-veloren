@@ -600,7 +600,7 @@ impl<'a> Widget for Skillbar<'a> {
         Image::new(self.imgs.skillbar_slot_big_bg)
             .w_h(38.0 * scale, 38.0 * scale)
             .color(
-                match self.loadout.active_item.as_ref().map(|i| &i.item.inner_item.kind) {
+                match self.loadout.active_item.as_ref().map(|i| &i.item.item_def.kind) {
                     Some(ItemKind::Tool(Tool { kind, .. })) => match kind {
                         ToolKind::Bow(_) => Some(BG_COLOR_2),
                         ToolKind::Staff(_) => Some(BG_COLOR_2),
@@ -612,7 +612,7 @@ impl<'a> Widget for Skillbar<'a> {
             .middle_of(state.ids.m1_slot)
             .set(state.ids.m1_slot_bg, ui);
         Button::image(
-            match self.loadout.active_item.as_ref().map(|i| &i.item.inner_item.kind) {
+            match self.loadout.active_item.as_ref().map(|i| &i.item.item_def.kind) {
                 Some(ItemKind::Tool(Tool { kind, .. })) => match kind {
                     ToolKind::Sword(_) => self.imgs.twohsword_m1,
                     ToolKind::Dagger(_) => self.imgs.onehdagger_m1,
@@ -663,12 +663,12 @@ impl<'a> Widget for Skillbar<'a> {
             },
         }
 
-        let active_tool_kind = match self.loadout.active_item.as_ref().map(|i| &i.item.inner_item.kind) {
+        let active_tool_kind = match self.loadout.active_item.as_ref().map(|i| &i.item.item_def.kind) {
             Some(ItemKind::Tool(Tool { kind, .. })) => Some(kind),
             _ => None,
         };
 
-        let second_tool_kind = match self.loadout.second_item.as_ref().map(|i| &i.item.inner_item.kind) {
+        let second_tool_kind = match self.loadout.second_item.as_ref().map(|i| &i.item.item_def.kind) {
             Some(ItemKind::Tool(Tool { kind, .. })) => Some(kind),
             _ => None,
         };
@@ -790,12 +790,12 @@ impl<'a> Widget for Skillbar<'a> {
                     hotbar::SlotContents::Inventory(i) => content_source
                         .1
                         .get(i)
-                        .map(|item| (item.name(), item.description())),
+                        .map(|item| (item.item_def.name.as_str(), item.item_def.description.as_str())),
                     hotbar::SlotContents::Ability3 => content_source
                         .2
                         .active_item
                         .as_ref()
-                        .map(|i| &i.item.inner_item.kind)
+                        .map(|i| &i.item.item_def.kind)
                         .and_then(|kind| match kind {
                             ItemKind::Tool(Tool { kind, .. }) => match kind {
                                 ToolKind::Staff(_) => Some((

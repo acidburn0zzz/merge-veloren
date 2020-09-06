@@ -103,7 +103,7 @@ impl<'a> SlotKey<HotbarSource<'a>, HotbarImageSource<'a>> for HotbarSlot {
             hotbar::SlotContents::Ability3 => loadout
                 .active_item
                 .as_ref()
-                .map(|i| &i.item.inner_item.kind)
+                .map(|i| &i.item.item_def.kind)
                 .and_then(|kind| {
                     match kind {
                         ItemKind::Tool(Tool { kind, .. }) => match kind {

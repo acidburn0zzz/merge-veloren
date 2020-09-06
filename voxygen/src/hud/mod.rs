@@ -1069,7 +1069,7 @@ impl Hud {
                 let ingame_pos = pos.0 + Vec3::unit_z() * 1.2;
 
                 // Item name
-                overitem::Overitem::new(&item.name(), &distance, &self.fonts)
+                overitem::Overitem::new(&item.item_def.name, &distance, &self.fonts)
                     .x_y(0.0, 100.0)
                     .position_ingame(ingame_pos)
                     .set(overitem_id, ui_widgets);

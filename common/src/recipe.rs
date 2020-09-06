@@ -1,7 +1,6 @@
 use crate::{
     assets::{self, Asset},
     comp::{Inventory, Item},
-    comp::item::InnerItem,
 };
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};

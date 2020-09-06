@@ -147,7 +147,7 @@ pub fn attempt_wield(data: &JoinData, update: &mut StateUpdate) {
         .loadout
         .active_item
         .as_ref()
-        .map(|i| &i.item.inner_item.kind)
+        .map(|i| &i.item.item_def.kind)
     {
         update.character = CharacterState::Equipping(equipping::Data {
             time_left: tool.equip_time(),
@@ -248,7 +248,7 @@ pub fn handle_ability2_input(data: &JoinData, update: &mut StateUpdate) {
             .loadout
             .active_item
             .as_ref()
-            .map(|i| &i.item.inner_item.kind)
+            .map(|i| &i.item.item_def.kind)
         {
             Some(ItemKind::Tool(Tool { kind, .. })) => Some(kind),
             _ => None,
@@ -258,7 +258,7 @@ pub fn handle_ability2_input(data: &JoinData, update: &mut StateUpdate) {
             .loadout
             .second_item
             .as_ref()
-            .map(|i| &i.item.inner_item.kind)
+            .map(|i| &i.item.item_def.kind)
         {
             Some(ItemKind::Tool(Tool { kind, .. })) => Some(kind),
             _ => None,
@@ -338,7 +338,7 @@ pub fn unwrap_tool_data<'a>(data: &'a JoinData) -> Option<&'a Tool> {
         .loadout
         .active_item
         .as_ref()
-        .map(|i| &i.item.inner_item.kind)
+        .map(|i| &i.item.item_def.kind)
     {
         Some(tool)
     } else {

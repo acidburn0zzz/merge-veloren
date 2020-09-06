@@ -137,7 +137,7 @@ impl CombatEventMapper {
         if let Some(active_loadout) = loadout {
             if let Some(item_config) = &active_loadout.active_item
             {
-                match &item_config.item.inner_item.kind {
+                match &item_config.item.item_def.kind {
                     ItemKind::Tool(data) => {
                         if character_state.is_attack() {
                             return SfxEvent::Attack(

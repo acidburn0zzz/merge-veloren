@@ -1,4 +1,4 @@
-InnerItem(
+ItemDef(
     name: "Agile Chest",
     description: "'Tightly packed pieces of leather to endure all weather.'",
     kind: Armor(

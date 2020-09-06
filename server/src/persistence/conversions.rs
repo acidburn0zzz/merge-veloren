@@ -37,7 +37,10 @@ pub fn convert_inventory_to_database_items(
                             Some(item_id) => Some(u64::from(item_id) as EntityId),
                             _ => None,
                         },
-                        stack_size: Some(item.amount() as i32),
+                        stack_size: match item.item_def.is_stackable() {
+                            true => Some(item.amount() as i32),
+                            false => None
+                        }
                     },
                     comp: item,
                     new_item_id: 0,
@@ -132,8 +135,10 @@ pub fn convert_inventory_from_database_items(database_items: &[Item]) -> Result<
 
         // Stack Size
         if let Some(amount) = db_item.stack_size {
-            item.set_amount(amount as u32)
-                .map_err(|_| Error::ConversionError("Error setting amount for item".to_owned()))?;
+            if item.item_def.is_stackable() {
+                item.set_amount(amount as u32)
+                    .map_err(|_| Error::ConversionError("Error setting amount for item".to_owned()))?;
+            }
         }
 
         // Insert item into inventory

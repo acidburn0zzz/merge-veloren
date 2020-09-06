@@ -73,7 +73,7 @@ impl State {
             loadout
                 .active_item
                 .as_ref()
-                .map(|i| &i.item.inner_item.kind)
+                .map(|i| &i.item.item_def.kind)
                 .filter(|kind| {
                     use common::comp::item::{tool::ToolKind, ItemKind};
                     if let ItemKind::Tool(kind) = kind {

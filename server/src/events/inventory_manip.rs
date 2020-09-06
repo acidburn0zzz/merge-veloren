@@ -141,7 +141,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                     let (is_equippable, lantern_opt) =
                         inventory
                             .get(slot)
-                            .map_or((false, None), |i| match &i.inner_item.kind {
+                            .map_or((false, None), |i| match &i.item_def.kind {
                                 ItemKind::Tool(_) | ItemKind::Armor { .. } => (true, None),
                                 ItemKind::Lantern(lantern) => (true, Some(lantern)),
                                 _ => (false, None),
@@ -157,7 +157,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                             None
                         }
                     } else if let Some(item) = inventory.take(slot) {
-                        match &item.inner_item.kind {
+                        match &item.item_def.kind {
                             ItemKind::Consumable { kind, effect, .. } => {
                                 maybe_effect = Some(*effect);
                                 Some(comp::InventoryUpdateEvent::Consumed(kind.clone()))

@@ -21,7 +21,7 @@ fn armor_stats() -> Result<(), Box<dyn Error>> {
     for item in comp::item::Item::new_from_asset_glob("common.items.armor.*")
         .expect("Failed to iterate over item folders!")
     {
-        match &item.inner_item.kind {
+        match &item.item_def.kind {
             comp::item::ItemKind::Armor(armor) => {
                 let protection = match armor.get_protection() {
                     Protection::Invincible => "Invincible".to_string(),
@@ -29,7 +29,7 @@ fn armor_stats() -> Result<(), Box<dyn Error>> {
                 };
                 let kind = get_armor_kind(&armor.kind);
 
-                wtr.write_record(&[item.item_definition_id(), &kind, item.name(), &protection])?;
+                wtr.write_record(&[item.item_definition_id(), &kind, &item.item_def.name, &protection])?;
             },
             _ => println!("Skipping non-armor item: {:?}", item),
         }
@@ -46,7 +46,7 @@ fn weapon_stats() -> Result<(), Box<dyn Error>> {
     for item in comp::item::Item::new_from_asset_glob("common.items.weapons.*")
         .expect("Failed to iterate over item folders!")
     {
-        match &item.inner_item.kind {
+        match &item.item_def.kind {
             comp::item::ItemKind::Tool(tool) => {
                 let power = tool.base_power().to_string();
                 let equip_time = tool.equip_time().subsec_millis().to_string();
@@ -55,7 +55,7 @@ fn weapon_stats() -> Result<(), Box<dyn Error>> {
                 wtr.write_record(&[
                     item.item_definition_id(),
                     &kind,
-                    item.name(),
+                    &item.item_def.name,
                     &power,
                     &equip_time,
                 ])?;
@@ -137,14 +137,14 @@ fn all_items() -> Result<(), Box<dyn Error>> {
     for item in comp::item::Item::new_from_asset_glob("common.items.*")
         .expect("Failed to iterate over item folders!")
     {
-        let kind = match item.inner_item.kind.clone() {
+        let kind = match item.item_def.kind.clone() {
             ItemKind::Armor(armor) => get_armor_kind_kind(&armor.kind),
             ItemKind::Lantern(lantern) => lantern.kind,
             ItemKind::Tool(tool) => get_tool_kind_kind(&tool.kind),
             _ => "".to_owned(),
         };
 
-        wtr.write_record(&[item.item_definition_id(), item.name(), &kind])?;
+        wtr.write_record(&[item.item_definition_id(), &item.item_def.name, &kind])?;
     }
 
     wtr.flush()?;

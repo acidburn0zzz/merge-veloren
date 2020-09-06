@@ -19,9 +19,9 @@ pub fn loadout_slot_text<'a>(
 }
 
 pub fn item_text<'a>(item: &'a Item) -> (&'_ str, Cow<'a, str>) {
-    let desc = match &item.inner_item.kind {
-        ItemKind::Armor(armor) => Cow::Owned(armor_desc(&armor, item.description())),
-        ItemKind::Tool(tool) => Cow::Owned(tool_desc(&tool, item.description())),
+    let desc: Cow<str> = match &item.item_def.kind {
+        ItemKind::Armor(armor) => Cow::Owned(armor_desc(&armor, &item.item_def.description)),
+        ItemKind::Tool(tool) => Cow::Owned(tool_desc(&tool, &item.item_def.description)),
         /*ItemKind::Consumable(kind, effect, ..) => {
             Cow::Owned(consumable_desc(consumable, item.description()))
         },*/
@@ -29,10 +29,10 @@ pub fn item_text<'a>(item: &'a Item) -> (&'_ str, Cow<'a, str>) {
         // ItemKind::Utility => {},
         // ItemKind::Ingredient => {},
         // ItemKind::Lantern => {},
-        _ => Cow::Borrowed(item.description()),
+        _ => Cow::Borrowed(&item.item_def.description),
     };
 
-    (item.name(), desc)
+    (&item.item_def.name, desc)
 }
 // Armor Description
 fn armor_desc(armor: &Armor, desc: &str) -> String {
