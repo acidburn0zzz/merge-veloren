@@ -125,6 +125,7 @@ impl Tool {
                             angle: 45.0,
                             base_buildup_duration: Duration::from_millis(10),
                             base_recover_duration: Duration::from_millis(10),
+                            swing_frac: 0.5,
                         },
                         combo_melee::Stage {
                             stage: 2,
@@ -136,6 +137,7 @@ impl Tool {
                             angle: 45.0,
                             base_buildup_duration: Duration::from_millis(1000),
                             base_recover_duration: Duration::from_millis(400),
+                            swing_frac: 0.6,
                         },
                         combo_melee::Stage {
                             stage: 3,
@@ -147,6 +149,7 @@ impl Tool {
                             angle: 45.0,
                             base_buildup_duration: Duration::from_millis(10),
                             base_recover_duration: Duration::from_millis(10),
+                            swing_frac: 0.5,
                         },
                     ],
                     initial_energy_gain: 0,
@@ -174,6 +177,7 @@ impl Tool {
                             angle: 45.0,
                             base_buildup_duration: Duration::from_millis(150),
                             base_recover_duration: Duration::from_millis(100),
+                            swing_frac: 0.5,
                         },
                         combo_melee::Stage {
                             stage: 2,
@@ -185,6 +189,7 @@ impl Tool {
                             angle: 45.0,
                             base_buildup_duration: Duration::from_millis(150),
                             base_recover_duration: Duration::from_millis(100),
+                            swing_frac: 0.6,
                         },
                         combo_melee::Stage {
                             stage: 3,
@@ -196,6 +201,7 @@ impl Tool {
                             angle: 45.0,
                             base_buildup_duration: Duration::from_millis(150),
                             base_recover_duration: Duration::from_millis(100),
+                            swing_frac: 0.5,
                         },
                     ],
                     initial_energy_gain: 0,
