@@ -124,7 +124,7 @@ impl CharacterBehavior for Data {
                 applied: false,
                 hit_count: 0,
                 knockback: self.initial_knockback
-                    + charge_amount(self.max_knockback - self.initial_knockback) as f32,
+                    + charge_amount * (self.max_knockback - self.initial_knockback) as f32,
             });
             // TODO This is all projectile stuff to be removed.
             //            let mut projectile = Projectile {

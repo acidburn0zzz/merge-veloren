@@ -112,7 +112,8 @@ impl<'a> System<'a> for Sys {
                 | CharacterState::SpinMelee { .. }
                 | CharacterState::ComboMelee { .. }
                 | CharacterState::BasicRanged { .. }
-                | CharacterState::ChargedRanged { .. } => {
+                | CharacterState::ChargedRanged { .. }
+                | CharacterState::ChargedMelee { .. } => {
                     if energy.get_unchecked().regen_rate != 0.0 {
                         energy.get_mut_unchecked().regen_rate = 0.0
                     }
