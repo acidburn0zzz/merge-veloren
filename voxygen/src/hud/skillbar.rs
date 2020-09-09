@@ -801,7 +801,12 @@ impl<'a> Widget for Skillbar<'a> {
                                 ToolKind::Staff(_) => Some((
                                     "Firebomb",
                                     "\nWhirls a big fireball into the air. \nExplodes the ground \
-                                     and does\na big amount of damage",
+                                     and does\na big amount of damage.",
+                                )),
+                                ToolKind::Hammer(_) => Some((
+                                    "Smash of Doom",
+                                    "\nAn AOE attack with knockback. \nLeaps to position of \
+                                     cursor.",
                                 )),
                                 ToolKind::Sword(_) => Some((
                                     "Whirlwind",

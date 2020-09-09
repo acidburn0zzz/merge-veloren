@@ -38,7 +38,7 @@ impl CharacterBehavior for Data {
     fn behavior(&self, data: &JoinData) -> StateUpdate {
         let mut update = StateUpdate::from(data);
 
-        handle_move(data, &mut update, 0.7);
+        handle_move(data, &mut update, 0.3);
         handle_jump(data, &mut update);
 
         if self.prepare_duration != Duration::default() {
@@ -124,7 +124,7 @@ impl CharacterBehavior for Data {
                 applied: false,
                 hit_count: 0,
                 knockback: self.initial_knockback
-                    + charge_amount * (self.max_knockback - self.initial_knockback) as f32,
+                    + charge_amount * (self.max_knockback - self.initial_knockback),
             });
             // TODO This is all projectile stuff to be removed.
             //            let mut projectile = Projectile {
