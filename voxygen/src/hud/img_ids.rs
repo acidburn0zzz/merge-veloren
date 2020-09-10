@@ -142,6 +142,7 @@ image_ids! {
         sword_pierce: "voxygen.element.icons.skill_sword_pierce",
         hammerleap: "voxygen.element.icons.skill_hammerleap",
         axespin: "voxygen.element.icons.skill_axespin",
+        hammergolf: "voxygen.element.icons.skill_hammergolf",
 
         // Skillbar
         level_up: "voxygen.element.misc_bg.level_up",
@@ -267,6 +268,7 @@ image_ids! {
         fire_spell_1: "voxygen.element.icons.fire_spell_0",
         snake_arrow_0: "voxygen.element.icons.snake",
         heal_0: "voxygen.element.icons.heal_0",
+        skill_hammerleap: "voxygen.element.icons.skill_hammerleap",
 
         // Buttons
         button: "voxygen.element.buttons.button",

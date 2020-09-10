@@ -89,6 +89,7 @@ pub enum HotbarImage {
     Item(ItemKey),
     Fireball,
     SnakeArrow,
+    HammerLeap,
 }
 
 type HotbarSource<'a> = (&'a hotbar::State, &'a Inventory, &'a Loadout, &'a Energy);
@@ -118,15 +119,24 @@ impl<'a> SlotKey<HotbarSource<'a>, HotbarImageSource<'a>> for HotbarSlot {
                                 "Boost" => Some(HotbarImage::SnakeArrow),
                                 _ => None,
                             },
+                            ToolKind::Hammer(_) => Some(HotbarImage::HammerLeap),
                             _ => None,
                         },
                         _ => None,
                     }
-                    .map(|image_key| {
-                        (
+                    .map(|image_key| match image_key {
+                        HotbarImage::Fireball => (
                             image_key,
                             (energy.current() < 500).then_some(Color::Rgba(0.3, 0.3, 0.3, 0.8)),
-                        )
+                        ),
+                        HotbarImage::HammerLeap => (
+                            image_key,
+                            (energy.current() < 700).then_some(Color::Rgba(0.3, 0.3, 0.3, 0.8)),
+                        ),
+                        _ => (
+                            image_key,
+                            (energy.current() < 700).then_some(Color::Rgba(1.0, 1.0, 1.0, 1.0)),
+                        ),
                     })
                 }),
         })
@@ -154,6 +164,7 @@ impl<'a> SlotKey<HotbarSource<'a>, HotbarImageSource<'a>> for HotbarSlot {
             HotbarImage::Item(key) => item_imgs.img_id_or_not_found_img(key.clone()),
             HotbarImage::SnakeArrow => imgs.snake_arrow_0,
             HotbarImage::Fireball => imgs.fire_spell_1,
+            HotbarImage::HammerLeap => imgs.skill_hammerleap,
         }
     }
 }

@@ -8,6 +8,8 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
+use inline_tweak::*;
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ToolKind {
     Sword(String),
@@ -227,23 +229,23 @@ impl Tool {
                 },
                 ChargedMelee {
                     energy_cost: 0,
-                    energy_drain: 300,
-                    initial_damage: (20.0 * self.base_power()) as u32,
-                    max_damage: (100.0 * self.base_power()) as u32,
-                    initial_knockback: 10.0,
-                    max_knockback: 50.0,
-                    prepare_duration: Duration::from_millis(600),
-                    charge_duration: Duration::from_millis(1500),
-                    recover_duration: Duration::from_millis(500),
-                    range: 3.5,
-                    max_angle: 20.0,
+                    energy_drain: tweak!(300),
+                    initial_damage: (tweak!(20.0) * self.base_power()) as u32,
+                    max_damage: (tweak!(100.0) * self.base_power()) as u32,
+                    initial_knockback: tweak!(10.0),
+                    max_knockback: tweak!(60.0),
+                    prepare_duration: Duration::from_millis(tweak!(600)),
+                    charge_duration: Duration::from_millis(tweak!(1500)),
+                    recover_duration: Duration::from_millis(tweak!(500)),
+                    range: tweak!(3.5),
+                    max_angle: tweak!(20.0),
                 },
                 LeapMelee {
-                    energy_cost: 800,
+                    energy_cost: tweak!(700),
                     movement_duration: Duration::from_millis(500),
                     buildup_duration: Duration::from_millis(1000),
                     recover_duration: Duration::from_millis(100),
-                    base_damage: (240.0 * self.base_power()) as u32,
+                    base_damage: (tweak!(240.0) * self.base_power()) as u32,
                 },
             ],
             Farming(_) => vec![BasicMelee {

@@ -695,7 +695,8 @@ impl<'a> Widget for Skillbar<'a> {
             Some(ToolKind::Sword(_)) => self.imgs.twohsword_m2,
             Some(ToolKind::Dagger(_)) => self.imgs.onehdagger_m2,
             Some(ToolKind::Shield(_)) => self.imgs.onehshield_m2,
-            Some(ToolKind::Hammer(_)) => self.imgs.hammerleap,
+            //Some(ToolKind::Hammer(_)) => self.imgs.hammerleap,
+            Some(ToolKind::Hammer(_)) => self.imgs.hammergolf,
             Some(ToolKind::Axe(_)) => self.imgs.axespin,
             Some(ToolKind::Bow(_)) => self.imgs.bow_m2,
             Some(ToolKind::Staff(kind)) => match kind.as_ref() {
@@ -735,6 +736,13 @@ impl<'a> Widget for Skillbar<'a> {
                     }
                 },
                 _ => Color::Rgba(1.0, 1.0, 1.0, 1.0),
+            },
+            Some(ToolKind::Axe(_)) => {
+                if self.energy.current() as f64 >= 100.0 {
+                    Color::Rgba(1.0, 1.0, 1.0, 1.0)
+                } else {
+                    Color::Rgba(0.3, 0.3, 0.3, 0.8)
+                }
             },
             _ => Color::Rgba(1.0, 1.0, 1.0, 1.0),
         })
