@@ -191,7 +191,7 @@ impl<'a> System<'a> for Sys {
                 if ignore_group.is_some() && ignore_group == group {
                     continue;
                 }
-                
+
                 if entity_other == entity {
                     continue;
                 }
