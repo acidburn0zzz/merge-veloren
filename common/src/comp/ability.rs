@@ -20,7 +20,7 @@ pub enum CharacterAbilityType {
     ChargedRanged,
     DashMelee,
     BasicBlock,
-    ComboMelee,
+    ComboMelee(u32),
     LeapMelee,
     SpinMelee,
 }
@@ -34,7 +34,7 @@ impl From<&CharacterState> for CharacterAbilityType {
             CharacterState::DashMelee(_) => Self::DashMelee,
             CharacterState::BasicBlock => Self::BasicBlock,
             CharacterState::LeapMelee(_) => Self::LeapMelee,
-            CharacterState::ComboMelee(_) => Self::ComboMelee,
+            CharacterState::ComboMelee(data) => Self::ComboMelee(data.stage),
             CharacterState::SpinMelee(_) => Self::SpinMelee,
             CharacterState::ChargedRanged(_) => Self::ChargedRanged,
             _ => Self::BasicMelee,
@@ -81,6 +81,7 @@ pub enum CharacterAbility {
         swing_duration: Duration,
         recover_duration: Duration,
         infinite_charge: bool,
+        is_interruptible: bool,
     },
     BasicBlock,
     Roll,
@@ -91,6 +92,7 @@ pub enum CharacterAbility {
         energy_increase: u32,
         speed_increase: f32,
         max_speed_increase: f32,
+        is_interruptible: bool,
     },
     LeapMelee {
         energy_cost: u32,
@@ -287,6 +289,7 @@ impl From<&CharacterAbility> for CharacterState {
                 swing_duration,
                 recover_duration,
                 infinite_charge,
+                is_interruptible,
             } => CharacterState::DashMelee(dash_melee::Data {
                 static_data: dash_melee::StaticData {
                     base_damage: *base_damage,
@@ -302,6 +305,7 @@ impl From<&CharacterAbility> for CharacterState {
                     charge_duration: *charge_duration,
                     swing_duration: *swing_duration,
                     recover_duration: *recover_duration,
+                    is_interruptible: *is_interruptible,
                 },
                 end_charge: false,
                 timer: Duration::default(),
@@ -320,6 +324,7 @@ impl From<&CharacterAbility> for CharacterState {
                 energy_increase,
                 speed_increase,
                 max_speed_increase,
+                is_interruptible,
             } => CharacterState::ComboMelee(combo_melee::Data {
                 stage: 1,
                 num_stages: stage_data.len() as u32,
@@ -333,6 +338,7 @@ impl From<&CharacterAbility> for CharacterState {
                 next_stage: false,
                 speed_increase: 1.0 - *speed_increase,
                 max_speed_increase: *max_speed_increase - 1.0,
+                is_interruptible: *is_interruptible,
             }),
             CharacterAbility::LeapMelee {
                 energy_cost: _,
