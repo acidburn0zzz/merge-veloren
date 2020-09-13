@@ -269,6 +269,7 @@ image_ids! {
         snake_arrow_0: "voxygen.element.icons.snake",
         heal_0: "voxygen.element.icons.heal_0",
         skill_hammerleap: "voxygen.element.icons.skill_hammerleap",
+        skill_axe_leap_slash: "voxygen.element.icons.skill_axe_leap_slash",
 
         // Buttons
         button: "voxygen.element.buttons.button",

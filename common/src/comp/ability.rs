@@ -102,6 +102,10 @@ pub enum CharacterAbility {
         buildup_duration: Duration,
         recover_duration: Duration,
         base_damage: u32,
+        range: f32,
+        max_angle: f32,
+        leap_speed: f32,
+        leap_vert_speed: f32,
     },
     SpinMelee {
         buildup_duration: Duration,
@@ -372,6 +376,10 @@ impl From<&CharacterAbility> for CharacterState {
                 buildup_duration,
                 recover_duration,
                 base_damage,
+                range,
+                max_angle,
+                leap_speed,
+                leap_vert_speed,
             } => CharacterState::LeapMelee(leap_melee::Data {
                 initialize: true,
                 exhausted: false,
@@ -379,6 +387,10 @@ impl From<&CharacterAbility> for CharacterState {
                 buildup_duration: *buildup_duration,
                 recover_duration: *recover_duration,
                 base_damage: *base_damage,
+                range: *range,
+                max_angle: *max_angle,
+                leap_speed: *leap_speed,
+                leap_vert_speed: *leap_vert_speed,
             }),
             CharacterAbility::SpinMelee {
                 buildup_duration,

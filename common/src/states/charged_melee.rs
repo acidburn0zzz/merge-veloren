@@ -106,8 +106,6 @@ impl CharacterBehavior for Data {
             });
 
             // Consumes energy if there's enough left and RMB is held down
-            // TODO This division by 5.0 scales the energy drain
-            // and should probably by changed
             update.energy.change_by(
                 -(self.energy_drain as f32 * data.dt.0 / 5.0) as i32,
                 EnergySource::Ability,
@@ -126,35 +124,6 @@ impl CharacterBehavior for Data {
                 knockback: self.initial_knockback
                     + charge_amount * (self.max_knockback - self.initial_knockback),
             });
-            // TODO This is all projectile stuff to be removed.
-            //            let mut projectile = Projectile {
-            //                hit_solid: vec![projectile::Effect::Stick],
-            //                hit_entity: vec![
-            //                    projectile::Effect::Damage(
-            //                        -(self.initial_damage as i32
-            //                            + (charge_amount * (self.max_damage -
-            // self.initial_damage) as f32)                                as
-            // i32),                    ),
-            //                    projectile::Effect::Knockback(
-            //                        self.initial_knockback
-            //                            + charge_amount * (self.max_knockback -
-            // self.initial_knockback),                    ),
-            //                    projectile::Effect::Vanish,
-            //                ],
-            //                time_left: Duration::from_secs(15),
-            //                owner: None,
-            //            };
-            //            projectile.owner = Some(*data.uid);
-            //            update.server_events.push_front(ServerEvent::Shoot {
-            //                entity: data.entity,
-            //                dir: data.inputs.look_dir,
-            //                body: self.projectile_body,
-            //                projectile,
-            //                light: self.projectile_light,
-            //                gravity: Some(Gravity(
-            //                    MAX_GRAVITY - charge_amount * (MAX_GRAVITY - MIN_GRAVITY),
-            //                )),
-            //            });
 
             update.character = CharacterState::ChargedMelee(Data {
                 exhausted: true,

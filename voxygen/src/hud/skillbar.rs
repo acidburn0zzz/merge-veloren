@@ -695,7 +695,6 @@ impl<'a> Widget for Skillbar<'a> {
             Some(ToolKind::Sword(_)) => self.imgs.twohsword_m2,
             Some(ToolKind::Dagger(_)) => self.imgs.onehdagger_m2,
             Some(ToolKind::Shield(_)) => self.imgs.onehshield_m2,
-            //Some(ToolKind::Hammer(_)) => self.imgs.hammerleap,
             Some(ToolKind::Hammer(_)) => self.imgs.hammergolf,
             Some(ToolKind::Axe(_)) => self.imgs.axespin,
             Some(ToolKind::Bow(_)) => self.imgs.bow_m2,
@@ -820,6 +819,9 @@ impl<'a> Widget for Skillbar<'a> {
                                     "Whirlwind",
                                     "\nMove forward while spinning with \n your sword.",
                                 )),
+                                ToolKind::Axe(_) => {
+                                    Some(("Spin Leap", "\nA slashing running leap with \n a spin."))
+                                },
                                 ToolKind::Debug(kind) => match kind.as_ref() {
                                     "Boost" => Some((
                                         "Possessing Arrow",

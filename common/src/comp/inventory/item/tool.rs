@@ -217,6 +217,17 @@ impl Tool {
                     forward_speed: 0.0,
                     num_spins: 1,
                 },
+                LeapMelee {
+                    energy_cost: tweak!(100),
+                    movement_duration: Duration::from_millis(tweak!(200)),
+                    buildup_duration: Duration::from_millis(tweak!(500)),
+                    recover_duration: Duration::from_millis(tweak!(100)),
+                    base_damage: (tweak!(130.0) * self.base_power()) as u32,
+                    range: tweak!(2.0),
+                    max_angle: tweak!(40.0),
+                    leap_speed: tweak!(16.0),
+                    leap_vert_speed: tweak!(16.0),
+                },
             ],
             Hammer(_) => vec![
                 BasicMelee {
@@ -246,6 +257,10 @@ impl Tool {
                     buildup_duration: Duration::from_millis(1000),
                     recover_duration: Duration::from_millis(100),
                     base_damage: (tweak!(240.0) * self.base_power()) as u32,
+                    range: tweak!(4.5),
+                    max_angle: tweak!(360.0),
+                    leap_speed: tweak!(24.0),
+                    leap_vert_speed: tweak!(8.0),
                 },
             ],
             Farming(_) => vec![BasicMelee {

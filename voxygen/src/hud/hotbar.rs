@@ -84,6 +84,8 @@ impl State {
                         } else if let ToolKind::Sword(_) = &kind.kind {
                         } else if let ToolKind::Hammer(_) = &kind.kind {
                             true
+                        } else if let ToolKind::Axe(_) = &kind.kind {
+                            true
                         } else {
                             false
                         }
