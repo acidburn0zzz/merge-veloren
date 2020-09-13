@@ -1955,11 +1955,8 @@ fn create_pipelines(
         create_shader_module(
             device,
             &mut compiler,
-            &assets::load_watched::<String>(
-                "voxygen.shaders.sprite-vert",
-                shader_reload_indicator,
-            )
-            .unwrap(),
+            &assets::load_watched::<String>("voxygen.shaders.sprite-vert", shader_reload_indicator)
+                .unwrap(),
             ShaderKind::Vertex,
             "sprite-vert.glsl",
             &options,
@@ -1967,11 +1964,8 @@ fn create_pipelines(
         create_shader_module(
             device,
             &mut compiler,
-            &assets::load_watched::<String>(
-                "voxygen.shaders.sprite-frag",
-                shader_reload_indicator,
-            )
-            .unwrap(),
+            &assets::load_watched::<String>("voxygen.shaders.sprite-frag", shader_reload_indicator)
+                .unwrap(),
             ShaderKind::Fragment,
             "sprite-frag.glsl",
             &options,
@@ -2019,11 +2013,8 @@ fn create_pipelines(
         create_shader_module(
             device,
             &mut compiler,
-            &assets::load_watched::<String>(
-                "voxygen.shaders.ui-vert",
-                shader_reload_indicator,
-            )
-            .unwrap(),
+            &assets::load_watched::<String>("voxygen.shaders.ui-vert", shader_reload_indicator)
+                .unwrap(),
             ShaderKind::Vertex,
             "ui-vert.glsl",
             &options,
@@ -2031,11 +2022,8 @@ fn create_pipelines(
         create_shader_module(
             device,
             &mut compiler,
-            &assets::load_watched::<String>(
-                "voxygen.shaders.ui-frag",
-                shader_reload_indicator,
-            )
-            .unwrap(),
+            &assets::load_watched::<String>("voxygen.shaders.ui-frag", shader_reload_indicator)
+                .unwrap(),
             ShaderKind::Fragment,
             "ui-frag.glsl",
             &options,
