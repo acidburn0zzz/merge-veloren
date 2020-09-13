@@ -20,7 +20,7 @@ pub enum CharacterAbilityType {
     ChargedRanged,
     DashMelee,
     BasicBlock,
-    ComboMelee(u32),
+    ComboMelee(StageSection, u32),
     LeapMelee,
     SpinMelee,
 }
@@ -34,7 +34,7 @@ impl From<&CharacterState> for CharacterAbilityType {
             CharacterState::DashMelee(_) => Self::DashMelee,
             CharacterState::BasicBlock => Self::BasicBlock,
             CharacterState::LeapMelee(_) => Self::LeapMelee,
-            CharacterState::ComboMelee(data) => Self::ComboMelee(data.stage),
+            CharacterState::ComboMelee(data) => Self::ComboMelee(data.stage_section, data.stage),
             CharacterState::SpinMelee(_) => Self::SpinMelee,
             CharacterState::ChargedRanged(_) => Self::ChargedRanged,
             _ => Self::BasicMelee,

@@ -154,10 +154,11 @@ impl<'a> System<'a> for Sys {
                     }
 
                     if attack.knockback != 0.0 {
+                        let kb_dir = Dir::new((pos_b.0 - pos.0).try_normalized().unwrap_or(*ori.0));
                         local_emitter.emit(LocalEvent::ApplyForce {
                             entity: b,
                             force: attack.knockback
-                                * *Dir::slerp(ori.0, Dir::new(Vec3::new(0.0, 0.0, 1.0)), 0.5),
+                                * *Dir::slerp(kb_dir, Dir::new(Vec3::new(0.0, 0.0, 1.0)), 0.5),
                         });
                     }
                     attack.hit_count += 1;
