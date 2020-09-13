@@ -22,8 +22,8 @@ client = { package = "veloren-client", path = "../client" }
 anim = { package = "veloren-voxygen-anim", path = "src/anim", default-features = false }
 
 # Graphics
-wgpu = {git="https://github.com/gfx-rs/wgpu-rs.git"}
-zerocopy = "0.3"
+wgpu = { git="https://github.com/gfx-rs/wgpu-rs.git" }
+bytemuck = { version="1.4", features=["derive"] }
 shaderc = "0.6.2"
 winit = { version = "0.22.2", features = ["serde"] }
 conrod_core = { git = "https://gitlab.com/veloren/conrod.git" }

@@ -21,16 +21,17 @@ pub use self::{
             BoneData as FigureBoneData, BoneMeshes, FigureLayout, FigureModel,
             Locals as FigureLocals,
         },
-        lod_terrain::LodData,
-        particle::Instance as ParticleInstance,
-        postprocess::create_mesh as create_pp_mesh,
+        fluid::Vertex as FluidVertex,
+        lod_terrain::{LodData, Vertex as LodTerrainVertex},
+        particle::{Instance as ParticleInstance, Vertex as ParticleVertex},
+        postprocess::{create_mesh as create_pp_mesh, Vertex as PostProcessVertex},
         shadow::Locals as ShadowLocals,
-        skybox::create_mesh as create_skybox_mesh,
-        sprite::{Instance as SpriteInstance, Locals as SpriteLocals},
+        skybox::{create_mesh as create_skybox_mesh, Vertex as SkyboxVertex},
+        sprite::{Instance as SpriteInstance, Locals as SpriteLocals, Vertex as SpriteVertex},
         terrain::{Locals as TerrainLocals, TerrainLayout, Vertex as TerrainVertex},
         ui::{
             create_quad as create_ui_quad, create_tri as create_ui_tri, Locals as UiLocals,
-            Mode as UiMode,
+            Mode as UiMode, Vertex as UIVertex,
         },
         GlobalModel, Globals, GlobalsLayouts, Light, Shadow,
     },
@@ -39,7 +40,7 @@ pub use self::{
 };
 pub use wgpu::{AddressMode, FilterMode};
 
-trait Vertex = Clone + zerocopy::AsBytes;
+pub trait Vertex = Clone + bytemuck::Pod;
 
 use serde_derive::{Deserialize, Serialize};
 /// Anti-aliasing modes

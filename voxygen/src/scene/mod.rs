@@ -17,8 +17,7 @@ use crate::{
     audio::{music::MusicMgr, sfx::SfxMgr, AudioFrontend},
     render::{
         create_pp_mesh, create_skybox_mesh, Consts, GlobalModel, Globals, Light, LodData, Model,
-        PostProcessLocals, PostProcessPipeline, Renderer, Shadow, ShadowLocals, SkyboxLocals,
-        SkyboxPipeline,
+        PostProcessVertex, Renderer, Shadow, ShadowLocals, SkyboxVertex,
     },
     settings::Settings,
     window::{AnalogGameInput, Event},
@@ -66,13 +65,11 @@ struct EventLight {
 }
 
 struct Skybox {
-    model: Model<SkyboxPipeline>,
-    locals: Consts<SkyboxLocals>,
+    model: Model<SkyboxVertex>,
 }
 
 struct PostProcess {
-    model: Model<PostProcessPipeline>,
-    locals: Consts<PostProcessLocals>,
+    model: Model<PostProcessVertex>,
 }
 
 pub struct Scene {
@@ -279,13 +276,9 @@ impl Scene {
 
             skybox: Skybox {
                 model: renderer.create_model(&create_skybox_mesh()).unwrap(),
-                locals: renderer.create_consts(&[SkyboxLocals::default()]).unwrap(),
             },
             postprocess: PostProcess {
                 model: renderer.create_model(&create_pp_mesh()).unwrap(),
-                locals: renderer
-                    .create_consts(&[PostProcessLocals::default()])
-                    .unwrap(),
             },
             terrain: Terrain::new(renderer),
             lod: Lod::new(renderer, client, settings),

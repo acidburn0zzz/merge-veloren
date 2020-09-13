@@ -1,9 +1,9 @@
 use crate::{
     mesh::{greedy::GreedyMesh, Meshable},
     render::{
-        create_pp_mesh, create_skybox_mesh, BoneMeshes, Consts, FigureModel, FigurePipeline,
-        GlobalModel, Globals, Light, Mesh, Model, PostProcessLocals, PostProcessPipeline, Renderer,
-        Shadow, ShadowLocals, SkyboxLocals, SkyboxPipeline, TerrainPipeline,
+        create_pp_mesh, create_skybox_mesh, BoneMeshes, Consts, FigureModel, GlobalModel, Globals,
+        Light, Mesh, Model, PostProcessVertex, Renderer, Shadow, ShadowLocals, SkyboxVertex,
+        TerrainVertex,
     },
     scene::{
         camera::{self, Camera, CameraMode},
@@ -47,12 +47,12 @@ impl ReadVol for VoidVol {
 
 fn generate_mesh<'a>(
     greedy: &mut GreedyMesh<'a>,
-    mesh: &mut Mesh<TerrainPipeline>,
+    mesh: &mut Mesh<TerrainVertex>,
     segment: Segment,
     offset: Vec3<f32>,
 ) -> BoneMeshes {
     let (opaque, _, /* shadow */ _, bounds) =
-        Meshable::<FigurePipeline, &mut GreedyMesh>::generate_mesh(
+        Meshable::<TerrainVertex, &mut GreedyMesh>::generate_mesh(
             segment,
             (greedy, mesh, offset, Vec3::one()),
         );
@@ -60,13 +60,11 @@ fn generate_mesh<'a>(
 }
 
 struct Skybox {
-    model: Model<SkyboxPipeline>,
-    locals: Consts<SkyboxLocals>,
+    model: Model<SkyboxVertex>,
 }
 
 struct PostProcess {
-    model: Model<PostProcessPipeline>,
-    locals: Consts<PostProcessLocals>,
+    model: Model<PostProcessVertex>,
 }
 
 pub struct Scene {
@@ -127,13 +125,9 @@ impl Scene {
 
             skybox: Skybox {
                 model: renderer.create_model(&create_skybox_mesh()).unwrap(),
-                locals: renderer.create_consts(&[SkyboxLocals::default()]).unwrap(),
             },
             postprocess: PostProcess {
                 model: renderer.create_model(&create_pp_mesh()).unwrap(),
-                locals: renderer
-                    .create_consts(&[PostProcessLocals::default()])
-                    .unwrap(),
             },
             lod: LodData::new(
                 renderer,

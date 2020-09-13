@@ -6,7 +6,7 @@ pub struct Event(pub Input);
 impl Event {
     pub fn try_from(
         event: &winit::event::Event<()>,
-        window: &glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>,
+        window: &winit::window::Window,
     ) -> Option<Self> {
         use conrod_winit::*;
         // A wrapper around the winit window that allows us to implement the trait

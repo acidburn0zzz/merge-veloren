@@ -3,7 +3,7 @@ use crate::{
     mesh::{greedy::GreedyMesh, Meshable},
     render::{
         pipelines::particle::ParticleMode, GlobalModel, Instances, LodData, Model,
-        ParticleInstance, ParticlePipeline, Renderer,
+        ParticleInstance, ParticleVertex, Renderer,
     },
 };
 use common::{
@@ -30,7 +30,7 @@ pub struct ParticleMgr {
     instances: Instances<ParticleInstance>,
 
     /// GPU Vertex Buffers
-    model_cache: HashMap<&'static str, Model<ParticlePipeline>>,
+    model_cache: HashMap<&'static str, Model<ParticleVertex>>,
 }
 
 impl ParticleMgr {
@@ -292,7 +292,7 @@ fn default_instances(renderer: &mut Renderer) -> Instances<ParticleInstance> {
 
 const DEFAULT_MODEL_KEY: &str = "voxygen.voxel.particle";
 
-fn default_cache(renderer: &mut Renderer) -> HashMap<&'static str, Model<ParticlePipeline>> {
+fn default_cache(renderer: &mut Renderer) -> HashMap<&'static str, Model<ParticleVertex>> {
     let mut model_cache = HashMap::new();
 
     model_cache.entry(DEFAULT_MODEL_KEY).or_insert_with(|| {
@@ -305,7 +305,7 @@ fn default_cache(renderer: &mut Renderer) -> HashMap<&'static str, Model<Particl
             guillotiere::Size::new(i32::from(max_texture_size), i32::from(max_texture_size));
         let mut greedy = GreedyMesh::new(max_size);
 
-        let mesh = Meshable::<ParticlePipeline, &mut GreedyMesh>::generate_mesh(
+        let mesh = Meshable::<ParticleVertex, &mut GreedyMesh>::generate_mesh(
             Segment::from(vox.as_ref()),
             &mut greedy,
         )

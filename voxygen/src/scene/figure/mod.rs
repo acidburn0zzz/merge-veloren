@@ -8,8 +8,8 @@ use crate::{
     ecs::comp::Interpolated,
     mesh::greedy::GreedyMesh,
     render::{
-        ColLightFmt, Consts, FigureBoneData, FigureLocals, FigureModel, GlobalModel, Mesh,
-        RenderError, Renderer, ShadowPipeline, TerrainPipeline, Texture,
+        pipelines, Consts, FigureBoneData, FigureLocals, FigureModel, GlobalModel, Mesh,
+        RenderError, Renderer, TerrainVertex, Texture,
     },
     scene::{
         camera::{Camera, CameraMode, Dependents},
@@ -57,7 +57,7 @@ pub type FigureModelRef<'a> = (
     &'a Consts<FigureLocals>,
     &'a Consts<FigureBoneData>,
     &'a FigureModel,
-    &'a Texture<ColLightFmt>,
+    &'a Texture, /* <ColLightFmt> */
 );
 
 /// An entry holding enough information to draw or destroy a figure in a
@@ -73,7 +73,7 @@ pub struct FigureModelEntry<const N: usize> {
     /// Texture used to store color/light information for this figure entry.
     /* TODO: Consider using mipmaps instead of storing multiple texture atlases for different
      * LOD levels. */
-    col_lights: Texture<ColLightFmt>,
+    col_lights: Texture, /* <ColLightFmt> */
     /// Models stored in this figure entry; there may be several for one figure,
     /// because of LOD models.
     pub models: [FigureModel; N],
@@ -2613,10 +2613,8 @@ impl FigureColLights {
     }
 
     /// Find the correct texture for this model entry.
-    pub fn texture<'a, const N: usize>(
-        &'a self,
-        model: &'a FigureModelEntry<N>,
-    ) -> &'a Texture<ColLightFmt> {
+    pub fn texture<'a, const N: usize>(&'a self, model: &'a FigureModelEntry<N>) -> &'a Texture /* <ColLightFmt> */
+    {
         /* &self.col_lights */
         &model.col_lights
     }
@@ -2631,7 +2629,7 @@ impl FigureColLights {
         &mut self,
         renderer: &mut Renderer,
         greedy: GreedyMesh<'a>,
-        (opaque, bounds): (Mesh<TerrainPipeline>, math::Aabb<f32>),
+        (opaque, bounds): (Mesh<TerrainVertex>, math::Aabb<f32>),
         vertex_range: [Range<u32>; N],
     ) -> Result<FigureModelEntry<N>, RenderError> {
         let (tex, tex_size) = greedy.finalize();
@@ -2642,7 +2640,7 @@ impl FigureColLights {
                 i32::from(tex_size.y),
             ))
             .expect("Not yet implemented: allocate new atlas on allocation failure.");
-        let col_lights = ShadowPipeline::create_col_lights(renderer, (tex, tex_size))?;
+        let col_lights = pipelines::shadow::create_col_lights(renderer, (tex, tex_size))?;
         let model_len = u32::try_from(opaque.vertices().len())
             .expect("The model size for this figure does not fit in a u32!");
         let model = renderer.create_model(&opaque)?;
@@ -2834,5 +2832,5 @@ impl<S: Skeleton> FigureState<S> {
 fn figure_bone_data_from_anim(
     mats: &[anim::FigureBoneData; anim::MAX_BONE_COUNT],
 ) -> &[FigureBoneData] {
-    gfx::memory::cast_slice(mats)
+    bytemuck::cast_slice(mats)
 }
