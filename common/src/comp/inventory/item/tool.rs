@@ -220,10 +220,10 @@ impl Tool {
                 LeapMelee {
                     energy_cost: tweak!(100),
                     movement_duration: Duration::from_millis(tweak!(200)),
-                    buildup_duration: Duration::from_millis(tweak!(500)),
-                    recover_duration: Duration::from_millis(tweak!(100)),
+                    buildup_duration: Duration::from_millis(tweak!(1400)),
+                    recover_duration: Duration::from_millis(tweak!(600)),
                     base_damage: (tweak!(130.0) * self.base_power()) as u32,
-                    range: tweak!(2.0),
+                    range: tweak!(2.5),
                     max_angle: tweak!(40.0),
                     leap_speed: tweak!(16.0),
                     leap_vert_speed: tweak!(16.0),
