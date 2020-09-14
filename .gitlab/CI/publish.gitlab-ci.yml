@@ -38,3 +38,15 @@ pages-broken-fix-me-in-future:
   allow_failure: true
   script:
     - cargo doc --no-deps --document-private-items
+
+snap:
+  extends: .publish
+  image: "cibuilds/snapcraft:core20"
+  script:
+    - snapcraft
+    - snapcraft login --with $SNAPCRAFT_LOGIN_DATA
+    - snapcraft push --release=edge veloren*.snap
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always
+    - when: never

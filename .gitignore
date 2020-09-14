@@ -49,3 +49,6 @@ todo.txt
 
 # Nix
 nix/result
+
+# Snap
+*.snap
