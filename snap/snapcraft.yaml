@@ -120,9 +120,6 @@ parts:
       snapcraftctl set-grade "devel"
     override-build: |
       snapcraftctl build
-      export PATH=:/root/.cargo/bin:$PATH
-      rustup toolchain install nightly
-      rustup override set nightly
       # Cannot install virtual manifest packages directly due to https://github.com/rust-lang/cargo/issues/4101
       cargo +nightly build --release --bin veloren-voxygen --bin veloren-server-cli
       mkdir -p $SNAPCRAFT_PART_INSTALL/bin
