@@ -44,7 +44,8 @@ snap:
   image: "cibuilds/snapcraft:core20"
   script:
     - snapcraft
-    - snapcraft login --with $SNAPCRAFT_LOGIN_DATA
+    - echo $SNAPCRAFT_LOGIN_DATA | base64 --decode --ignore-garbage > snapcraft.login
+    - snapcraft login --with snapcraft.login
     - snapcraft push --release=edge veloren*.snap
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
