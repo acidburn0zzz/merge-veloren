@@ -42,6 +42,7 @@ impl Animation for LeapAnimation {
 
         let spin = (anim_time as f32 * 2.8 * lab as f32).sin();
         let spinhalf = (anim_time as f32 * 1.4 * lab as f32).sin();
+
         // end spin stuff
 
         if let Some(ToolKind::Hammer(_)) = active_tool_kind {
@@ -129,16 +130,15 @@ impl Animation for LeapAnimation {
             next.r_hand.position = Vec3::new(0.75, -1.5, -5.5);
             next.r_hand.orientation = Quaternion::rotation_x(1.27);
             next.r_hand.scale = Vec3::one() * 1.05;
-            //next.main.position = Vec3::new(0.0, 6.0, -1.0);
-            next.main.position = Vec3::new(0.0, 6.0, -1.0);
-            //next.main.orientation = Quaternion::rotation_x(-0.3)
-            next.main.orientation = Quaternion::rotation_x(2.3)
-                * Quaternion::rotation_y(-0.5)
-                * Quaternion::rotation_z(0.0);
+            //next.main.position = Vec3::new(0.0, 0.0, 10.0);
+            next.main.position = Vec3::new(0.0, 0.0, -5.0);
+            next.main.orientation = Quaternion::rotation_x(1.6)
+                * Quaternion::rotation_y(0.0)
+                * Quaternion::rotation_z(-0.4);
             next.main.scale = Vec3::one();
 
             next.control.position = Vec3::new(-4.5 + spinhalf * 4.0, 11.0, 8.0);
-            next.control.orientation = Quaternion::rotation_x(-1.7)
+            next.control.orientation = Quaternion::rotation_x(0.6 + spinhalf * -3.3)
                 * Quaternion::rotation_y(0.2 + spin * -2.0)
                 * Quaternion::rotation_z(1.4 + spin * 0.1);
             next.control.scale = Vec3::one();
@@ -166,7 +166,7 @@ impl Animation for LeapAnimation {
             next.torso.position = Vec3::new(0.0, 0.0, 0.1) * skeleton_attr.scaler;
             next.torso.orientation = Quaternion::rotation_z((spin * 7.0).max(0.3))
                 * Quaternion::rotation_x(0.0)
-                * Quaternion::rotation_y(0.0);
+                * Quaternion::rotation_y(0.3);
             next.torso.scale = Vec3::one() / 11.0 * skeleton_attr.scaler;
 
             // Stuff after the branch in the spin animation file
