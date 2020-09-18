@@ -51,11 +51,10 @@ const UI_MAIN: iced::Color = iced::Color::from_rgba(0.61, 0.70, 0.70, 1.0); // G
 
 image_ids_ice! {
     struct Imgs {
-        <VoxelGraphic>
+        <ImageGraphic>
         slider_range: "voxygen.element.slider.track",
         slider_indicator: "voxygen.element.slider.indicator",
 
-        <ImageGraphic>
         gray_corner: "voxygen.element.frames.gray.corner",
         gray_edge: "voxygen.element.frames.gray.edge",
 
@@ -78,8 +77,6 @@ image_ids_ice! {
         staff: "voxygen.element.icons.staff",
 
         // Species Icons
-        male: "voxygen.element.icons.male",
-        female: "voxygen.element.icons.female",
         human_m: "voxygen.element.icons.human_m",
         human_f: "voxygen.element.icons.human_f",
         orc_m: "voxygen.element.icons.orc_m",
@@ -607,20 +604,29 @@ impl Controls {
                     .style(style::container::Style::image(img))
                 };
 
-                let [ref mut male_button, ref mut female_button] = body_type_buttons;
+                let (body_m_ico, body_f_ico) = match body.species {
+                    humanoid::Species::Human => (imgs.human_m, imgs.human_f),
+                    humanoid::Species::Orc => (imgs.orc_m, imgs.orc_f),
+                    humanoid::Species::Dwarf => (imgs.dwarf_m, imgs.dwarf_f),
+                    humanoid::Species::Elf => (imgs.elf_m, imgs.elf_f),
+                    humanoid::Species::Undead => (imgs.undead_m, imgs.undead_f),
+                    humanoid::Species::Danari => (imgs.danari_m, imgs.danari_f),
+                };
+
+                let [ref mut body_m_button, ref mut body_f_button] = body_type_buttons;
                 let body_type = Row::with_children(vec![
                     icon_button(
-                        male_button,
+                        body_m_button,
                         matches!(body.body_type, humanoid::BodyType::Male),
                         Message::BodyType(humanoid::BodyType::Male),
-                        imgs.male,
+                        body_m_ico,
                     )
                     .into(),
                     icon_button(
-                        female_button,
+                        body_f_button,
                         matches!(body.body_type, humanoid::BodyType::Female),
                         Message::BodyType(humanoid::BodyType::Female),
-                        imgs.female,
+                        body_f_ico,
                     )
                     .into(),
                 ])
@@ -717,7 +723,6 @@ impl Controls {
                         icon_button(
                             daggers_button,
                             *tool == STARTER_DAGGER,
-                            // TODO: pass none
                             Message::Tool(STARTER_DAGGER),
                             imgs.daggers,
                         )
@@ -875,7 +880,7 @@ impl Controls {
                     ..
                 } = &self.mode
                 {
-                    // TODO: eliminate option in character id
+                    // TODO: eliminate option in character id?
                     if let Some(id) = characters.get(*selected).and_then(|i| i.character.id) {
                         events.push(Event::Play(id));
                     }
@@ -1027,7 +1032,7 @@ impl CharSelectionUi {
         }
     }
 
-    // TODO: do we need whole client here or just character list
+    // TODO: do we need whole client here or just character list?
     pub fn maintain(&mut self, global_state: &mut GlobalState, client: &mut Client) -> Vec<Event> {
         let mut events = Vec::new();
 
@@ -1044,6 +1049,6 @@ impl CharSelectionUi {
         events
     }
 
-    // TODO: do we need globals
+    // TODO: do we need globals?
     pub fn render(&self, renderer: &mut Renderer) { self.ui.render(renderer); }
 }
