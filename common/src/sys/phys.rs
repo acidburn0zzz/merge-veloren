@@ -244,7 +244,8 @@ impl<'a> System<'a> for Sys {
                         }
 
                         if diff.magnitude_squared() > 0.0 {
-                            let force = 40.0 * (collision_dist - diff.magnitude()) * mass_other
+                            //let force = 40.0 * (collision_dist - diff.magnitude()) * mass_other
+                            let force = 300.0 * (collision_dist - diff.magnitude()) * mass_other
                                 / (mass + mass_other);
 
                             vel_delta += Vec3::from(diff.normalized()) * force * step_delta;

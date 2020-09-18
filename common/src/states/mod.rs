@@ -13,6 +13,7 @@ pub mod glide;
 pub mod glide_wield;
 pub mod idle;
 pub mod leap_melee;
+pub mod repeater_ranged;
 pub mod roll;
 pub mod sit;
 pub mod sneak;

@@ -848,6 +848,32 @@ impl FigureMgr {
                                 )
                             }
                         },
+                        CharacterState::RepeaterRanged(data) => {
+                            if data.exhausted {
+                                anim::character::ShootAnimation::update_skeleton(
+                                    &target_base,
+                                    (active_tool_kind, second_tool_kind, vel.0.magnitude(), time),
+                                    state.state_time,
+                                    &mut state_animation_rate,
+                                    skeleton_attr,
+                                )
+                            } else {
+                                anim::character::ChargeAnimation::update_skeleton(
+                                    &target_base,
+                                    (
+                                        active_tool_kind,
+                                        second_tool_kind,
+                                        vel.0.magnitude(),
+                                        ori,
+                                        state.last_ori,
+                                        time,
+                                    ),
+                                    state.state_time,
+                                    &mut state_animation_rate,
+                                    skeleton_attr,
+                                )
+                            }
+                        },
                         CharacterState::ChargedRanged(data) => {
                             if data.exhausted {
                                 anim::character::ShootAnimation::update_skeleton(
@@ -878,7 +904,13 @@ impl FigureMgr {
                             if data.exhausted {
                                 anim::character::AlphaAnimation::update_skeleton(
                                     &target_base,
-                                    (active_tool_kind, second_tool_kind, vel.0.magnitude(), time),
+                                    (
+                                        active_tool_kind,
+                                        second_tool_kind,
+                                        vel.0.magnitude(),
+                                        time,
+                                        None,
+                                    ),
                                     state.state_time,
                                     &mut state_animation_rate,
                                     skeleton_attr,

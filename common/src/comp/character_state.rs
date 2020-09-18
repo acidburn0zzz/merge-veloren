@@ -71,6 +71,8 @@ pub enum CharacterState {
     ChargedRanged(charged_ranged::Data),
     /// A charged melee attack
     ChargedMelee(charged_melee::Data),
+    /// A repeating ranged attack
+    RepeaterRanged(repeater_ranged::Data),
 }
 
 impl CharacterState {
@@ -86,6 +88,7 @@ impl CharacterState {
             | CharacterState::SpinMelee(_)
             | CharacterState::ChargedRanged(_)
             | CharacterState::ChargedMelee(_)
+            | CharacterState::RepeaterRanged(_)
         )
     }
 
@@ -99,6 +102,7 @@ impl CharacterState {
             | CharacterState::SpinMelee(_)
             | CharacterState::ChargedRanged(_)
             | CharacterState::ChargedMelee(_)
+            | CharacterState::RepeaterRanged(_)
         )
     }
 
@@ -112,6 +116,7 @@ impl CharacterState {
             | CharacterState::LeapMelee(_)
             | CharacterState::ChargedRanged(_)
             | CharacterState::ChargedMelee(_)
+            | CharacterState::RepeaterRanged(_)
         )
     }
 

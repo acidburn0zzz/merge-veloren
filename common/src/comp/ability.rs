@@ -14,15 +14,16 @@ use std::time::Duration;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum CharacterAbilityType {
+    BasicBlock,
     BasicMelee,
     BasicRanged,
     Boost,
     ChargedRanged,
     ChargedMelee,
-    DashMelee,
-    BasicBlock,
     ComboMelee(StageSection, u32),
+    DashMelee,
     LeapMelee,
+    RepeaterRanged,
     SpinMelee,
 }
 
@@ -38,6 +39,7 @@ impl From<&CharacterState> for CharacterAbilityType {
             CharacterState::ComboMelee(data) => Self::ComboMelee(data.stage_section, data.stage),
             CharacterState::SpinMelee(_) => Self::SpinMelee,
             CharacterState::ChargedRanged(_) => Self::ChargedRanged,
+            CharacterState::RepeaterRanged(_) => Self::RepeaterRanged,
             CharacterState::ChargedMelee(_) => Self::ChargedMelee,
             _ => Self::BasicMelee,
         }
@@ -63,6 +65,19 @@ pub enum CharacterAbility {
         projectile_body: Body,
         projectile_light: Option<LightEmitter>,
         projectile_gravity: Option<Gravity>,
+    },
+    RepeaterRanged {
+        movement_duration: Duration,
+        energy_cost: u32,
+        holdable: bool,
+        prepare_duration: Duration,
+        recover_duration: Duration,
+        projectile: Projectile,
+        projectile_body: Body,
+        projectile_light: Option<LightEmitter>,
+        projectile_gravity: Option<Gravity>,
+        repetitions: u32,
+        current_rep: u32,
     },
     Boost {
         duration: Duration,
@@ -187,6 +202,10 @@ impl CharacterAbility {
                 .try_change_by(-(*energy_cost as i32), EnergySource::Ability)
                 .is_ok(),
             CharacterAbility::ChargedMelee { energy_cost, .. } => update
+                .energy
+                .try_change_by(-(*energy_cost as i32), EnergySource::Ability)
+                .is_ok(),
+            CharacterAbility::RepeaterRanged { energy_cost, .. } => update
                 .energy
                 .try_change_by(-(*energy_cost as i32), EnergySource::Ability)
                 .is_ok(),
@@ -391,6 +410,33 @@ impl From<&CharacterAbility> for CharacterState {
                 max_angle: *max_angle,
                 leap_speed: *leap_speed,
                 leap_vert_speed: *leap_vert_speed,
+            }),
+            CharacterAbility::RepeaterRanged {
+                movement_duration,
+                holdable,
+                prepare_duration,
+                recover_duration,
+                projectile,
+                projectile_body,
+                projectile_light,
+                projectile_gravity,
+                energy_cost: _,
+                repetitions,
+                current_rep,
+            } => CharacterState::RepeaterRanged(repeater_ranged::Data {
+                exhausted: false,
+                prepare_timer: Duration::default(),
+                holdable: *holdable,
+                movement_duration: *movement_duration,
+                prepare_duration: *prepare_duration,
+                recover_duration: *recover_duration,
+                projectile: projectile.clone(),
+                projectile_body: *projectile_body,
+                projectile_light: *projectile_light,
+                projectile_gravity: *projectile_gravity,
+                repetitions: *repetitions,
+                current_rep: *current_rep,
+                initialize: true,
             }),
             CharacterAbility::SpinMelee {
                 buildup_duration,

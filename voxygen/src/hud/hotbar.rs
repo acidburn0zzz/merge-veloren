@@ -82,9 +82,12 @@ impl State {
                         } else if let ToolKind::Debug(kind) = &kind.kind {
                             kind == "Boost"
                         } else if let ToolKind::Sword(_) = &kind.kind {
+                            true
                         } else if let ToolKind::Hammer(_) = &kind.kind {
                             true
                         } else if let ToolKind::Axe(_) = &kind.kind {
+                            true
+                        } else if let ToolKind::Bow(_) = &kind.kind {
                             true
                         } else {
                             false
