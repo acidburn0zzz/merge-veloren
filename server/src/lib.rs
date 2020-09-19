@@ -49,8 +49,7 @@ use futures_util::{select, FutureExt};
 use metrics::{ServerMetrics, StateTickMetrics, TickMetrics};
 use network::{Network, Pid, ProtocolAddr};
 use persistence::{
-    character_loader::{CharacterLoader, CharacterLoaderResponseType},
-    character_updater::CharacterUpdater,
+    character_loader::{CharacterLoader, CharacterLoaderResponseType}
 };
 use specs::{join::Join, Builder, Entity as EcsEntity, RunNow, SystemData, WorldExt};
 use std::{
@@ -70,9 +69,10 @@ use world::{
     sim::{FileOpts, WorldOpts, DEFAULT_WORLD_MAP},
     IndexOwned, World,
 };
+use crate::persistence::connection::VelorenConnectionPool;
 
 #[macro_use] extern crate diesel;
-#[macro_use] extern crate diesel_migrations;
+extern crate diesel_migrations;
 
 #[derive(Copy, Clone)]
 struct SpawnPoint(Vec3<f32>);
@@ -102,11 +102,14 @@ impl Server {
     #[allow(clippy::expect_fun_call)] // TODO: Pending review in #587
     #[allow(clippy::needless_update)] // TODO: Pending review in #587
     pub fn new(settings: ServerSettings) -> Result<Self, Error> {
+        let connection_pool = VelorenConnectionPool::new(&settings.persistence_db_dir).unwrap();
+
         // Run pending DB migrations (if any)
         debug!("Running DB migrations...");
-        if let Some(e) = persistence::run_migrations(&settings.persistence_db_dir).err() {
+        if let Some(e) = persistence::run_migrations(connection_pool.get_connection()).err() {
             panic!("Migration error: {:?}", e);
         }
+
 
         let (chunk_gen_metrics, registry_chunk) = metrics::ChunkGenMetrics::new().unwrap();
         let (network_request_metrics, registry_network) =
@@ -127,14 +130,14 @@ impl Server {
             .insert(ChunkGenerator::new(chunk_gen_metrics));
         state
             .ecs_mut()
-            .insert(CharacterUpdater::new(settings.persistence_db_dir.clone())?);
-        state
-            .ecs_mut()
-            .insert(CharacterLoader::new(settings.persistence_db_dir.clone())?);
+            .insert(CharacterLoader::new(connection_pool.clone())?);
         state
             .ecs_mut()
             .insert(comp::AdminList(settings.admins.clone()));
         state.ecs_mut().insert(Vec::<Outcome>::new());
+
+
+        state.ecs_mut().insert(connection_pool);
 
         // System timers for performance monitoring
         state.ecs_mut().insert(sys::EntitySyncTimer::default());

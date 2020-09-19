@@ -37,6 +37,13 @@ tiny_http = "0.7.0"
 portpicker = { git = "https://github.com/xMAC94x/portpicker-rs" }
 authc = { git = "https://gitlab.com/veloren/auth.git", rev = "b943c85e4a38f5ec60cd18c34c73097640162bfe" }
 libsqlite3-sys = { version = "0.18", features = ["bundled"] }
-diesel = { version = "1.4.3", features = ["sqlite"] }
-diesel_migrations = "1.4.0"
+#diesel = { version = "1.4.3", features = ["r2d2", "sqlite"] }
+# Using a non-released version of diesel because we use PooledConnection which isn't usable
+# in Diesel 1.4.5 when used with SQLite. Once this commit is in a released version of Diesel
+# we should use that instead. https://github.com/diesel-rs/diesel/commit/fa826f0c97e1f47eef34f37cb5b60056855a2b9a
+diesel = { git = "https://github.com/diesel-rs/diesel.git", rev = "70d83095fd73e3b35174338fa787d84e39986aa8", features = ["r2d2", "sqlite"]  }
+#diesel_migrations = "1.4.0"
+diesel_migrations = { git =  "https://github.com/diesel-rs/diesel.git", rev = "70d83095fd73e3b35174338fa787d84e39986aa8" }
 dotenv = "0.15.0"
+
+#tracing-tracy = "0.2.0"

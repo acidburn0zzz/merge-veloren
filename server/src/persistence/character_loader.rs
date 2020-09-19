@@ -1,11 +1,12 @@
 use crate::persistence::{
     character::{create_character, delete_character, load_character_data, load_character_list},
     error::Error,
-    establish_connection, PersistedComponents,
+    PersistedComponents,
 };
 use common::character::{CharacterId, CharacterItem};
 use crossbeam::{channel, channel::TryIter};
 use tracing::error;
+use crate::persistence::connection::VelorenConnectionPool;
 
 pub(crate) type CharacterListResult = Result<Vec<CharacterItem>, Error>;
 pub(crate) type CharacterDataResult = Result<PersistedComponents, Error>;
@@ -61,15 +62,15 @@ pub struct CharacterLoaderResponse {
 pub struct CharacterLoader {
     update_rx: Option<channel::Receiver<CharacterLoaderResponse>>,
     update_tx: Option<channel::Sender<CharacterLoaderRequest>>,
-    handle: Option<std::thread::JoinHandle<()>>,
+    handle: Option<std::thread::JoinHandle<()>>
 }
 
 impl CharacterLoader {
-    pub fn new(db_dir: String) -> diesel::QueryResult<Self> {
+    pub fn new(connection_pool: VelorenConnectionPool) -> diesel::QueryResult<Self> {
         let (update_tx, internal_rx) = channel::unbounded::<CharacterLoaderRequest>();
         let (internal_tx, update_rx) = channel::unbounded::<CharacterLoaderResponse>();
 
-        let mut conn = establish_connection(&db_dir)?;
+        let mut conn = connection_pool.get_connection();
 
         let handle = std::thread::spawn(move || {
             while let Ok(request) = internal_rx.recv() {
@@ -121,7 +122,7 @@ impl CharacterLoader {
         Ok(Self {
             update_tx: Some(update_tx),
             update_rx: Some(update_rx),
-            handle: Some(handle),
+            handle: Some(handle)
         })
     }
 

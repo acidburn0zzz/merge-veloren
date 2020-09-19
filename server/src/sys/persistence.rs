@@ -1,13 +1,12 @@
-use crate::{
-    persistence::character_updater,
-    sys::{SysScheduler, SysTimer},
-};
+use crate::{sys::{SysScheduler, SysTimer}, persistence};
 use common::{
     comp::{Inventory, Loadout, Player, Stats},
     span,
 };
-use specs::{Join, ReadExpect, ReadStorage, System, Write};
+use specs::{Join, ReadStorage, System, Write};
+use crate::persistence::connection::VelorenConnectionPool;
 
+use tracing::{debug, error};
 pub struct Sys;
 
 impl<'a> System<'a> for Sys {
@@ -17,7 +16,7 @@ impl<'a> System<'a> for Sys {
         ReadStorage<'a, Stats>,
         ReadStorage<'a, Inventory>,
         ReadStorage<'a, Loadout>,
-        ReadExpect<'a, character_updater::CharacterUpdater>,
+        Write<'a, VelorenConnectionPool>,
         Write<'a, SysScheduler<Self>>,
         Write<'a, SysTimer<Self>>,
     );
@@ -29,15 +28,18 @@ impl<'a> System<'a> for Sys {
             player_stats,
             player_inventories,
             player_loadouts,
-            updater,
+            mut connection_pool,
             mut scheduler,
             mut timer,
         ): Self::SystemData,
     ) {
         span!(_guard, "run", "persistence::Sys::run");
+
+
         if scheduler.should_run() {
             timer.start();
-            updater.batch_update(
+            debug!("Starting persistence update");
+            persistence::character_updater::execute_batch_update(&mut connection_pool,
                 (
                     &players,
                     &player_stats,
@@ -48,9 +50,10 @@ impl<'a> System<'a> for Sys {
                     .filter_map(|(player, stats, inventory, loadout)| {
                         player
                             .character_id
-                            .map(|id| (id, stats, inventory, loadout))
+                            .map(|id| (id, (stats, inventory, loadout)))
                     }),
             );
+            debug!("Finished persistence update");
             timer.end();
         }
     }

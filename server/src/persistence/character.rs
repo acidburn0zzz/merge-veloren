@@ -6,7 +6,7 @@
 //! polled and handled each server tick.
 extern crate diesel;
 
-use super::{error::Error, models::*, schema, VelorenTransaction};
+use super::{error::Error, models::*, schema};
 use crate::{
     comp,
     persistence::{
@@ -26,6 +26,7 @@ use core::ops::Range;
 use diesel::{prelude::*, sql_query, sql_types::BigInt};
 use std::sync::Arc;
 use tracing::{debug, error};
+use crate::persistence::connection::VelorenTransaction;
 
 /// Private module for very tightly coupled database conversion methods.  In
 /// general, these have many invariants that need to be maintained when they're
@@ -408,7 +409,8 @@ fn get_new_entity_ids(
     #[derive(QueryableByName)]
     struct NextEntityId {
         #[sql_type = "BigInt"]
-        entity_id: i64,
+        #[column_name = "entity_id"]
+        _entity_id: i64,
     }
 
     // The sqlite_sequence table is used here to avoid reusing entity IDs for
@@ -423,7 +425,7 @@ fn get_new_entity_ids(
     .load::<NextEntityId>(&*conn)?
     .pop()
     .ok_or_else(|| Error::OtherError("No rows returned for sqlite_sequence query ".to_string()))?
-    .entity_id;
+    ._entity_id;
 
     let max_entity_id = max(next_entity_id);
 
@@ -507,9 +509,9 @@ fn get_pseudo_container_id(
 
 pub fn update(
     char_id: CharacterId,
-    char_stats: comp::Stats,
-    inventory: comp::Inventory,
-    loadout: comp::Loadout,
+    char_stats: &comp::Stats,
+    inventory: &comp::Inventory,
+    loadout: &comp::Loadout,
     connection: VelorenTransaction,
 ) -> Result<Vec<Arc<common::comp::item::ItemId>>, Error> {
     use super::schema::{item::dsl::*, stats::dsl::*};

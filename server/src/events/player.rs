@@ -12,6 +12,7 @@ use common::{
 use futures_executor::block_on;
 use specs::{saveload::MarkerAllocator, Builder, Entity as EcsEntity, WorldExt};
 use tracing::{debug, error, trace, warn};
+use crate::persistence::connection::VelorenConnectionPool;
 
 pub fn handle_exit_ingame(server: &mut Server, entity: EcsEntity) {
     span!(_guard, "handle_exit_ingame");
@@ -133,17 +134,15 @@ pub fn handle_client_disconnect(server: &mut Server, entity: EcsEntity) -> Event
     }
 
     // Sync the player's character data to the database
-    if let (Some(player), Some(stats), Some(inventory), Some(loadout), updater) = (
+    if let (Some(player), Some(stats), Some(inventory), Some(loadout), connection_pool) = (
         state.read_storage::<Player>().get(entity),
         state.read_storage::<comp::Stats>().get(entity),
         state.read_storage::<comp::Inventory>().get(entity),
         state.read_storage::<comp::Loadout>().get(entity),
-        state
-            .ecs()
-            .read_resource::<persistence::character_updater::CharacterUpdater>(),
+        state.ecs().read_resource::<VelorenConnectionPool>()
     ) {
         if let Some(character_id) = player.character_id {
-            updater.update(character_id, stats, inventory, loadout);
+            persistence::character_updater::update(&connection_pool.clone(), character_id, stats, inventory, loadout);
         }
     }
 

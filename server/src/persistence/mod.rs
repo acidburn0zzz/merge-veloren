@@ -13,14 +13,14 @@ mod error;
 mod json_models;
 mod models;
 mod schema;
+pub(crate) mod connection;
 
 extern crate diesel;
 
 use common::comp;
-use diesel::{connection::SimpleConnection, prelude::*};
 use diesel_migrations::embed_migrations;
-use std::{env, fs, path::PathBuf};
-use tracing::{info, warn};
+use tracing::{info};
+use crate::persistence::connection::VelorenConnection;
 
 /// A tuple of the components that are persisted to the DB for each character
 pub type PersistedComponents = (comp::Body, comp::Stats, comp::Inventory, comp::Loadout);
@@ -45,88 +45,39 @@ impl std::io::Write for TracingOut {
 }
 
 /// Runs any pending database migrations. This is executed during server startup
-pub fn run_migrations(db_dir: &str) -> Result<(), diesel_migrations::RunMigrationsError> {
-    let db_dir = &apply_saves_dir_override(db_dir);
-    let _ = fs::create_dir(format!("{}/", db_dir));
-
+pub fn run_migrations(connection: VelorenConnection) -> Result<(), diesel_migrations::RunMigrationsError> {
     embedded_migrations::run_with_output(
-        &establish_connection(db_dir)
-            .expect(
-                "If we cannot execute migrations, we should not be allowed to launch the server, \
-                 so we don't populate it with bad data.",
-            )
-            .0,
+        &connection.0,
         &mut std::io::LineWriter::new(TracingOut),
     )
 }
 
-/// A database connection blessed by Veloren.
-pub struct VelorenConnection(SqliteConnection);
 
-/// A transaction blessed by Veloren.
-#[derive(Clone, Copy)]
-pub struct VelorenTransaction<'a>(&'a SqliteConnection);
 
-impl VelorenConnection {
-    /// Open a transaction in order to be able to run a set of queries against
-    /// the database. We require the use of a transaction, rather than
-    /// allowing direct session access, so that (1) we can control things
-    /// like the retry process (at a future date), and (2) to avoid
-    /// accidentally forgetting to open or reuse a transaction.
-    ///
-    /// We could make things even more foolproof, but we restrict ourselves to
-    /// this for now.
-    pub fn transaction<T, E, F>(&mut self, f: F) -> Result<T, E>
-    where
-        F: for<'a> FnOnce(VelorenTransaction<'a>) -> Result<T, E>,
-        E: From<diesel::result::Error>,
-    {
-        self.0.transaction(|| f(VelorenTransaction(&self.0)))
-    }
-}
+// pub fn establish_connection(db_dir: &str) -> QueryResult<VelorenConnection> {
+//     let db_dir = &apply_saves_dir_override(db_dir);
+//     let database_url = format!("{}/db.sqlite", db_dir);
+//
+//     let connection = SqliteConnection::establish(&database_url)
+//         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url));
+//
+//     // Use Write-Ahead-Logging for improved concurrency: https://sqlite.org/wal.html
+//     // Set a busy timeout (in ms): https://sqlite.org/c3ref/busy_timeout.html
+//     connection
+//         .batch_execute(
+//             "
+//         PRAGMA foreign_keys = ON;
+//         PRAGMA journal_mode = WAL;
+//         PRAGMA busy_timeout = 250;
+//         ",
+//         )
+//         .expect(
+//             "Failed adding PRAGMA statements while establishing sqlite connection, including \
+//              enabling foreign key constraints.  We will not allow connecting to the server under \
+//              these conditions.",
+//         );
+//
+//     Ok(VelorenConnection(connection))
+// }
 
-impl<'a> core::ops::Deref for VelorenTransaction<'a> {
-    type Target = SqliteConnection;
 
-    fn deref(&self) -> &Self::Target { &self.0 }
-}
-
-pub fn establish_connection(db_dir: &str) -> QueryResult<VelorenConnection> {
-    let db_dir = &apply_saves_dir_override(db_dir);
-    let database_url = format!("{}/db.sqlite", db_dir);
-
-    let connection = SqliteConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url));
-
-    // Use Write-Ahead-Logging for improved concurrency: https://sqlite.org/wal.html
-    // Set a busy timeout (in ms): https://sqlite.org/c3ref/busy_timeout.html
-    connection
-        .batch_execute(
-            "
-        PRAGMA foreign_keys = ON;
-        PRAGMA journal_mode = WAL;
-        PRAGMA busy_timeout = 250;
-        ",
-        )
-        .expect(
-            "Failed adding PRAGMA statements while establishing sqlite connection, including \
-             enabling foreign key constraints.  We will not allow connecting to the server under \
-             these conditions.",
-        );
-
-    Ok(VelorenConnection(connection))
-}
-
-fn apply_saves_dir_override(db_dir: &str) -> String {
-    if let Some(saves_dir) = env::var_os("VELOREN_SAVES_DIR") {
-        let path = PathBuf::from(saves_dir.clone());
-        if path.exists() || path.parent().map(|x| x.exists()).unwrap_or(false) {
-            // Only allow paths with valid unicode characters
-            if let Some(path) = path.to_str() {
-                return path.to_owned();
-            }
-        }
-        warn!(?saves_dir, "VELOREN_SAVES_DIR points to an invalid path.");
-    }
-    db_dir.to_string()
-}
