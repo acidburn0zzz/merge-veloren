@@ -21,6 +21,10 @@ pub enum Outcome {
         body: comp::Body,
         vel: Vec3<f32>,
     },
+    LevelUp {
+        uid: u64, //Uid,
+        level: u32,
+    },
 }
 
 impl Outcome {
@@ -28,6 +32,7 @@ impl Outcome {
         match self {
             Outcome::Explosion { pos, .. } => Some(*pos),
             Outcome::ProjectileShot { pos, .. } => Some(*pos),
+            Outcome::LevelUp { .. } => None,
         }
     }
 }
