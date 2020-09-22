@@ -82,17 +82,20 @@
 
 mod event_mapper;
 
-use crate::{audio::AudioFrontend, scene::Camera};
-
+use crate::{
+    audio::AudioFrontend,
+    scene::{Camera, SceneData},
+};
 use common::{
     assets,
     comp::{
         item::{ItemKind, ToolCategory},
-        object, Body, CharacterAbilityType, InventoryUpdateEvent,
+        object, Body, CharacterAbilityType, InventoryUpdateEvent, Pos,
     },
     event::EventBus,
     outcome::Outcome,
     state::State,
+    sync::WorldSyncExt,
 };
 use event_mapper::SfxEventMapper;
 use hashbrown::HashMap;
@@ -275,12 +278,32 @@ impl SfxMgr {
         }
     }
 
-    pub fn handle_outcome(&mut self, outcome: &Outcome, audio: &mut AudioFrontend) {
+    pub fn handle_outcome(
+        &mut self,
+        outcome: &Outcome,
+        audio: &mut AudioFrontend,
+        scene_data: &SceneData,
+    ) {
         if !audio.sfx_enabled() {
             return;
         }
 
         match outcome {
+            Outcome::LevelUp { uid, .. } => {
+                if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
+                    if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
+                        audio.play_sfx(
+                            "voxygen.audio.sfx.character.level_up_sound_-_shorter_wind_up",
+                            pos.0,
+                            None,
+                        );
+                    } else {
+                        tracing::warn!("Position for entity not found for level up sfx");
+                    }
+                } else {
+                    tracing::warn!("entity by uid not found for level up sfx");
+                }
+            },
             Outcome::Explosion { pos, power, .. } => {
                 audio.play_sfx(
                     // TODO: from sfx config?

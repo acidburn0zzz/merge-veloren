@@ -1,12 +1,10 @@
 mod combat;
 mod movement;
-mod progression;
 
 use common::state::State;
 
 use combat::CombatEventMapper;
 use movement::MovementEventMapper;
-use progression::ProgressionEventMapper;
 
 use super::SfxTriggers;
 use crate::scene::Camera;
@@ -31,7 +29,6 @@ impl SfxEventMapper {
             mappers: vec![
                 Box::new(CombatEventMapper::new()),
                 Box::new(MovementEventMapper::new()),
-                Box::new(ProgressionEventMapper::new()),
             ],
         }
     }

@@ -15,6 +15,7 @@ use common::{
     spiral::Spiral2d,
     state::DeltaTime,
     states::utils::StageSection,
+    sync::WorldSyncExt,
     terrain::TerrainChunk,
     vol::{RectRasterableVol, SizedVol},
 };
@@ -24,7 +25,6 @@ use rand::prelude::*;
 use specs::{Join, WorldExt};
 use std::time::Duration;
 use vek::*;
-
 pub struct ParticleMgr {
     /// keep track of lifespans
     particles: Vec<Particle>,
@@ -55,6 +55,20 @@ impl ParticleMgr {
         let mut rng = rand::thread_rng();
 
         match outcome {
+            Outcome::LevelUp { uid, .. } => {
+                if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
+                    if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
+                        self.particles.resize_with(self.particles.len() + 300, || {
+                            Particle::new(
+                                Duration::from_millis(1000),
+                                time,
+                                ParticleMode::FireworkYellow,
+                                pos.0 + Vec3::new(0.0, 0.0, 2.0),
+                            )
+                        });
+                    }
+                }
+            },
             Outcome::Explosion {
                 pos,
                 power,

@@ -638,6 +638,16 @@ pub fn handle_level_up(server: &mut Server, entity: EcsEntity, new_level: u32) {
         .get(entity)
         .expect("Failed to fetch uid component for entity.");
 
+    // Add an outcome
+    server
+        .state
+        .ecs()
+        .write_resource::<Vec<Outcome>>()
+        .push(Outcome::LevelUp {
+            uid: uid.0,
+            level: new_level,
+        });
+    // TODO: determine which event system we should use.
     server
         .state
         .notify_registered_clients(ServerMsg::PlayerListUpdate(PlayerListUpdate::LevelChange(

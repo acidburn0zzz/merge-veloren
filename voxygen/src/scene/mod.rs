@@ -26,10 +26,11 @@ use crate::{
 use client::Client;
 use common::{
     comp,
-    comp::humanoid::DEFAULT_HUMANOID_EYE_HEIGHT,
+    comp::{humanoid::DEFAULT_HUMANOID_EYE_HEIGHT, Pos},
     outcome::Outcome,
     span,
     state::{DeltaTime, State},
+    sync::WorldSyncExt,
     terrain::{BlockKind, TerrainChunk},
     vol::ReadVol,
 };
@@ -383,7 +384,7 @@ impl Scene {
     ) {
         span!(_guard, "handle_outcome", "Scene::handle_outcome");
         self.particle_mgr.handle_outcome(&outcome, &scene_data);
-        self.sfx_mgr.handle_outcome(&outcome, audio);
+        self.sfx_mgr.handle_outcome(&outcome, audio, &scene_data);
 
         match outcome {
             Outcome::Explosion {
@@ -421,6 +422,17 @@ impl Scene {
                 fadeout: |timeout| timeout * 2.0,
             }),
             Outcome::ProjectileShot { .. } => {},
+            Outcome::LevelUp { uid, .. } => {
+                if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
+                    if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
+                        self.event_lights.push(EventLight {
+                            light: Light::new(pos.0, Rgb::new(1.0, 1.0, 0.0), 5.0),
+                            timeout: 1.0,
+                            fadeout: |timeout| timeout * 2.0,
+                        });
+                    }
+                }
+            },
         }
     }
 
