@@ -51,6 +51,8 @@ const int BEE = 11;
 const int GROUND_SHOCKWAVE = 12;
 const int HEALING_BEAM = 13;
 const int ENERGY_NATURE = 14;
+const int LEVEL_UP = 15;
+const int BLEED = 16;
 
 // meters per second squared (acceleration)
 const float earth_gravity = 9.807;
@@ -284,6 +286,54 @@ void main() {
 			),
 			vec3(0.8),
 			vec4(vec3(0, 1, 0), 1),
+	} else if (inst_mode == LEVEL_UP) {
+
+		// if (rand0 < -5.5) {
+		// 	// burst upwards like helium baloons
+		// 	attr = Attr(
+		// 		linear_motion(
+		// 			vec3(0),
+		// 			vec3(rand1, rand2, rand3) * 2.0 + grav_vel(-earth_gravity)
+		// 		),
+		// 		vec3(1.0),
+		// 		vec4(1, 1, 0, 1),
+		// 		identity()
+		// 	);
+		// } else 
+		if(rand0 < -0.5) {
+			// burst outwards like helicopter dust cloud
+			attr = Attr(
+				linear_motion(
+					vec3(0),
+					vec3(rand1, rand2, 0.1) * 20.0
+				),
+				vec3(1.0),
+				vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
+				identity()
+			);
+		} else {
+			// spiral upwards clockwise
+			float r = lifetime + (rand1 * 3.14 * 2);
+			attr = Attr(
+				vec3(sin(r), cos(r), 0.0)
+				+ linear_motion(
+				 	vec3(0),	
+				 	grav_vel(-1.0 + rand2)
+				)
+				,
+				vec3(1.0),
+				vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
+				identity()
+			);
+		}
+	} else if (inst_mode == BLEED) {
+		attr = Attr(
+			linear_motion(
+				vec3(0),
+				vec3(rand1, rand2, 0.0) * 5.0 + grav_vel(earth_gravity)
+			),
+			vec3(0.1 + rand0),
+			vec4(1, 0, 0, 1),
 			spin_in_axis(vec3(rand6, rand7, rand8), rand9 * 3)
 		);
 	} else {
