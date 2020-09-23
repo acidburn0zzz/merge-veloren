@@ -91,6 +91,7 @@ use common::{
     comp::{
         item::{ItemKind, ToolCategory},
         object, Body, CharacterAbilityType, InventoryUpdateEvent, Pos,
+        HealthSource,
     },
     event::EventBus,
     outcome::Outcome,
@@ -144,14 +145,14 @@ pub enum SfxEvent {
     GliderClose,
     Jump,
     Fall,
-    ExperienceGained,
-    LevelUp,
+    // ExperienceGained, // removed
+    // LevelUp, // replaced
     Attack(CharacterAbilityType, ToolCategory),
     Wield(ToolCategory),
     Unwield(ToolCategory),
     Inventory(SfxInventoryEvent),
-    Explosion,
-    ProjectileShot,
+    // Explosion, // replaced
+    // ProjectileShot, // replaced
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Hash, Eq)]
@@ -289,14 +290,21 @@ impl SfxMgr {
         }
 
         match outcome {
-            Outcome::Damage { uid, .. } => {
+            Outcome::Damage { uid, change } => {
                 if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
-                        audio.play_sfx(
-                            "voxygen.audio.sfx.abilities.arrow_shot_1",
-                            pos.0,
-                            None,
-                        );
+                        match change.cause {
+                            HealthSource::Attack { .. } => audio.play_sfx("voxygen.audio.sfx.character.death_grunt", pos.0, None),
+                            HealthSource::Projectile { .. } => audio.play_sfx("voxygen.audio.sfx.character.death_grunt", pos.0, None),
+                            HealthSource::Explosion { .. } => audio.play_sfx("voxygen.audio.sfx.character.death_grunt", pos.0, None),
+                            HealthSource::Suicide => audio.play_sfx("voxygen.audio.sfx.character.death_grunt", pos.0, None),
+                            HealthSource::World => audio.play_sfx("voxygen.audio.sfx.character.death_grunt", pos.0, None),
+                            HealthSource::Command => audio.play_sfx("voxygen.audio.sfx.character.death_grunt", pos.0, None),
+                            HealthSource::Unknown => audio.play_sfx("voxygen.audio.sfx.character.death_grunt", pos.0, None),
+                            _ => {
+                                tracing::warn!("Damage HealthChange Outcome not mapped to a sfx")
+                            }
+                        };
                     } else {
                         tracing::warn!("Position for entity not found for level up sfx");
                     }

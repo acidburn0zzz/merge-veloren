@@ -58,12 +58,12 @@ impl ParticleMgr {
             Outcome::Damage { uid, .. } => {
                 if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
-                        self.particles.resize_with(self.particles.len() + 300, || {
+                        self.particles.resize_with(self.particles.len() + 20, || {
                             Particle::new(
-                                Duration::from_millis(1000),
+                                Duration::from_millis(2000),
                                 time,
-                                ParticleMode::FireworkRed,
-                                pos.0 + Vec3::new(0.0, 0.0, 1.0),
+                                ParticleMode::Bleed,
+                                pos.0 + Vec3::new(0.0, 0.0, 1.5), // TODO: relative wound position
                             )
                         });
                     }
@@ -72,12 +72,12 @@ impl ParticleMgr {
             Outcome::LevelUp { uid, .. } => {
                 if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
-                        self.particles.resize_with(self.particles.len() + 300, || {
+                        self.particles.resize_with(self.particles.len() + 100, || {
                             Particle::new(
-                                Duration::from_millis(1000),
+                                Duration::from_millis(5000),
                                 time,
-                                ParticleMode::FireworkYellow,
-                                pos.0 + Vec3::new(0.0, 0.0, 2.0),
+                                ParticleMode::LevelUp,
+                                pos.0,
                             )
                         });
                     }
