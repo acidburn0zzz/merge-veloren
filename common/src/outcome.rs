@@ -1,4 +1,5 @@
 use crate::comp;
+use crate::comp::HealthChange;
 use comp::item::Reagent;
 use serde::{Deserialize, Serialize};
 use vek::*;
@@ -25,6 +26,10 @@ pub enum Outcome {
         uid: u64, //Uid,
         level: u32,
     },
+    Damage {
+        uid: u64, //Uid,
+        change: HealthChange,
+    },
 }
 
 impl Outcome {
@@ -32,7 +37,10 @@ impl Outcome {
         match self {
             Outcome::Explosion { pos, .. } => Some(*pos),
             Outcome::ProjectileShot { pos, .. } => Some(*pos),
-            Outcome::LevelUp { .. } => None,
+            _ => {
+                tracing::warn!("get_pos not implemented for Outcome, which is used for avoiding unnecessary network syncs.");
+                None
+            },
         }
     }
 }
