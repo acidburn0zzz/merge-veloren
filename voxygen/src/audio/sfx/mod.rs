@@ -289,6 +289,21 @@ impl SfxMgr {
         }
 
         match outcome {
+            Outcome::Damage { uid, .. } => {
+                if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
+                    if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
+                        audio.play_sfx(
+                            "voxygen.audio.sfx.abilities.arrow_shot_1",
+                            pos.0,
+                            None,
+                        );
+                    } else {
+                        tracing::warn!("Position for entity not found for level up sfx");
+                    }
+                } else {
+                    tracing::warn!("entity by uid not found for level up sfx");
+                }
+            },
             Outcome::LevelUp { uid, .. } => {
                 if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {

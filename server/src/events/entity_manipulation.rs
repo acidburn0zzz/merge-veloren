@@ -32,6 +32,7 @@ pub fn handle_damage(server: &Server, uid: Uid, change: HealthChange) {
     if let Some(entity) = ecs.entity_from_uid(uid.into()) {
         if let Some(stats) = ecs.write_storage::<Stats>().get_mut(entity) {
             stats.health.change_by(change);
+            ecs.write_resource::<Vec<Outcome>>().push(Outcome::Damage { uid: uid.0, change });
         }
     }
 }
