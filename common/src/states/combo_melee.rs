@@ -31,6 +31,8 @@ pub struct Stage {
     pub base_recover_duration: Duration,
     /// How much forward movement there is in the swing portion of the stage
     pub forward_movement: f32,
+    /// Continue automatically to the next Stage
+    pub auto_continue: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -183,7 +185,7 @@ impl CharacterBehavior for Data {
             StageSection::Recover => {
                 if self.timer < self.static_data.stage_data[stage_index].base_recover_duration {
                     // Recovers
-                    if data.inputs.primary.is_pressed() {
+                    if data.inputs.primary.is_pressed() | self.static_data.stage_data[stage_index].auto_continue {
                         // Checks if state will transition to next stage after recover
                         update.character = CharacterState::ComboMelee(Data {
                             static_data: self.static_data.clone(),
