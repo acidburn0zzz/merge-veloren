@@ -55,6 +55,20 @@ impl ParticleMgr {
         let mut rng = rand::thread_rng();
 
         match outcome {
+            Outcome::Destruction { uid, .. } => {
+                if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
+                    if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
+                        self.particles.resize_with(self.particles.len() + 200, || {
+                            Particle::new(
+                                Duration::from_millis(2000),
+                                time,
+                                ParticleMode::FireworkRed,
+                                pos.0 + Vec3::new(0.0, 0.0, 1.5), // TODO: relative wound position
+                            )
+                        });
+                    }
+                }
+            },
             Outcome::Damage { uid, .. } => {
                 if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {

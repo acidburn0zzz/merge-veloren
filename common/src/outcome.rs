@@ -1,5 +1,6 @@
 use crate::comp;
 use crate::comp::HealthChange;
+use crate::comp::HealthSource;
 use comp::item::Reagent;
 use serde::{Deserialize, Serialize};
 use vek::*;
@@ -30,6 +31,10 @@ pub enum Outcome {
         uid: u64, //Uid,
         change: HealthChange,
     },
+    Destruction {
+        uid: u64, //Uid,
+        cause: HealthSource,
+    }
 }
 
 impl Outcome {
