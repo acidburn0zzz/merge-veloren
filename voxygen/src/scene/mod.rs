@@ -423,6 +423,7 @@ impl Scene {
             }),
             Outcome::ProjectileShot { .. } => {},
             Outcome::Damage { .. } => {},
+            Outcome::Destruction { .. } => {},
             Outcome::LevelUp { uid, .. } => {
                 if let Some(entity) = scene_data.state.ecs().entity_from_uid(*uid) {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {

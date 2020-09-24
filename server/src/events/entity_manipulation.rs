@@ -67,6 +67,16 @@ pub fn handle_destroy(server: &mut Server, entity: EcsEntity, cause: HealthSourc
         return;
     }
 
+    if let Some(uid) = state.ecs().read_storage::<Uid>().get(entity) {
+
+        state.ecs().write_resource::<Vec<Outcome>>().push(Outcome::Destruction {
+            uid: uid.0,
+            cause,
+        });
+
+        tracing::warn!("Created Outcome::Destruction {} {:?}", uid.0, cause);
+    }
+
     // Chat message
     // If it was a player that died
     if let Some(_player) = state.ecs().read_storage::<Player>().get(entity) {
