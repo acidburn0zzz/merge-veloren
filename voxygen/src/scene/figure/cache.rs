@@ -1,6 +1,6 @@
 use super::{load::*, FigureModelEntry};
 use crate::{
-    mesh::{greedy::GreedyMesh, Meshable},
+    mesh::{greedy::GreedyMesh, segment::generate_mesh_base_vol_terrain},
     render::{BoneMeshes, FigureModel, Mesh, Renderer, TerrainVertex},
     scene::camera::CameraMode,
 };
@@ -1100,11 +1100,10 @@ impl<Skel: Skeleton> FigureModelCache<Skel> {
                         segment: Segment,
                         offset: Vec3<f32>,
                     ) -> BoneMeshes {
-                        let (opaque, _, _, bounds) =
-                            Meshable::<TerrainVertex, &mut GreedyMesh>::generate_mesh(
-                                segment,
-                                (greedy, opaque_mesh, offset, Vec3::one()),
-                            );
+                        let (opaque, _, _, bounds) = generate_mesh_base_vol_terrain(
+                            segment,
+                            (greedy, opaque_mesh, offset, Vec3::one()),
+                        );
                         (opaque, bounds)
                     }
 
@@ -1115,16 +1114,15 @@ impl<Skel: Skeleton> FigureModelCache<Skel> {
                         offset: Vec3<f32>,
                     ) -> BoneMeshes {
                         let lod_scale = 0.6;
-                        let (opaque, _, _, bounds) =
-                            Meshable::<TerrainVertex, &mut GreedyMesh>::generate_mesh(
-                                segment.scaled_by(Vec3::broadcast(lod_scale)),
-                                (
-                                    greedy,
-                                    opaque_mesh,
-                                    offset * lod_scale,
-                                    Vec3::one() / lod_scale,
-                                ),
-                            );
+                        let (opaque, _, _, bounds) = generate_mesh_base_vol_terrain(
+                            segment.scaled_by(Vec3::broadcast(lod_scale)),
+                            (
+                                greedy,
+                                opaque_mesh,
+                                offset * lod_scale,
+                                Vec3::one() / lod_scale,
+                            ),
+                        );
                         (opaque, bounds)
                     }
 
@@ -1135,16 +1133,15 @@ impl<Skel: Skeleton> FigureModelCache<Skel> {
                         offset: Vec3<f32>,
                     ) -> BoneMeshes {
                         let lod_scale = 0.3;
-                        let (opaque, _, _, bounds) =
-                            Meshable::<TerrainVertex, &mut GreedyMesh>::generate_mesh(
-                                segment.scaled_by(Vec3::broadcast(lod_scale)),
-                                (
-                                    greedy,
-                                    opaque_mesh,
-                                    offset * lod_scale,
-                                    Vec3::one() / lod_scale,
-                                ),
-                            );
+                        let (opaque, _, _, bounds) = generate_mesh_base_vol_terrain(
+                            segment.scaled_by(Vec3::broadcast(lod_scale)),
+                            (
+                                greedy,
+                                opaque_mesh,
+                                offset * lod_scale,
+                                Vec3::one() / lod_scale,
+                            ),
+                        );
                         (opaque, bounds)
                     }
 

@@ -1,9 +1,9 @@
 use super::super::{AaMode, GlobalsLayouts};
-use bytemuck::Pod;
+use bytemuck::{Pod, Zeroable};
 use vek::*;
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Pod)]
+#[derive(Copy, Clone, Debug, Zeroable, Pod)]
 pub struct Vertex {
     pos_norm: u32,
     atlas_pos: u32,
@@ -61,14 +61,14 @@ impl Vertex {
         }
     }
 
-    pub fn make_col_light(light: u8, col: Rgb<u8>) -> [u8; 3] { [col.r, col.g, col.b, light] }
+    pub fn make_col_light(light: u8, col: Rgb<u8>) -> [u8; 4] { [col.r, col.g, col.b, light] }
 
     /// Set the bone_idx for an existing figure vertex.
     pub fn set_bone_idx(&mut self, bone_idx: u8) {
         self.pos_norm = (self.pos_norm & !(0xF << 27)) | ((bone_idx as u32 & 0xF) << 27);
     }
 
-    fn desc<'a>() -> wgpu::VertexBufferDescriptor<'a> {
+    pub fn desc<'a>() -> wgpu::VertexBufferDescriptor<'a> {
         use std::mem;
         wgpu::VertexBufferDescriptor {
             stride: mem::size_of::<Self>() as wgpu::BufferAddress,
@@ -79,7 +79,7 @@ impl Vertex {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Pod)]
+#[derive(Copy, Clone, Debug, Zeroable, Pod)]
 pub struct Locals {
     model_offs: [f32; 3],
     load_time: f32,

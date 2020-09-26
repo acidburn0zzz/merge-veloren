@@ -1,6 +1,6 @@
 use super::SceneData;
 use crate::{
-    mesh::{greedy::GreedyMesh, Meshable},
+    mesh::{greedy::GreedyMesh, segment::generate_mesh_base_vol_particle},
     render::{
         pipelines::particle::ParticleMode, GlobalModel, Instances, LodData, Model,
         ParticleInstance, ParticleVertex, Renderer,
@@ -301,15 +301,10 @@ fn default_cache(renderer: &mut Renderer) -> HashMap<&'static str, Model<Particl
         // NOTE: If we add texturing we may eventually try to share it among all
         // particles in a single atlas.
         let max_texture_size = renderer.max_texture_size();
-        let max_size =
-            guillotiere::Size::new(i32::from(max_texture_size), i32::from(max_texture_size));
+        let max_size = guillotiere::Size::new(max_texture_size as i32, max_texture_size as i32);
         let mut greedy = GreedyMesh::new(max_size);
 
-        let mesh = Meshable::<ParticleVertex, &mut GreedyMesh>::generate_mesh(
-            Segment::from(vox.as_ref()),
-            &mut greedy,
-        )
-        .0;
+        let mesh = generate_mesh_base_vol_particle(Segment::from(vox.as_ref()), &mut greedy).0;
 
         // NOTE: Ignoring coloring / lighting for now.
         drop(greedy);
@@ -399,7 +394,7 @@ impl Particle {
     fn new(lifespan: Duration, time: f64, mode: ParticleMode, pos: Vec3<f32>) -> Self {
         Particle {
             alive_until: time + lifespan.as_secs_f64(),
-            instance: ParticleInstance::new(time, mode, pos),
+            instance: ParticleInstance::new(time, lifespan.as_secs_f32(), mode, pos),
         }
     }
 }

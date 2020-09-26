@@ -26,7 +26,7 @@ impl Lod {
             model: None,
             data: LodData::new(
                 renderer,
-                client.world_map.1,
+                client.world_map.1.as_(),
                 &client.lod_base,
                 &client.lod_alt,
                 &client.lod_horizon,

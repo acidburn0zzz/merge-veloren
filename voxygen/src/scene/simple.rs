@@ -1,5 +1,5 @@
 use crate::{
-    mesh::{greedy::GreedyMesh, Meshable},
+    mesh::{greedy::GreedyMesh, segment::generate_mesh_base_vol_terrain},
     render::{
         create_pp_mesh, create_skybox_mesh, BoneMeshes, Consts, FigureModel, GlobalModel, Globals,
         Light, Mesh, Model, PostProcessVertex, Renderer, Shadow, ShadowLocals, SkyboxVertex,
@@ -52,10 +52,7 @@ fn generate_mesh<'a>(
     offset: Vec3<f32>,
 ) -> BoneMeshes {
     let (opaque, _, /* shadow */ _, bounds) =
-        Meshable::<TerrainVertex, &mut GreedyMesh>::generate_mesh(
-            segment,
-            (greedy, mesh, offset, Vec3::one()),
-        );
+        generate_mesh_base_vol_terrain(segment, (greedy, mesh, offset, Vec3::one()));
     (opaque /* , shadow */, bounds)
 }
 
@@ -136,7 +133,7 @@ impl Scene {
                 &alt_image,
                 &horizon_image,
                 1,
-                map_border.into(),
+                //map_border.into(),
             ),
             map_bounds,
 
@@ -239,7 +236,7 @@ impl Scene {
         const SHADOW_NEAR: f32 = 1.0;
         const SHADOW_FAR: f32 = 25.0;
 
-        if let Err(e) = renderer.update_consts(&mut self.data.globals, &[Globals::new(
+        renderer.update_consts(&mut self.data.globals, &[Globals::new(
             view_mat,
             proj_mat,
             cam_pos,
@@ -249,7 +246,7 @@ impl Scene {
             self.map_bounds,
             TIME,
             scene_data.time,
-            renderer.get_resolution(),
+            renderer.get_resolution().as_(),
             Vec2::new(SHADOW_NEAR, SHADOW_FAR),
             0,
             0,
@@ -259,9 +256,7 @@ impl Scene {
             scene_data.gamma,
             self.camera.get_mode(),
             250.0,
-        )]) {
-            error!(?e, "Renderer failed to update");
-        }
+        )]);
 
         self.figure_model_cache
             .clean(&mut self.col_lights, scene_data.tick);

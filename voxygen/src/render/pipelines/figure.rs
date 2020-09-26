@@ -3,12 +3,12 @@ use super::{
     terrain::Vertex,
 };
 use crate::mesh::greedy::GreedyMesh;
-use bytemuck::Pod;
+use bytemuck::{Pod, Zeroable};
 use core::ops::Range;
 use vek::*;
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Pod)]
+#[derive(Copy, Clone, Debug, Zeroable, Pod)]
 pub struct Locals {
     model_mat: [[f32; 4]; 4],
     model_col: [f32; 4],
@@ -18,7 +18,7 @@ pub struct Locals {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Pod)]
+#[derive(Copy, Clone, Debug, Zeroable, Pod)]
 pub struct BoneData {
     bone_mat: [[f32; 4]; 4],
     normals_mat: [[f32; 4]; 4],
