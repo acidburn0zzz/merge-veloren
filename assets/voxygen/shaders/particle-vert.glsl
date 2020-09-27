@@ -53,6 +53,7 @@ const int HEALING_BEAM = 13;
 const int ENERGY_NATURE = 14;
 const int LEVEL_UP = 15;
 const int BLEED = 16;
+const int DESTROYED_BLOCK = 17;
 
 // meters per second squared (acceleration)
 const float earth_gravity = 9.807;
@@ -231,11 +232,14 @@ void main() {
 			identity()
 		);
 	} else if (inst_mode == LEAF) {
+
+		float r = lifetime + (rand1 * 3.14 * 2);
+
 		attr = Attr(
 			linear_motion(
 				vec3(0),
 				vec3(0, 0, -2)
-			) + vec3(sin(lifetime), sin(lifetime + 0.7), sin(lifetime * 0.5)) * 2.0,
+			) + vec3(sin(r), sin(r + 0.7), sin(r * 0.5)) * 2.0,
 			vec3(4),
 			vec4(vec3(0.2 + rand7 * 0.2, 0.2 + (0.5 + rand6 * 0.5) * 0.6, 0), 1),
 			spin_in_axis(vec3(rand6, rand7, rand8), rand9 * 3 + lifetime * 5)
@@ -335,6 +339,16 @@ void main() {
 			vec3(0.1 + rand0),
 			vec4(1, 0, 0, 1),
 			spin_in_axis(vec3(rand6, rand7, rand8), rand9 * 3)
+		);
+	} else if (inst_mode == DESTROYED_BLOCK) {
+		attr = Attr(
+			linear_motion(
+				vec3(0),
+				vec3(rand1, rand2, rand3) * 50.0 + grav_vel(earth_gravity)
+			),
+			vec3(11.0),
+			vec4(0, 0, 0, 1),
+			spin_in_axis(vec3(rand4, rand5, rand6), rand7 * 3.0)
 		);
 	} else {
 		attr = Attr(

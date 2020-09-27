@@ -13,12 +13,12 @@ use common::{
     state::BlockChange,
     sync::{Uid, UidAllocator, WorldSyncExt},
     sys::combat::BLOCK_ANGLE,
-    terrain::{Block, TerrainGrid},
+    terrain::{Block, BlockKind, TerrainGrid},
     vol::ReadVol,
 };
 use comp::item::Reagent;
 use rand::prelude::*;
-use specs::{join::Join, saveload::MarkerAllocator, Entity as EcsEntity, WorldExt};
+use specs::{join::Join, saveload::MarkerAllocator, Builder, Entity as EcsEntity, WorldExt};
 use tracing::error;
 use vek::Vec3;
 
@@ -28,7 +28,8 @@ pub fn handle_damage(server: &Server, uid: Uid, change: HealthChange) {
     if let Some(entity) = ecs.entity_from_uid(uid.into()) {
         if let Some(stats) = ecs.write_storage::<Stats>().get_mut(entity) {
             stats.health.change_by(change);
-            ecs.write_resource::<Vec<Outcome>>().push(Outcome::Damage { uid: uid.0, change });
+            ecs.write_resource::<Vec<Outcome>>()
+                .push(Outcome::Damage { uid: uid.0, change });
         }
     }
 }
@@ -68,11 +69,10 @@ pub fn handle_destroy(server: &mut Server, entity: EcsEntity, cause: HealthSourc
     }
 
     if let Some(uid) = state.ecs().read_storage::<Uid>().get(entity) {
-
-        state.ecs().write_resource::<Vec<Outcome>>().push(Outcome::Destruction {
-            uid: uid.0,
-            cause,
-        });
+        state
+            .ecs()
+            .write_resource::<Vec<Outcome>>()
+            .push(Outcome::Destruction { uid: uid.0, cause });
 
         tracing::warn!("Created Outcome::Destruction {} {:?}", uid.0, cause);
     }
@@ -480,7 +480,7 @@ pub fn handle_respawn(server: &Server, entity: EcsEntity) {
 }
 
 pub fn handle_explosion(
-    server: &Server,
+    server: &mut Server,
     pos: Vec3<f32>,
     power: f32,
     owner: Option<Uid>,
@@ -490,21 +490,12 @@ pub fn handle_explosion(
 ) {
     // Go through all other entities
     let hit_range = 3.0 * power;
-    let ecs = &server.state.ecs();
+    let ecs = server.state.ecs_mut();
 
-    // Add an outcome
-    ecs.write_resource::<Vec<Outcome>>()
-        .push(Outcome::Explosion {
-            pos,
-            power,
-            reagent,
-            percent_damage,
-        });
     let owner_entity = owner.and_then(|uid| {
         ecs.read_resource::<UidAllocator>()
             .retrieve_entity_internal(uid.into())
     });
-    let groups = ecs.read_storage::<comp::Group>();
 
     for (entity_b, pos_b, ori_b, character_b, stats_b, loadout_b) in (
         &ecs.entities(),
@@ -516,6 +507,8 @@ pub fn handle_explosion(
     )
         .join()
     {
+        let groups = ecs.read_storage::<comp::Group>();
+
         let distance_squared = pos.distance_squared(pos_b.0);
         // Check if it is a hit
         if !stats_b.is_dead
@@ -578,6 +571,8 @@ pub fn handle_explosion(
         }
     }
 
+    let mut exploded_blocks = hashbrown::HashMap::new();
+
     const RAYS: usize = 500;
 
     if percent_damage > 0.9 {
@@ -635,12 +630,65 @@ pub fn handle_explosion(
                 .until(|block| block.is_liquid() || rand::random::<f32>() < 0.05)
                 .for_each(|block: &Block, pos| {
                     if block.is_explodable() {
+                        exploded_blocks.push(pos, block.clone());
                         block_change.set(pos, block.into_vacant());
                     }
                 })
                 .cast();
         }
     }
+
+    for (pos, block) in &exploded_blocks {
+        match block.kind() {
+            BlockKind::Leaves => {
+                // TODO: use create_object function instead.
+                ecs.create_entity_synced()
+                    .with(comp::Pos(pos.map(|x| x as f32)))
+                    .with(comp::Vel(Vec3::zero()))
+                    .with(comp::Ori::default())
+                    .with(comp::Mass(5.0))
+                    .with(comp::Collider::Box {
+                        radius: comp::Body::Object(object::Body::Pouch).radius(),
+                        z_min: 0.0,
+                        z_max: comp::Body::Object(object::Body::Pouch).height(),
+                    })
+                    .with(comp::Body::Object(object::Body::Pouch))
+                    .with(comp::Gravity(1.0))
+                    .with(Item::new_from_asset_expect(
+                        "common.items.crafting_ing.twigs",
+                    ));
+            },
+            BlockKind::WeakRock => {
+                // TODO: use create_object function instead.
+                ecs.create_entity_synced()
+                    .with(comp::Pos(pos.map(|x| x as f32)))
+                    .with(comp::Vel(Vec3::zero()))
+                    .with(comp::Ori::default())
+                    .with(comp::Mass(5.0))
+                    .with(comp::Collider::Box {
+                        radius: comp::Body::Object(object::Body::Pouch).radius(),
+                        z_min: 0.0,
+                        z_max: comp::Body::Object(object::Body::Pouch).height(),
+                    })
+                    .with(comp::Body::Object(object::Body::Pouch))
+                    .with(comp::Gravity(1.0))
+                    .with(Item::new_from_asset_expect(
+                        "common.items.crafting_ing.stones",
+                    ));
+            },
+            _ => {},
+        };
+    }
+
+    // Add an outcome
+    ecs.write_resource::<Vec<Outcome>>()
+        .push(Outcome::Explosion {
+            pos,
+            power,
+            reagent,
+            percent_damage,
+            exploded_blocks,
+        });
 }
 
 pub fn handle_level_up(server: &mut Server, entity: EcsEntity, new_level: u32) {

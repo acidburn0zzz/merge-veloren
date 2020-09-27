@@ -1,6 +1,8 @@
-use crate::comp;
-use crate::comp::HealthChange;
-use crate::comp::HealthSource;
+use crate::{
+    comp,
+    comp::{HealthChange, HealthSource},
+    terrain::Block,
+};
 use comp::item::Reagent;
 use serde::{Deserialize, Serialize};
 use vek::*;
@@ -17,6 +19,8 @@ pub enum Outcome {
         power: f32,
         reagent: Option<Reagent>, // How can we better define this?
         percent_damage: f32,
+        exploded_blocks: hashbrown::HashMap<Vec3<i32>, Block>, /* should this be a seperate
+                                                                * BlockDestruction event? */
     },
     ProjectileShot {
         pos: Vec3<f32>,
@@ -32,9 +36,10 @@ pub enum Outcome {
         change: HealthChange,
     },
     Destruction {
+        // TODO: rename EntityDestruction
         uid: u64, //Uid,
         cause: HealthSource,
-    }
+    },
 }
 
 impl Outcome {
@@ -43,7 +48,10 @@ impl Outcome {
             Outcome::Explosion { pos, .. } => Some(*pos),
             Outcome::ProjectileShot { pos, .. } => Some(*pos),
             _ => {
-                tracing::warn!("get_pos not implemented for Outcome, which is used for avoiding unnecessary network syncs.");
+                tracing::warn!(
+                    "get_pos not implemented for Outcome, which is used for avoiding unnecessary \
+                     network syncs."
+                );
                 None
             },
         }

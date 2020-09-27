@@ -392,6 +392,7 @@ impl Scene {
                 power,
                 reagent,
                 percent_damage,
+                ..
             } => self.event_lights.push(EventLight {
                 light: Light::new(
                     *pos,
