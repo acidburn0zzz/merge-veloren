@@ -667,7 +667,7 @@ pub fn handle_explosion(
                                 ).unwrap_or_default()
                             )
                         )
-                        .with(comp::Mass(5.0))
+                        .with(comp::Mass(0.1))
                         .with(comp::Collider::Box {
                             radius: comp::Body::Object(body).radius(),
                             z_min: 0.0,
@@ -684,7 +684,7 @@ pub fn handle_explosion(
                         ecs
                         .create_entity_synced()
                         .with(comp::Pos(pos.map(|x| x as f32)))
-                        .with(comp::Vel(Vec3::new()))
+                        .with(comp::Vel(Vec3::zero()))
                         .with(
                             comp::Ori(
                                 Dir::from_unnormalized(
@@ -696,7 +696,7 @@ pub fn handle_explosion(
                                 ).unwrap_or_default()
                             )
                         )
-                        .with(comp::Mass(5.0))
+                        .with(comp::Mass(1.0))
                         .with(comp::Collider::Box {
                             radius: comp::Body::Object(body).radius(),
                             z_min: 0.0,
