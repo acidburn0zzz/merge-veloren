@@ -3589,6 +3589,13 @@ fn mesh_object(obj: &object::Body) -> BoneMeshes {
         Body::TrainingDummy => ("object.training_dummy", Vec3::new(-7.0, -5.0, 0.0)),
         Body::MultiArrow => ("weapon.projectile.multi-arrow", Vec3::new(-4.0, -9.5, -5.0)),
         Body::BoltNature => ("weapon.projectile.nature-bolt", Vec3::new(-6.0, -6.0, -6.0)),
+
+        Body::Twigs0 => ("sprite.twigs.twigs-0", Vec3::new(-3.0, -3.0, 0.0)),
+        Body::Twigs1 => ("sprite.twigs.twigs-1", Vec3::new(-3.0, -3.0, 0.0)),
+        Body::Twigs2 => ("sprite.twigs.twigs-2", Vec3::new(-3.0, -3.0, 0.0)),
+        Body::Rock0 => ("sprite.rocks.rock-0", Vec3::new(-3.0, -3.0, 0.0)),
+        Body::Rock1 => ("sprite.rocks.rock-1", Vec3::new(-3.0, -3.0, 0.0)),
+        Body::Rock2 => ("sprite.rocks.rock-2", Vec3::new(-3.0, -3.0, 0.0)),
     };
     load_mesh(name, offset)
 }
