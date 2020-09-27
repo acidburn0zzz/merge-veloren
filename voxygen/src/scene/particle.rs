@@ -16,7 +16,7 @@ use common::{
     state::DeltaTime,
     states::utils::StageSection,
     sync::WorldSyncExt,
-    terrain::TerrainChunk,
+    terrain::{BlockKind, TerrainChunk},
     vol::{RectRasterableVol, SizedVol},
 };
 use dot_vox::DotVoxData;
@@ -102,6 +102,7 @@ impl ParticleMgr {
                 power,
                 reagent,
                 percent_damage,
+                exploded_blocks,
             } => {
                 if *percent_damage < 0.5 {
                     self.particles.resize_with(
@@ -117,6 +118,87 @@ impl ParticleMgr {
                         },
                     );
                 } else {
+                    self.particles.reserve(exploded_blocks.len());
+                    for (pos, block) in exploded_blocks {
+                        match block.kind() {
+                            BlockKind::Leaves => {
+                                for _ in 0..(3 * 3 * 3) {
+                                    self.particles.push(Particle::new(
+                                        Duration::from_millis(30_000),
+                                        time,
+                                        match block.kind() {
+                                            BlockKind::Leaves => ParticleMode::Leaf,
+                                            _ => ParticleMode::DestroyedBlock,
+                                        },
+                                        pos.map(|p| p as f32),
+                                        /* TODO: include directional force, relative to
+                                         * explosion origin.
+                                         * TODO: include block.get_color() */
+                                    ));
+                                }
+                            },
+                            BlockKind::Grass => {
+                                for _ in 0..(3 * 3 * 3) {
+                                    self.particles.push(Particle::new(
+                                        Duration::from_millis(5_000),
+                                        time,
+                                        match block.kind() {
+                                            BlockKind::Leaves => ParticleMode::DestroyedBlock,
+                                            _ => ParticleMode::DestroyedBlock,
+                                        },
+                                        pos.map(|p| p as f32),
+                                        /* TODO: include directional force, relative to
+                                         * explosion origin.
+                                         * TODO: include block.get_color() */
+                                    ));
+                                }
+                            },
+                            BlockKind::WeakRock => {
+                                for _ in 0..(3 * 3 * 3) {
+                                    self.particles.push(Particle::new(
+                                        Duration::from_millis(5_000),
+                                        time,
+                                        match block.kind() {
+                                            BlockKind::Leaves => ParticleMode::DestroyedBlock,
+                                            _ => ParticleMode::DestroyedBlock,
+                                        },
+                                        pos.map(|p| p as f32),
+                                        /* TODO: include directional force, relative to
+                                         * explosion origin.
+                                         * TODO: include block.get_color() */
+                                    ));
+                                }
+                            },
+                            BlockKind::Water => {
+                                // these voxels do not get destroyed, but!
+                                // a water splash might be appropriate?
+                            },
+                            BlockKind::Sand => {
+                                // these voxels do not get destroyed, but!
+                                // sand/dust cloud might be appropriate?
+                            },
+
+                            // Air = 0x00, // Air counts as a fluid
+                            // Water = 0x01, // water splash?
+                            // Rock = 0x10,
+                            // WeakRock = 0x11, // Explodable
+                            // Grass = 0x20, // Note: *not* the same as grass sprites
+                            // Earth = 0x30,
+                            // Sand = 0x31,
+                            // Wood = 0x40,
+                            // Leaves = 0x41,
+                            // Misc = 0xFE,
+                            _ => {
+                                if block.get_sprite().is_some() {
+                                    // sprite debris particles
+                                    tracing::warn!("Did a sprite just get destroyed?");
+                                } else {
+                                    // not explodeable.
+                                }
+                            },
+                        }
+                    }
+
                     self.particles.resize_with(
                         self.particles.len() + if reagent.is_some() { 300 } else { 150 },
                         || {

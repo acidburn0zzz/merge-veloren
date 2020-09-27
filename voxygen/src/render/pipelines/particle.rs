@@ -113,6 +113,7 @@ pub enum ParticleMode {
     EnergyNature = 14,
     LevelUp = 15,
     Bleed = 16,
+    DestroyedBlock = 17,
 }
 
 impl ParticleMode {
