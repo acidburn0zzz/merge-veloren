@@ -10,16 +10,6 @@ unittests:
   retry:
     max: 2
 
-benchmarks:
-  extends: .recompile-branch
-  stage: build
-  script:
-    - unset DISABLE_GIT_LFS_CHECK
-    - ln -s /dockercache/cache-all target
-    - cargo bench
-  retry:
-    max: 2
-
 # # Coverage is needed on master for the README.md badge to work
 # coverage:
 #   extends: .recompile
