@@ -2283,7 +2283,7 @@ impl<'a> Widget for SettingsWindow<'a> {
                 .window
                 .window()
                 .window()
-                .current_monitor()
+                .current_monitor().unwrap()
                 .video_modes()
                 .collect();
 

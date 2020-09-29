@@ -1086,7 +1086,7 @@ impl Window {
         let correct_res = correct_res.unwrap_or_else(|| {
             let window = self.window.window();
             window
-                .current_monitor()
+                .current_monitor().unwrap()
                 .video_modes()
                 .filter(|mode| mode.size().width == resolution[0] as u32)
                 .filter(|mode| mode.size().height == resolution[1] as u32)
@@ -1237,7 +1237,7 @@ impl Window {
                 self
                     .window
                     .window()
-                    .current_monitor()
+                    .current_monitor().unwrap()
                     .video_modes()
                     // Prefer bit depth over refresh rate
                     .sorted_by_key(|mode| mode.refresh_rate())
