@@ -395,6 +395,8 @@ impl CharSelectionUi {
                     ability1: None,
                     ability2: None,
                     ability3: None,
+                    ability4: None,
+                    ability5: None,
                     block_ability: None,
                     dodge_ability: None,
                 });

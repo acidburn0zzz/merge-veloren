@@ -266,6 +266,8 @@ impl<'a> System<'a> for Sys {
                     } => {
                         enum Tactic {
                             Melee,
+                            Carnivore,
+                            AggressiveHerbivore,
                             RangedPowerup,
                             Staff,
                             StoneGolemBoss,
@@ -283,6 +285,10 @@ impl<'a> System<'a> for Sys {
                             Some(ToolKind::NpcWeapon(kind)) => {
                                 if kind == "StoneGolemsFist" {
                                     Tactic::StoneGolemBoss
+                                } else if kind == "CarnivoreAttacks" {
+                                    Tactic::Carnivore
+                                } else if kind == "AggressiveHerbivoreAttacks" {
+                                    Tactic::AggressiveHerbivore
                                 } else {
                                     Tactic::Melee
                                 }
@@ -363,9 +369,11 @@ impl<'a> System<'a> for Sys {
                                     * 0.1;
 
                                 match tactic {
-                                    Tactic::Melee | Tactic::Staff | Tactic::StoneGolemBoss => {
-                                        inputs.primary.set_state(true)
-                                    },
+                                    Tactic::Melee
+                                    | Tactic::Staff
+                                    | Tactic::StoneGolemBoss
+                                    | Tactic::AggressiveHerbivore
+                                    | Tactic::Carnivore => inputs.primary.set_state(true),
                                     Tactic::RangedPowerup => inputs.roll.set_state(true),
                                 }
                             } else if dist_sqrd < MAX_CHASE_DIST.powf(2.0)
@@ -397,6 +405,38 @@ impl<'a> System<'a> for Sys {
                                         inputs.secondary.set_state(true);
                                     } else if let Tactic::StoneGolemBoss = tactic {
                                         if *powerup > 5.0 {
+                                            if thread_rng().gen_bool(0.4) {
+                                                inputs.secondary.set_state(true);
+                                                *powerup = 0.0;
+                                            } else {
+                                                if thread_rng().gen_bool(0.3) {
+                                                    inputs.ability3.set_state(true);
+                                                    *powerup = 0.0;
+                                                } else {
+                                                    if thread_rng().gen_bool(0.5) {
+                                                        inputs.ability4.set_state(true);
+                                                        *powerup = 0.0;
+                                                    } else {
+                                                        inputs.ability5.set_state(true);
+                                                        *powerup = 0.0;
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            *powerup += dt.0;
+                                        }
+                                    } else if let Tactic::Carnivore = tactic {
+                                        if *powerup > 2.0 {
+                                            match thread_rng().gen_bool(0.5) {
+                                                true => inputs.secondary.set_state(true),
+                                                false => inputs.ability3.set_state(true),
+                                            }
+                                            *powerup = 0.0;
+                                        } else {
+                                            *powerup += dt.0;
+                                        }
+                                    } else if let Tactic::AggressiveHerbivore = tactic {
+                                        if *powerup > 3.0 {
                                             inputs.secondary.set_state(true);
                                             *powerup = 0.0;
                                         } else {

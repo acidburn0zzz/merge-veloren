@@ -1,7 +1,7 @@
 use crate::comp::{
     golem,
     item::{Item, ItemKind},
-    Alignment, Body, CharacterAbility, ItemConfig, Loadout,
+    quadruped_medium, Alignment, Body, CharacterAbility, ItemConfig, Loadout,
 };
 use rand::Rng;
 use std::time::Duration;
@@ -88,6 +88,28 @@ impl LoadoutBuilder {
                     ));
                 }
             },
+            Body::QuadrupedMedium(animal) => match animal.species {
+                quadruped_medium::Species::Lion
+                | quadruped_medium::Species::Saber
+                | quadruped_medium::Species::Wolf
+                | quadruped_medium::Species::Grolgar
+                | quadruped_medium::Species::Frostfang
+                | quadruped_medium::Species::Tiger => {
+                    main_tool = Some(Item::new_from_asset_expect(
+                        "common.items.npc_weapons.npcweapon.carnivore_attacks",
+                    ));
+                },
+                quadruped_medium::Species::Deer
+                | quadruped_medium::Species::Hirdrasil
+                | quadruped_medium::Species::Tuskram
+                | quadruped_medium::Species::Catoblepas
+                | quadruped_medium::Species::Mouflon => {
+                    main_tool = Some(Item::new_from_asset_expect(
+                        "common.items.npc_weapons.npcweapon.aggressive_herbivore_attacks",
+                    ));
+                },
+                _ => {},
+            },
             _ => {},
         };
 
@@ -100,6 +122,8 @@ impl LoadoutBuilder {
                 ability1: ability_drain.next(),
                 ability2: ability_drain.next(),
                 ability3: ability_drain.next(),
+                ability4: ability_drain.next(),
+                ability5: ability_drain.next(),
                 block_ability: None,
                 dodge_ability: Some(CharacterAbility::Roll),
             })
@@ -118,6 +142,8 @@ impl LoadoutBuilder {
                 }),
                 ability2: None,
                 ability3: None,
+                ability4: None,
+                ability5: None,
                 block_ability: None,
                 dodge_ability: None,
             })
@@ -252,6 +278,36 @@ impl LoadoutBuilder {
                     tabard: None,
                 },
             },
+            Body::QuadrupedMedium(animal) => match animal.species {
+                quadruped_medium::Species::Lion
+                | quadruped_medium::Species::Saber
+                | quadruped_medium::Species::Wolf
+                | quadruped_medium::Species::Grolgar
+                | quadruped_medium::Species::Frostfang
+                | quadruped_medium::Species::Tiger
+                | quadruped_medium::Species::Deer
+                | quadruped_medium::Species::Hirdrasil
+                | quadruped_medium::Species::Tuskram
+                | quadruped_medium::Species::Catoblepas
+                | quadruped_medium::Species::Mouflon => Loadout {
+                    active_item,
+                    second_item: None,
+                    shoulder: None,
+                    chest: None,
+                    belt: None,
+                    hand: None,
+                    pants: None,
+                    foot: None,
+                    back: None,
+                    ring: None,
+                    neck: None,
+                    lantern: None,
+                    glider: None,
+                    head: None,
+                    tabard: None,
+                },
+                _ => LoadoutBuilder::animal(body).build(),
+            },
             _ => LoadoutBuilder::animal(body).build(),
         };
 
@@ -274,6 +330,8 @@ impl LoadoutBuilder {
                 }),
                 ability2: None,
                 ability3: None,
+                ability4: None,
+                ability5: None,
                 block_ability: None,
                 dodge_ability: None,
             }),

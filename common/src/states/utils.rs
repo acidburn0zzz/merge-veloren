@@ -152,6 +152,8 @@ pub fn handle_wield(data: &JoinData, update: &mut StateUpdate) {
     if data.inputs.primary.is_pressed()
         || data.inputs.secondary.is_pressed()
         || data.inputs.ability3.is_pressed()
+        || data.inputs.ability4.is_pressed()
+        || data.inputs.ability5.is_pressed()
     {
         attempt_wield(data, update);
     }
@@ -316,6 +318,36 @@ pub fn handle_ability3_input(data: &JoinData, update: &mut StateUpdate) {
     }
 }
 
+/// Will attempt to go into `loadout.active_item.ability4`
+pub fn handle_ability4_input(data: &JoinData, update: &mut StateUpdate) {
+    if data.inputs.ability4.is_pressed() {
+        if let Some(ability) = data
+            .loadout
+            .active_item
+            .as_ref()
+            .and_then(|i| i.ability4.as_ref())
+            .filter(|ability| ability.requirements_paid(data, update))
+        {
+            update.character = ability.into();
+        }
+    }
+}
+
+/// Will attempt to go into `loadout.active_item.ability5`
+pub fn handle_ability5_input(data: &JoinData, update: &mut StateUpdate) {
+    if data.inputs.ability5.is_pressed() {
+        if let Some(ability) = data
+            .loadout
+            .active_item
+            .as_ref()
+            .and_then(|i| i.ability5.as_ref())
+            .filter(|ability| ability.requirements_paid(data, update))
+        {
+            update.character = ability.into();
+        }
+    }
+}
+
 /// Checks that player can perform a dodge, then
 /// attempts to go into `loadout.active_item.dodge_ability`
 pub fn handle_dodge_input(data: &JoinData, update: &mut StateUpdate) {
@@ -351,6 +383,8 @@ pub fn handle_interrupt(data: &JoinData, update: &mut StateUpdate) {
     handle_ability1_input(data, update);
     handle_ability2_input(data, update);
     handle_ability3_input(data, update);
+    handle_ability4_input(data, update);
+    handle_ability5_input(data, update);
     handle_dodge_input(data, update);
 }
 

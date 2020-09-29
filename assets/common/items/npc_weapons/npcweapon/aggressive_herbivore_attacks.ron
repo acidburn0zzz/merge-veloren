@@ -1,0 +1,13 @@
+ItemDef(
+    name: "Aggressive Herbivore Attacks",
+    description: "Weapon for aggresive herbivore animals in the overworld.",
+    kind: Tool(
+        (
+            kind: NpcWeapon("AggressiveHerbivoreAttacks"),    
+            stats: (
+                equip_time_millis: 500,
+                power: 1.00,
+            ),
+        )
+    ),
+)

@@ -1,13 +1,15 @@
 pub mod alpha;
 pub mod idle;
 pub mod jump;
+pub mod roll;
 pub mod run;
 pub mod shockwave;
+pub mod spinmelee;
 
 // Reexports
 pub use self::{
-    alpha::AlphaAnimation, idle::IdleAnimation, jump::JumpAnimation, run::RunAnimation,
-    shockwave::ShockwaveAnimation,
+    alpha::AlphaAnimation, idle::IdleAnimation, jump::JumpAnimation, roll::RollAnimation,
+    run::RunAnimation, shockwave::ShockwaveAnimation, spinmelee::SpinMeleeAnimation,
 };
 
 use super::{make_bone, vek::*, FigureBoneData, Skeleton};

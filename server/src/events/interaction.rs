@@ -133,6 +133,8 @@ pub fn handle_possess(server: &Server, possessor_uid: Uid, possesse_uid: Uid) {
                         ability1: ability_drain.next(),
                         ability2: ability_drain.next(),
                         ability3: ability_drain.next(),
+                        ability4: ability_drain.next(),
+                        ability5: ability_drain.next(),
                         block_ability: None,
                         dodge_ability: None,
                     };

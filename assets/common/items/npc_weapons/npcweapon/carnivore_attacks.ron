@@ -1,0 +1,13 @@
+ItemDef(
+    name: "Carnivore Attacks",
+    description: "Weapon for carnivorous animals in the overworld.",
+    kind: Tool(
+        (
+            kind: NpcWeapon("CarnivoreAttacks"),    
+            stats: (
+                equip_time_millis: 500,
+                power: 1.00,
+            ),
+        )
+    ),
+)
