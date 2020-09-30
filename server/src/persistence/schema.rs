@@ -35,6 +35,7 @@ table! {
         stats_id -> BigInt,
         level -> Integer,
         exp -> Integer,
+        inv_slots -> SmallInt,
         endurance -> Integer,
         fitness -> Integer,
         willpower -> Integer,

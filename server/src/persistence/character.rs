@@ -83,10 +83,12 @@ pub fn load_character_data(
         .filter(schema::body::dsl::body_id.eq(char_id))
         .first::<Body>(&*connection)?;
 
+    let stats_comp = convert_stats_from_database(&stats_data, character_data.alias);
+    let _inv_slots = stats_comp.inv_slots;
     Ok((
         convert_body_from_database(&char_body)?,
-        convert_stats_from_database(&stats_data, character_data.alias),
-        convert_inventory_from_database_items(&inventory_items)?,
+        stats_comp,
+        convert_inventory_from_database_items(&inventory_items, _inv_slots)?,
         convert_loadout_from_database_items(&loadout_items)?,
     ))
 }

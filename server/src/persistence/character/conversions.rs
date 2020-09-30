@@ -170,14 +170,18 @@ pub fn convert_stats_to_database(character_id: CharacterId, stats: &common::comp
         stats_id: character_id,
         level: stats.level.level() as i32,
         exp: stats.exp.current() as i32,
+        inv_slots: stats.inv_slots as i16,
         endurance: stats.endurance as i32,
         fitness: stats.fitness as i32,
         willpower: stats.willpower as i32,
     }
 }
 
-pub fn convert_inventory_from_database_items(database_items: &[Item]) -> Result<Inventory, Error> {
-    let mut inventory = Inventory::new_empty();
+pub fn convert_inventory_from_database_items(
+    database_items: &[Item],
+    inv_slots: u16,
+) -> Result<Inventory, Error> {
+    let mut inventory = Inventory::new_empty(inv_slots);
     for db_item in database_items.iter() {
         let mut item = common::comp::Item::new_from_asset(db_item.item_definition_id.as_str())?;
 
@@ -318,6 +322,7 @@ pub fn convert_stats_from_database(stats: &Stats, alias: String) -> common::comp
     new_stats.level.set_level(stats.level as u32);
     new_stats.exp.update_maximum(stats.level as u32);
     new_stats.exp.set_current(stats.exp as u32);
+    new_stats.inv_slots = stats.inv_slots as u16;
     new_stats.update_max_hp(new_stats.body_type);
     new_stats.health.set_to(
         new_stats.health.maximum(),

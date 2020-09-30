@@ -1,0 +1,11 @@
+ItemDef(
+    name: "Adventurer Backpack",
+    description: "A tier 3 bag space upgrade",
+    kind: Consumable(
+        kind: "BagUpgradeTier3",
+        effect: InventorySlotIncrease (
+					tier: 3,
+					slots: 18
+				),
+    ),
+)

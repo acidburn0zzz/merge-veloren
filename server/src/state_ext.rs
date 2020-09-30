@@ -19,7 +19,7 @@ use vek::*;
 
 pub trait StateExt {
     /// Updates a component associated with the entity based on the `Effect`
-    fn apply_effect(&mut self, entity: EcsEntity, effect: Effect);
+    fn apply_effect(&mut self, entity: EcsEntity, effect: Effect) -> Result<(), String>;
     /// Build a non-player character
     fn create_npc(
         &mut self,
@@ -68,13 +68,34 @@ pub trait StateExt {
 }
 
 impl StateExt for State {
-    fn apply_effect(&mut self, entity: EcsEntity, effect: Effect) {
+    fn apply_effect(&mut self, entity: EcsEntity, effect: Effect) -> Result<(), String> {
         match effect {
             Effect::Health(change) => {
                 self.ecs()
                     .write_storage::<comp::Stats>()
                     .get_mut(entity)
                     .map(|stats| stats.health.change_by(change));
+            },
+            Effect::InventorySlotIncrease { tier, slots } => {
+                if let Some(inv) = self
+                    .ecs()
+                    .write_storage::<comp::Inventory>()
+                    .get_mut(entity)
+                {
+                    match inv.upgrade_slots(tier, slots) {
+                        Ok(added_slots) => {
+                            self.ecs()
+                                .write_storage::<comp::Stats>()
+                                .get_mut(entity)
+                                .map(|stats| stats.inv_slots += added_slots);
+                        },
+                        Err(e) => {
+                            // TODO: Remove this println
+                            println!("Failed to upgrade inventory: {}", e);
+                            return Err(e);
+                        },
+                    }
+                }
             },
             Effect::Xp(xp) => {
                 self.ecs()
@@ -83,6 +104,8 @@ impl StateExt for State {
                     .map(|stats| stats.exp.change_by(xp));
             },
         }
+
+        Ok(())
     }
 
     fn create_npc(

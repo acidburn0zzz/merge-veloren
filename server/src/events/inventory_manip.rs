@@ -2,9 +2,11 @@ use crate::{client::Client, Server, StateExt};
 use common::{
     comp::{
         self, item,
+        item::Item,
         slot::{self, Slot},
         Pos, MAX_PICKUP_RANGE_SQR,
     },
+    effect::Effect,
     msg::ServerMsg,
     recipe::default_recipe_book,
     sync::{Uid, WorldSyncExt},
@@ -163,7 +165,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                 return;
             };
 
-            let mut maybe_effect = None;
+            let mut maybe_effect_consumable: Option<(Effect, Item)> = None;
 
             let event = match slot {
                 Slot::Inventory(slot) => {
@@ -189,8 +191,9 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                     } else if let Some(item) = inventory.take(slot) {
                         match item.kind() {
                             ItemKind::Consumable { kind, effect, .. } => {
-                                maybe_effect = Some(*effect);
-                                Some(comp::InventoryUpdateEvent::Consumed(kind.clone()))
+                                let kind = kind.clone();
+                                maybe_effect_consumable = Some((*effect, item));
+                                Some(comp::InventoryUpdateEvent::Consumed(kind))
                             },
                             ItemKind::Throwable { kind, .. } => {
                                 if let Some(pos) =
@@ -326,8 +329,18 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
             };
 
             drop(inventories);
-            if let Some(effect) = maybe_effect {
-                state.apply_effect(entity, effect);
+            if let Some((effect, item)) = maybe_effect_consumable {
+                if state.apply_effect(entity, effect).is_err() {
+                    state
+                        .ecs()
+                        .write_storage::<comp::Inventory>()
+                        .get_mut(entity)
+                        .map(|inv| {
+                            // The effect of the consumable failed to apply, return the consumable
+                            // to the inventory
+                            inv.push(item);
+                        });
+                }
             }
             if let Some(event) = event {
                 state.write_component(entity, comp::InventoryUpdate::new(event));

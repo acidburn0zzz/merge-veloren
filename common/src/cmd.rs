@@ -66,6 +66,7 @@ pub enum ChatCommand {
     Region,
     RemoveLights,
     Say,
+    SetInventorySlots,
     SetLevel,
     SetMotd,
     Spawn,
@@ -113,6 +114,7 @@ pub static CHAT_COMMANDS: &[ChatCommand] = &[
     ChatCommand::Region,
     ChatCommand::RemoveLights,
     ChatCommand::Say,
+    ChatCommand::SetInventorySlots,
     ChatCommand::SetLevel,
     ChatCommand::SetMotd,
     ChatCommand::Spawn,
@@ -347,6 +349,11 @@ impl ChatCommand {
                 "Send messages to everyone within shouting distance",
                 NoAdmin,
             ),
+            ChatCommand::SetInventorySlots => cmd(
+                vec![Integer("slots", 36, Required)],
+                "Set number of inventory slots",
+                Admin,
+            ),
             ChatCommand::SetLevel => cmd(
                 vec![Integer("level", 10, Required)],
                 "Set player Level",
@@ -441,6 +448,7 @@ impl ChatCommand {
             ChatCommand::Region => "region",
             ChatCommand::RemoveLights => "remove_lights",
             ChatCommand::Say => "say",
+            ChatCommand::SetInventorySlots => "set_inv_slots",
             ChatCommand::SetLevel => "set_level",
             ChatCommand::SetMotd => "set_motd",
             ChatCommand::Spawn => "spawn",
@@ -547,7 +555,7 @@ pub enum ArgumentSpec {
     /// * suggested tab-completion
     /// * whether it's optional
     Float(&'static str, f32, Requirement),
-    /// The argument is a float. The associated values are
+    /// The argument is an integer. The associated values are
     /// * label
     /// * suggested tab-completion
     /// * whether it's optional

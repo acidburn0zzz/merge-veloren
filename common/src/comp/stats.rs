@@ -8,6 +8,8 @@ use specs::{Component, FlaggedStorage};
 use specs_idvs::IdvStorage;
 use std::{error::Error, fmt};
 
+const DEFAULT_INV_SLOTS: u16 = 18;
+
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HealthChange {
     pub amount: i32,
@@ -129,6 +131,7 @@ pub struct Stats {
     pub health: Health,
     pub level: Level,
     pub exp: Exp,
+    pub inv_slots: u16,
     pub skill_set: SkillSet,
     pub endurance: u32,
     pub fitness: u32,
@@ -189,6 +192,7 @@ impl Stats {
                 current: 0,
                 maximum: 50,
             },
+            inv_slots: DEFAULT_INV_SLOTS,
             skill_set: SkillSet::default(),
             endurance,
             fitness,
@@ -223,6 +227,7 @@ impl Stats {
                 current: 0,
                 maximum: 50,
             },
+            inv_slots: 0,
             skill_set: SkillSet::default(),
             endurance: 0,
             fitness: 0,

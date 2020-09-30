@@ -94,6 +94,7 @@ fn get_handler(cmd: &ChatCommand) -> CommandHandler {
         ChatCommand::Region => handle_region,
         ChatCommand::RemoveLights => handle_remove_lights,
         ChatCommand::Say => handle_say,
+        ChatCommand::SetInventorySlots => handle_set_inventory_slots,
         ChatCommand::SetLevel => handle_set_level,
         ChatCommand::SetMotd => handle_set_motd,
         ChatCommand::Spawn => handle_spawn,
@@ -1382,6 +1383,42 @@ fn handle_say(
     if !msg.is_empty() {
         if let Some(uid) = server.state.ecs().read_storage().get(client) {
             server.state.send_chat(mode.new_message(*uid, msg));
+        }
+    }
+}
+
+fn handle_set_inventory_slots(
+    server: &mut Server,
+    _client: EcsEntity,
+    target: EcsEntity,
+    msg: String,
+    action: &ChatCommand,
+) {
+    if let Ok(slots) = scan_fmt!(&msg, &action.arg_fmt(), u16) {
+        if let Some(inventory) = server
+            .state()
+            .ecs()
+            .write_storage::<comp::Inventory>()
+            .get_mut(target)
+        {
+            if let Some(stats) = server
+                .state()
+                .ecs()
+                .write_storage::<comp::Stats>()
+                .get_mut(target)
+            {
+                inventory.set_slots(slots);
+                stats.inv_slots = slots;
+
+                let _ = server
+                    .state
+                    .ecs()
+                    .write_storage::<comp::InventoryUpdate>()
+                    .insert(
+                        target,
+                        comp::InventoryUpdate::new(comp::InventoryUpdateEvent::Given),
+                    );
+            }
         }
     }
 }

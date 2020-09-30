@@ -7,9 +7,14 @@ use item::Item;
 use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage, HashMapStorage};
 use specs_idvs::IdvStorage;
+use std::cmp::min;
 
 // The limit on distance between the entity and a collectible (squared)
 pub const MAX_PICKUP_RANGE_SQR: f32 = 64.0;
+// The maximum number of slots that an inventory may be upgraded to have
+pub const MAX_INVENTORY_SLOTS: u16 = 126;
+
+pub type InventoryUpgradeTier = u8;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Inventory {
@@ -27,9 +32,9 @@ pub enum Error {
 
 #[allow(clippy::len_without_is_empty)] // TODO: Pending review in #587
 impl Inventory {
-    pub fn new_empty() -> Inventory {
+    pub fn new_empty(slots: u16) -> Inventory {
         Inventory {
-            slots: vec![None; 36],
+            slots: vec![None; slots as usize],
             amount: 0,
         }
     }
@@ -208,6 +213,56 @@ impl Inventory {
         } else {
             None
         }
+    }
+
+    /// Attempts to upgrade the inventory's slots using
+    pub fn upgrade_slots(&mut self, tier: InventoryUpgradeTier, slots: u16) -> Result<u16, String> {
+        // TODO: Proper error type
+        const TIER_MAXIMUMS: [u16; 4] = [36, 72, 108, 144];
+        let current_slots = self.slots.len() as u16;
+        let max_slots_to_add = MAX_INVENTORY_SLOTS - current_slots;
+
+        let tier_min: u16 = if tier == 0 {
+            0
+        } else {
+            TIER_MAXIMUMS[tier as usize - 1]
+        };
+        let tier_max: u16 = TIER_MAXIMUMS[tier as usize] - 1;
+        let range = tier_min..=tier_max;
+
+        if range.contains(&current_slots) && max_slots_to_add > 0 {
+            let slots = min(slots, max_slots_to_add);
+            self.add_slots(slots);
+            Ok(slots)
+        } else {
+            Err("Inventory cannot be upgraded by this tier of upgrade".to_string())
+        }
+    }
+
+    /// Sets the inventory's slots to the given number - used by the
+    /// /set_inv_slots admin command
+    #[allow(clippy::comparison_chain)]
+    pub fn set_slots(&mut self, slots: u16) {
+        let current_slots = self.slots.len() as u16;
+
+        if slots < current_slots {
+            self.remove_slots(current_slots - slots)
+        } else if slots > current_slots {
+            self.add_slots(slots - current_slots)
+        }
+    }
+
+    fn add_slots(&mut self, slots: u16) {
+        for _ in 0..slots {
+            self.slots.push(None)
+        }
+    }
+
+    fn remove_slots(&mut self, slots: u16) {
+        // TODO: Return truncated items so that they can be dropped when /set_inv_slots
+        // reduces inv size
+        self.slots
+            .truncate((self.slots.len() as u16 - slots) as usize)
     }
 
     /// Determine how many of a particular item there is in the inventory.

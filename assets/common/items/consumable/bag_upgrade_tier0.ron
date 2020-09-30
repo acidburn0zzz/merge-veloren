@@ -1,0 +1,11 @@
+ItemDef(
+    name: "Small Pouch",
+    description: "A tier 0 bag space upgrade",
+    kind: Consumable(
+        kind: "BagUpgradeTier0",
+        effect: InventorySlotIncrease (
+					tier: 0,
+					slots: 3
+				),
+    ),
+)

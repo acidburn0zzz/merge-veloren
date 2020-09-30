@@ -1,0 +1,11 @@
+ItemDef(
+    name: "Sturdy Bag",
+    description: "A tier 1 bag space upgrade",
+    kind: Consumable(
+        kind: "BagUpgradeTier1",
+        effect: InventorySlotIncrease (
+					tier: 1,
+					slots: 6
+				),
+    ),
+)

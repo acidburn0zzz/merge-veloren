@@ -43,6 +43,7 @@ pub struct Stats {
     pub stats_id: i64,
     pub level: i32,
     pub exp: i32,
+    pub inv_slots: i16,
     pub endurance: i32,
     pub fitness: i32,
     pub willpower: i32,
