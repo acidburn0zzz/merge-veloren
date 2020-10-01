@@ -1,11 +1,11 @@
 ItemDef(
     name: "Sturdy Bag",
-    description: "Increases your Bag Space by 6.\n\nWorks from 37 to a maximum of 54 Spaces.",
+    description: "Increases your inventory by 6 slots up to a maximum of 54.\n\n<Right-Click to use>",
     kind: Consumable(
         kind: "BagUpgradeTier1",
         effect: InventorySlotIncrease (
-					tier: 1,
-					slots: 6
-				),
+                    tier: 1,
+                    slots: 6
+                ),
     ),
 )

@@ -222,14 +222,7 @@ impl Inventory {
         let current_slots = self.slots.len() as u16;
         let max_slots_to_add = MAX_INVENTORY_SLOTS - current_slots;
 
-        let tier_min: u16 = if tier == 0 {
-            0
-        } else {
-            TIER_MAXIMUMS[tier as usize - 1]
-        };
-        let tier_max: u16 = TIER_MAXIMUMS[tier as usize] - 1;
-        let range = tier_min..=tier_max;
-
+        let range = 0..TIER_MAXIMUMS[tier as usize] - 1;
         if range.contains(&current_slots) && max_slots_to_add > 0 {
             let slots = min(slots, max_slots_to_add);
             self.add_slots(slots);
