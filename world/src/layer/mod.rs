@@ -1,4 +1,5 @@
 pub mod scatter;
+pub mod wildlife;
 
 pub use self::scatter::apply_scatter_to;
 

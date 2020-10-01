@@ -10,7 +10,9 @@ use vek::*;
 fn close(x: f32, tgt: f32, falloff: f32) -> f32 {
     (1.0 - (x - tgt).abs() / falloff).max(0.0).powf(0.125)
 }
+
 const MUSH_FACT: f32 = 1.0e-4; // To balance everything around the mushroom spawning rate
+
 pub fn apply_scatter_to<'a>(
     wpos2d: Vec2<i32>,
     mut get_column: impl FnMut(Vec2<i32>) -> Option<&'a ColumnSample<'a>>,
@@ -322,8 +324,8 @@ pub fn apply_scatter_to<'a>(
                         .unwrap_or(true);
                     if density > 0.0
                         && is_patch
-                        && RandomField::new(i as u32)
-                            .chance(Vec3::new(wpos2d.x, wpos2d.y, 0), density)
+                        && RandomField::new(i as u32 * 7)
+                            .chance(Vec3::new(wpos2d.x, wpos2d.y, i as i32), density)
                         && underwater == *is_underwater
                     {
                         Some(*kind)
