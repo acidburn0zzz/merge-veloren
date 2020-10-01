@@ -2986,9 +2986,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "packed_simd"
+name = "packed_simd_2"
 version = "0.3.4"
-source = "git+https://github.com/rust-lang/packed_simd.git?rev=cad16a0312427825e2de2ce1bb7a4d058f9f76e9#cad16a0312427825e2de2ce1bb7a4d058f9f76e9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3278e0492f961fd4ae70909f56b2723a7e8d01a228427294e19cdfdebda89a17"
 dependencies = [
  "cfg-if",
  "libm",
@@ -4991,7 +4992,7 @@ dependencies = [
  "noise",
  "num 0.2.1",
  "ordered-float",
- "packed_simd",
+ "packed_simd_2",
  "rand 0.7.3",
  "rand_chacha 0.2.2",
  "rayon",
