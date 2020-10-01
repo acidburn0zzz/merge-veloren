@@ -1,6 +1,6 @@
 ItemDef(
     name: "Small Pouch",
-    description: "A tier 0 bag space upgrade",
+    description: "Increases your Bag Space by 3.\n\nWorks to a maximum of 36 Spaces.",
     kind: Consumable(
         kind: "BagUpgradeTier0",
         effect: InventorySlotIncrease (

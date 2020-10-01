@@ -1,6 +1,6 @@
 ItemDef(
     name: "Adventurer Backpack",
-    description: "A tier 3 bag space upgrade",
+    description: "Increases your Bag Space by 18.\n\nWorks from 92 to a maximum of 127 Spaces.",
     kind: Consumable(
         kind: "BagUpgradeTier3",
         effect: InventorySlotIncrease (

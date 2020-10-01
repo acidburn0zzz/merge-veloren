@@ -1174,6 +1174,19 @@
     Consumable("MushroomStick"): Png(
         "element.icons.item_shroom_stick",
     ),
+    // Bags
+    Consumable("BagUpgradeTier0"): Png(
+        "element.icons.item_bag_t0",
+    ),
+    Consumable("BagUpgradeTier1"): Png(
+        "element.icons.item_bag_t1",
+    ),
+    Consumable("BagUpgradeTier2"): Png(
+        "element.icons.item_bag_t2",
+    ),
+    Consumable("BagUpgradeTier3"): Png(
+        "element.icons.item_bag_t3",
+    ),
         
     // Throwables
     Throwable(Bomb): VoxTrans(
@@ -1209,6 +1222,9 @@
         "voxel.weapon.hammer.craftsman",
         (1.0, 1.0, 0.0), (-135.0, 90.0, 0.0), 1.0,
     ),
+    Ingredient("SewingSet"): Png(
+        "element.icons.item_chest0",
+    ),
     Ingredient("Flower"): VoxTrans(
         "voxel.sprite.flowers.flower_red_2",
         (0.0, -1.0, 0.0), (-50.0, 40.0, 20.0), 0.8,
@@ -1227,6 +1243,9 @@
     ),
     Ingredient("LeatherScraps"): Png(
         "element.icons.item_leather0",
+    ),
+    Ingredient("ClothScraps"): Png(
+        "element.icons.item_cloth0",
     ),
     Ingredient("ShinyGem"): Png(
         "element.icons.gem",

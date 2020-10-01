@@ -1,7 +1,9 @@
 [    
     // Crafting Ingredients
     (1, "common.items.crafting_ing.empty_vial"),
+    (1, "common.items.crafting_ing.cloth_scraps"),
     (0.10, "common.items.crafting_ing.shiny_gem"),
+    (0.20, "common.items.consumable.bag_upgrade_tier0"),
     // Consumables
     (0.2, "common.items.consumable.potion_minor"),
     // Armour

@@ -2,6 +2,7 @@
 	// Tools
 	"crafting_hammer": (("common.items.crafting_tools.craftsman_hammer", 1),[("common.items.crafting_ing.twigs", 14), ("common.items.crafting_ing.stones", 12)]),
 	"mortar_pestle": (("common.items.crafting_tools.mortar_pestle", 1), [("common.items.crafting_ing.stones", 6), ("common.items.food.coconut", 2), ("common.items.crafting_tools.craftsman_hammer", 0)]),
+	"sewing_set": (("common.items.crafting_tools.sewing_set", 1),[("common.items.crafting_ing.twigs", 4), ("common.items.crafting_ing.stones", 2), ("common.items.crafting_ing.shiny_gem", 1)]),
 	// Ore and more
 	"velorite_frag": (("common.items.ore.veloritefrag", 2), [("common.items.ore.velorite", 1), ("common.items.crafting_tools.craftsman_hammer", 0)]),
 	//Potions
@@ -33,8 +34,8 @@
 	"adventure pants": (("common.items.armor.pants.leather_adventurer", 1),[("common.items.crafting_ing.leather_scraps", 8)]),
 	"adventure shoulder": (("common.items.armor.shoulder.leather_adventurer", 1),[("common.items.crafting_ing.leather_scraps", 12)]),
 	// Inventory Slot Upgrades
-	"small pouch": (("common.items.consumable.bag_upgrade_tier0", 1),[("common.items.crafting_ing.leather_scraps", 4)]),
-	"sturdy bag": (("common.items.consumable.bag_upgrade_tier1", 1),[("common.items.consumable.bag_upgrade_tier0", 2)]),
-	"solid bag": (("common.items.consumable.bag_upgrade_tier2", 1),[("common.items.consumable.bag_upgrade_tier1", 2)]),
-	"adventurer backpack": (("common.items.consumable.bag_upgrade_tier3", 1),[("common.items.consumable.bag_upgrade_tier2", 2)]),
+	"small pouch": (("common.items.consumable.bag_upgrade_tier0", 1),[("common.items.crafting_ing.leather_scraps", 4), ("common.items.crafting_ing.cloth_scraps", 4), ("common.items.crafting_tools.sewing_set", 0)]),
+	"sturdy bag": (("common.items.consumable.bag_upgrade_tier1", 1),[("common.items.consumable.bag_upgrade_tier0", 1), ("common.items.crafting_ing.leather_scraps", 4), ("common.items.crafting_ing.cloth_scraps", 4), ("common.items.crafting_tools.sewing_set", 0)]),
+	"solid bag": (("common.items.consumable.bag_upgrade_tier2", 1),[("common.items.consumable.bag_upgrade_tier1", 2), ("common.items.crafting_ing.leather_scraps", 8), ("common.items.crafting_ing.cloth_scraps", 8), ("common.items.crafting_tools.sewing_set", 0)]),
+	"adventurer backpack": (("common.items.consumable.bag_upgrade_tier3", 1),[("common.items.consumable.bag_upgrade_tier2", 2), ("common.items.crafting_ing.leather_scraps", 12), ("common.items.crafting_ing.cloth_scraps", 12), ("common.items.crafting_tools.sewing_set", 0)]),
 }

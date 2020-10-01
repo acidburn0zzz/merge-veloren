@@ -1,0 +1,7 @@
+ItemDef(
+    name: "Cloth Scraps",
+    description: "Used to craft various items.",
+    kind: Ingredient(
+        kind: "ClothScraps",
+    )
+)

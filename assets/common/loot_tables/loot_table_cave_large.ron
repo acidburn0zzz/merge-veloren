@@ -1,6 +1,10 @@
 [
     // Misc
     (0.25, "common.items.armor.neck.neck_1"),
+    (0.20, "common.items.consumable.bag_upgrade_tier0"),
+    (0.10, "common.items.consumable.bag_upgrade_tier1"),
+    (0.05, "common.items.consumable.bag_upgrade_tier2"),
+    (0.01, "common.items.consumable.bag_upgrade_tier3"),
     // swords 
     (0.07, "common.items.weapons.sword.greatsword_2h_fine-1"),
     (0.07, "common.items.weapons.sword.greatsword_2h_fine-2"),

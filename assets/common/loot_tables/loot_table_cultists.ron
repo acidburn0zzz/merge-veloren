@@ -5,6 +5,12 @@
     (3, "common.items.food.apple"),
     (3, "common.items.food.mushroom"),
     (3, "common.items.food.coconut"),
+    // crafting ingredients
+    (3, "common.items.crafting_ing.cloth_scraps"),
+    (0.10, "common.items.consumable.bag_upgrade_tier0"),
+    (0.05, "common.items.consumable.bag_upgrade_tier1"),
+    (0.02, "common.items.consumable.bag_upgrade_tier2"),
+    (0.01, "common.items.consumable.bag_upgrade_tier3"),
     // crafted
     (0.5, "common.items.food.apple_mushroom_curry"),
     (0.5, "common.items.food.apple_stick"),
