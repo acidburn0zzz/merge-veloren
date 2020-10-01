@@ -1,6 +1,7 @@
 use crate::{client::Client, Server, StateExt};
 use common::{
     comp::{
+        ChatType,
         self, item,
         item::Item,
         slot::{self, Slot},
@@ -330,16 +331,27 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
 
             drop(inventories);
             if let Some((effect, item)) = maybe_effect_consumable {
-                if state.apply_effect(entity, effect).is_err() {
-                    state
-                        .ecs()
-                        .write_storage::<comp::Inventory>()
-                        .get_mut(entity)
-                        .map(|inv| {
-                            // The effect of the consumable failed to apply, return the consumable
-                            // to the inventory
-                            inv.push(item);
-                        });
+                match state.apply_effect(entity, effect) {
+                    Err(e) => {
+                        state
+                            .ecs()
+                            .write_storage::<comp::Inventory>()
+                            .get_mut(entity)
+                            .map(|inv| {
+                                // The effect of the consumable failed to apply, return the consumable
+                                // to the inventory
+                                inv.push(item);
+                            });
+
+                        state
+                            .ecs()
+                            .write_storage::<Client>()
+                            .get_mut(entity)
+                            .map(|client| {
+                                client.notify(ChatType::CommandError.server_msg(e))
+                            });
+                    },
+                    _ => { }
                 }
             }
             if let Some(event) = event {

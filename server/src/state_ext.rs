@@ -90,9 +90,7 @@ impl StateExt for State {
                                 .map(|stats| stats.inv_slots += added_slots);
                         },
                         Err(e) => {
-                            // TODO: Remove this println
-                            println!("Failed to upgrade inventory: {}", e);
-                            return Err(e);
+                            return Err(format!("Failed to upgrade inventory: {}", e));
                         },
                     }
                 }
