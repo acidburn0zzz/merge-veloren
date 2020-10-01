@@ -10,7 +10,7 @@ mod damage;
 mod energy;
 pub mod group;
 mod inputs;
-mod inventory;
+pub mod inventory;
 mod last;
 mod location;
 mod misc;

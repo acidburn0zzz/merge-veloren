@@ -4,6 +4,7 @@ use crate::{
 use common::{
     character::CharacterId,
     comp,
+    comp::inventory::Error,
     effect::Effect,
     msg::{CharacterInfo, ClientState, PlayerListUpdate, ServerMsg},
     state::State,
@@ -77,21 +78,19 @@ impl StateExt for State {
                     .map(|stats| stats.health.change_by(change));
             },
             Effect::InventorySlotIncrease { tier, slots } => {
-                if let Some(inv) = self
-                    .ecs()
-                    .write_storage::<comp::Inventory>()
-                    .get_mut(entity)
+                if let Some((inv, stats)) = (
+                    &mut self.ecs().write_storage::<comp::Inventory>(),
+                    &mut self.ecs().write_storage::<comp::Stats>(),
+                )
+                    .join()
+                    .get(entity, &self.ecs().entities())
                 {
-                    match inv.upgrade_slots(tier, slots) {
-                        Ok(added_slots) => {
-                            self.ecs()
-                                .write_storage::<comp::Stats>()
-                                .get_mut(entity)
-                                .map(|stats| stats.inv_slots += added_slots);
-                        },
-                        Err(e) => {
-                            return Err(format!("Failed to upgrade inventory: {}", e));
-                        },
+                    if let Some(error) = inv.upgrade_slots(stats, tier, slots).err() {
+                        if let Error::InvalidUpgradeTier = error {
+                            return Err("Failed to upgrade inventory: Inventory cannot be \
+                                        upgraded by this tier of upgrade"
+                                .to_string());
+                        }
                     }
                 }
             },

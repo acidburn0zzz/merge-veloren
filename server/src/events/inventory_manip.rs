@@ -1,11 +1,10 @@
 use crate::{client::Client, Server, StateExt};
 use common::{
     comp::{
-        ChatType,
         self, item,
         item::Item,
         slot::{self, Slot},
-        Pos, MAX_PICKUP_RANGE_SQR,
+        ChatType, Pos, MAX_PICKUP_RANGE_SQR,
     },
     effect::Effect,
     msg::ServerMsg,
@@ -331,29 +330,22 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
 
             drop(inventories);
             if let Some((effect, item)) = maybe_effect_consumable {
-                match state.apply_effect(entity, effect) {
-                    Err(e) => {
-                        state
-                            .ecs()
-                            .write_storage::<comp::Inventory>()
-                            .get_mut(entity)
-                            .map(|inv| {
-                                // The effect of the consumable failed to apply, return the consumable
-                                // to the inventory
-                                inv.push(item);
-                            });
-
-                        state
-                            .ecs()
-                            .write_storage::<Client>()
-                            .get_mut(entity)
-                            .map(|client| {
-                                client.notify(ChatType::CommandError.server_msg(e))
-                            });
-                    },
-                    _ => { }
+                if let Err(e) = state.apply_effect(entity, effect) {
+                    if let Some((inv, client)) = (
+                        &mut state.ecs().write_storage::<comp::Inventory>(),
+                        &mut state.ecs().write_storage::<Client>(),
+                    )
+                        .join()
+                        .get(entity, &state.ecs().entities())
+                    {
+                        // The effect of the consumable failed to apply, return the consumable
+                        // to the inventory and inform the client
+                        inv.push(item);
+                        client.notify(ChatType::CommandError.server_msg(e));
+                    }
                 }
             }
+
             if let Some(event) = event {
                 state.write_component(entity, comp::InventoryUpdate::new(event));
             }

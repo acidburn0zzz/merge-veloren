@@ -17,7 +17,7 @@ use client::Client;
 use common::comp::Stats;
 use conrod_core::{
     color,
-    widget::{self, Button, Image, Rectangle, Text},
+    widget::{self, Button, Image, Rectangle, Scrollbar, Text},
     widget_ids, Color, Colorable, Labelable, Positionable, Sizeable, Widget, WidgetCommon,
 };
 
@@ -33,6 +33,7 @@ widget_ids! {
         inv_scrollbar,
         inv_slots_0,
         inv_slots[],
+        scrollbar_slots,
         //tooltip[],
         bg,
         bg_frame,
@@ -243,12 +244,6 @@ impl<'a> Widget for Bag<'a> {
         .font_size(self.fonts.cyri.scale(20))
         .color(TEXT_COLOR)
         .set(state.ids.inventory_title, ui);
-        // Scrollbar-BG
-        Image::new(self.imgs.scrollbar_bg)
-            .w_h(9.0, 173.0)
-            .bottom_right_with_margins_on(state.ids.bg_frame, 42.0, 3.0)
-            .color(Some(UI_HIGHLIGHT_0))
-            .set(state.ids.scrollbar_bg, ui);
         // Char Pixel-Art
         Image::new(self.imgs.char_art)
             .w_h(40.0, 37.0)
@@ -283,6 +278,22 @@ impl<'a> Widget for Bag<'a> {
             .bottom_left_with_margins_on(state.ids.bg_frame, 29.0, 44.0)
             .scroll_kids_vertically()
             .set(state.ids.inv_alignment, ui);
+        // Slots Scrollbar
+        if space_max > 45 {
+            // Scrollbar-BG
+            Image::new(self.imgs.scrollbar_bg)
+                .w_h(9.0, 173.0)
+                .bottom_right_with_margins_on(state.ids.bg_frame, 42.0, 3.0)
+                .color(Some(UI_HIGHLIGHT_0))
+                .set(state.ids.scrollbar_bg, ui);
+            // Scrollbar
+            Scrollbar::y_axis(state.ids.inv_alignment)
+                .thickness(5.0)
+                .h(123.0)
+                .color(UI_MAIN)
+                .middle_of(state.ids.scrollbar_bg)
+                .set(state.ids.scrollbar_slots, ui);
+        };
 
         if !self.show.stats {
             // Title

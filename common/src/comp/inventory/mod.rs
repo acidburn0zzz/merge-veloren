@@ -1,13 +1,19 @@
 pub mod item;
 pub mod slot;
 
-use crate::{comp::inventory::item::ItemDef, recipe::Recipe};
+use crate::{
+    comp::{inventory::item::ItemDef, Stats},
+    recipe::Recipe,
+};
 use core::ops::Not;
 use item::Item;
 use serde::{Deserialize, Serialize};
 use specs::{Component, FlaggedStorage, HashMapStorage};
 use specs_idvs::IdvStorage;
-use std::cmp::min;
+use std::{
+    cmp::{min, Ordering},
+    mem,
+};
 
 // The limit on distance between the entity and a collectible (squared)
 pub const MAX_PICKUP_RANGE_SQR: f32 = 64.0;
@@ -28,6 +34,7 @@ pub enum Error {
     /// The inventory is full and items could not be added. The extra items have
     /// been returned.
     Full(Vec<Item>),
+    InvalidUpgradeTier,
 }
 
 #[allow(clippy::len_without_is_empty)] // TODO: Pending review in #587
@@ -215,9 +222,17 @@ impl Inventory {
         }
     }
 
-    /// Attempts to upgrade the inventory's slots using
-    pub fn upgrade_slots(&mut self, tier: InventoryUpgradeTier, slots: u16) -> Result<u16, String> {
-        // TODO: Proper error type
+    /// Attempts to upgrade the inventory's slots within the specifier tier
+    /// Each upgrade item has a specific tier, and each tier has a maximum
+    /// number of slots that it can be used to unlock. After the player has
+    /// the maximum number of slots for a particular tier, upgrade items of
+    /// that tier may no longer be used to unlock further slots.
+    pub fn upgrade_slots(
+        &mut self,
+        stats: &mut Stats,
+        tier: InventoryUpgradeTier,
+        slots: u16,
+    ) -> Result<u16, Error> {
         const TIER_MAXIMUMS: [u16; 4] = [36, 72, 108, 144];
         let current_slots = self.slots.len() as u16;
         let max_slots_to_add = MAX_INVENTORY_SLOTS - current_slots;
@@ -225,37 +240,51 @@ impl Inventory {
         let range = 0..TIER_MAXIMUMS[tier as usize] - 1;
         if range.contains(&current_slots) && max_slots_to_add > 0 {
             let slots = min(slots, max_slots_to_add);
-            self.add_slots(slots);
+            self.add_slots(stats, slots);
             Ok(slots)
         } else {
-            Err("Inventory cannot be upgraded by this tier of upgrade".to_string())
+            Err(Error::InvalidUpgradeTier)
         }
     }
 
     /// Sets the inventory's slots to the given number - used by the
     /// /set_inv_slots admin command
     #[allow(clippy::comparison_chain)]
-    pub fn set_slots(&mut self, slots: u16) {
+    pub fn set_slots(&mut self, stats: &mut Stats, slots: u16) -> Vec<Item> {
         let current_slots = self.slots.len() as u16;
 
-        if slots < current_slots {
-            self.remove_slots(current_slots - slots)
-        } else if slots > current_slots {
-            self.add_slots(slots - current_slots)
+        match slots.cmp(&current_slots) {
+            Ordering::Less => self.remove_slots(stats, current_slots - slots),
+            Ordering::Greater => {
+                self.add_slots(stats, slots - current_slots);
+                vec![]
+            },
+            _ => vec![],
         }
     }
 
-    fn add_slots(&mut self, slots: u16) {
+    /// Adds the given number of slots to the inventory. Takes Stats to ensure
+    /// that whenever the number of slots are modified the corresponding
+    /// field on Stats is also modified.
+    fn add_slots(&mut self, stats: &mut Stats, slots: u16) {
+        stats.inv_slots += slots;
         for _ in 0..slots {
             self.slots.push(None)
         }
     }
 
-    fn remove_slots(&mut self, slots: u16) {
-        // TODO: Return truncated items so that they can be dropped when /set_inv_slots
-        // reduces inv size
+    /// Removes the given number of slots from the inventory. Takes Stats to
+    /// ensure that whenever the number of slots are modified the
+    /// corresponding field on Stats is also modified.
+    fn remove_slots(&mut self, stats: &mut Stats, slots: u16) -> Vec<Item> {
+        stats.inv_slots -= slots;
+
+        // Remove the slots and return any items that were in the removed slots
         self.slots
-            .truncate((self.slots.len() as u16 - slots) as usize)
+            .split_off((self.slots.len() as u16 - slots) as usize)
+            .iter_mut()
+            .filter_map(|x| mem::take(x))
+            .collect()
     }
 
     /// Determine how many of a particular item there is in the inventory.

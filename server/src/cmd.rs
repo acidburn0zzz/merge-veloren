@@ -1395,30 +1395,48 @@ fn handle_set_inventory_slots(
     action: &ChatCommand,
 ) {
     if let Ok(slots) = scan_fmt!(&msg, &action.arg_fmt(), u16) {
-        if let Some(inventory) = server
-            .state()
-            .ecs()
-            .write_storage::<comp::Inventory>()
-            .get_mut(target)
+        let mut dropped_items = vec![];
         {
-            if let Some(stats) = server
-                .state()
-                .ecs()
-                .write_storage::<comp::Stats>()
-                .get_mut(target)
-            {
-                inventory.set_slots(slots);
-                stats.inv_slots = slots;
+            let ecs = server.state.ecs();
 
+            if let Some((inv, stats)) = (
+                &mut ecs.write_storage::<comp::Inventory>(),
+                &mut ecs.write_storage::<comp::Stats>(),
+            )
+                .join()
+                .get(target, &ecs.entities())
+            {
+                dropped_items = inv.set_slots(stats, slots);
+
+                // Send an InventoryUpdateEvent to force the client to refresh the inventory
+                // The variant doesn't actually matter since the client reloads the inventory
+                // when any InventoryUpdateEvent is received.
                 let _ = server
                     .state
                     .ecs()
                     .write_storage::<comp::InventoryUpdate>()
                     .insert(
                         target,
-                        comp::InventoryUpdate::new(comp::InventoryUpdateEvent::Given),
+                        comp::InventoryUpdate::new(comp::InventoryUpdateEvent::Init),
                     );
             }
+        }
+
+        // Drop any items that no longer fit in the player's inventory on the ground at
+        // their feet
+        let pos = server
+            .state
+            .read_component_copied::<comp::Pos>(target)
+            .unwrap_or_default();
+
+        for dropped_item in dropped_items {
+            server
+                .state
+                .create_object(Default::default(), comp::object::Body::Pouch)
+                .with(comp::Pos(pos.0 + Vec3::unit_z() * 0.25))
+                .with(dropped_item)
+                .with(comp::Vel(Vec3::<f32>::new(0.0, 0.0, 0.0)))
+                .build();
         }
     }
 }

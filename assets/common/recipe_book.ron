@@ -2,7 +2,7 @@
 	// Tools
 	"crafting_hammer": (("common.items.crafting_tools.craftsman_hammer", 1),[("common.items.crafting_ing.twigs", 14), ("common.items.crafting_ing.stones", 12)]),
 	"mortar_pestle": (("common.items.crafting_tools.mortar_pestle", 1), [("common.items.crafting_ing.stones", 6), ("common.items.food.coconut", 2), ("common.items.crafting_tools.craftsman_hammer", 0)]),
-	"sewing_set": (("common.items.crafting_tools.sewing_set", 1),[("common.items.crafting_ing.twigs", 4), ("common.items.crafting_ing.stones", 2), ("common.items.crafting_ing.shiny_gem", 1)]),
+	"sewing_set": (("common.items.crafting_tools.sewing_set", 1),[("common.items.crafting_ing.leather_scraps", 2), ("common.items.crafting_ing.twigs", 4), ("common.items.crafting_ing.stones", 2), ("common.items.crafting_ing.shiny_gem", 1)]),
 	// Ore and more
 	"velorite_frag": (("common.items.ore.veloritefrag", 2), [("common.items.ore.velorite", 1), ("common.items.crafting_tools.craftsman_hammer", 0)]),
 	//Potions

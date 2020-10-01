@@ -1223,7 +1223,7 @@
         (1.0, 1.0, 0.0), (-135.0, 90.0, 0.0), 1.0,
     ),
     Ingredient("SewingSet"): Png(
-        "element.icons.item_chest0",
+        "element.icons.item_bag_t1_purp",
     ),
     Ingredient("Flower"): VoxTrans(
         "voxel.sprite.flowers.flower_red_2",
