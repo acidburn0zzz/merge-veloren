@@ -233,7 +233,7 @@ impl Inventory {
         tier: InventoryUpgradeTier,
         slots: u16,
     ) -> Result<u16, Error> {
-        const TIER_MAXIMUMS: [u16; 4] = [36, 72, 108, 144];
+        const TIER_MAXIMUMS: [u16; 4] = [36, 54, 90, 126];
         let current_slots = self.slots.len() as u16;
         let max_slots_to_add = MAX_INVENTORY_SLOTS - current_slots;
 
@@ -249,7 +249,6 @@ impl Inventory {
 
     /// Sets the inventory's slots to the given number - used by the
     /// /set_inv_slots admin command
-    #[allow(clippy::comparison_chain)]
     pub fn set_slots(&mut self, stats: &mut Stats, slots: u16) -> Vec<Item> {
         let current_slots = self.slots.len() as u16;
 

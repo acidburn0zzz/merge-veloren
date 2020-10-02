@@ -27,10 +27,12 @@ fn push_all_full() {
         slots: TEST_ITEMS.iter().map(|a| Some(a.clone())).collect(),
         amount: 0,
     };
-    let Error::Full(leftovers) = inv
+    if let Error::Full(leftovers) = inv
         .push_all(TEST_ITEMS.iter().cloned())
-        .expect_err("Pushing into a full inventory somehow worked!");
-    assert_eq!(leftovers, TEST_ITEMS.clone())
+        .expect_err("Pushing into a full inventory somehow worked!")
+    {
+        assert_eq!(leftovers, TEST_ITEMS.clone())
+    }
 }
 
 /// Attempting to push uniquely into an inventory containing all the items
