@@ -137,7 +137,7 @@ fn loadout_insert(
 ///     LoadoutBuilder,
 /// };
 ///
-/// let mut inv = Inventory::new_empty();
+/// let mut inv = Inventory::new_empty(18);
 ///
 /// let mut loadout = LoadoutBuilder::new()
 ///     .defaults()
@@ -253,7 +253,7 @@ pub fn swap(
 ///
 /// let boots = Item::new_from_asset_expect("common.items.testing.test_boots");
 ///
-/// let mut inv = Inventory::new_empty();
+/// let mut inv = Inventory::new_empty(18);
 /// inv.push(boots.duplicate());
 ///
 /// let mut loadout = LoadoutBuilder::new().defaults().build();
@@ -308,7 +308,7 @@ pub fn equip(slot: usize, inventory: &mut Inventory, loadout: &mut Loadout) {
 ///     LoadoutBuilder,
 /// };
 ///
-/// let mut inv = Inventory::new_empty();
+/// let mut inv = Inventory::new_empty(18);
 ///
 /// let mut loadout = LoadoutBuilder::new()
 ///     .defaults()
