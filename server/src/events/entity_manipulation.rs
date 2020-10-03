@@ -14,8 +14,8 @@ use common::{
     sync::{Uid, UidAllocator, WorldSyncExt},
     sys::combat::BLOCK_ANGLE,
     terrain::{Block, BlockKind, TerrainGrid},
+    util::Dir,
     vol::ReadVol,
-    util::Dir
 };
 use comp::item::Reagent;
 use rand::prelude::*;
@@ -650,61 +650,57 @@ pub fn handle_explosion(
                             2 => object::Body::Twigs2,
                             _ => object::Body::Twigs0,
                         };
-        
+
                         // TODO: use create_object function instead.
-                        ecs
-                        .create_entity_synced()
-                        .with(comp::Pos(pos.map(|x| x as f32)))
-                        .with(comp::Vel(Vec3::zero()))
-                        .with(
-                            comp::Ori(
-                                Dir::from_unnormalized(
-                                    Vec3::new(
-                                        rand::thread_rng().gen_range(-1.0, 1.0),
-                                        rand::thread_rng().gen_range(-1.0, 1.0),
-                                        0.0,
-                                    )
-                                ).unwrap_or_default()
-                            )
-                        )
-                        .with(comp::Mass(0.1))
-                        .with(comp::Collider::Box {
-                            radius: comp::Body::Object(body).radius(),
-                            z_min: 0.0,
-                            z_max: comp::Body::Object(body).height(),
-                        })
-                        .with(comp::Body::Object(body))
-                        .with(comp::Gravity(1.0))
-                        .with(Item::new_from_asset_expect("common.items.crafting_ing.twigs"));
+                        ecs.create_entity_synced()
+                            .with(comp::Pos(pos.map(|x| x as f32)))
+                            .with(comp::Vel(Vec3::zero()))
+                            .with(comp::Ori(
+                                Dir::from_unnormalized(Vec3::new(
+                                    rand::thread_rng().gen_range(-1.0, 1.0),
+                                    rand::thread_rng().gen_range(-1.0, 1.0),
+                                    0.0,
+                                ))
+                                .unwrap_or_default(),
+                            ))
+                            .with(comp::Mass(0.1))
+                            .with(comp::Collider::Box {
+                                radius: comp::Body::Object(body).radius(),
+                                z_min: 0.0,
+                                z_max: comp::Body::Object(body).height(),
+                            })
+                            .with(comp::Body::Object(body))
+                            .with(comp::Gravity(1.0))
+                            .with(Item::new_from_asset_expect(
+                                "common.items.crafting_ing.twigs",
+                            ));
                     },
                     BlockKind::WeakRock => {
                         let body = object::Body::Rock0;
-        
+
                         // TODO: use create_object function instead.
-                        ecs
-                        .create_entity_synced()
-                        .with(comp::Pos(pos.map(|x| x as f32)))
-                        .with(comp::Vel(Vec3::zero()))
-                        .with(
-                            comp::Ori(
-                                Dir::from_unnormalized(
-                                    Vec3::new(
-                                        rand::thread_rng().gen_range(-1.0, 1.0),
-                                        rand::thread_rng().gen_range(-1.0, 1.0),
-                                        0.0,
-                                    )
-                                ).unwrap_or_default()
-                            )
-                        )
-                        .with(comp::Mass(1.0))
-                        .with(comp::Collider::Box {
-                            radius: comp::Body::Object(body).radius(),
-                            z_min: 0.0,
-                            z_max: comp::Body::Object(body).height(),
-                        })
-                        .with(comp::Body::Object(body))
-                        .with(comp::Gravity(1.0))
-                        .with(Item::new_from_asset_expect("common.items.crafting_ing.stones"));
+                        ecs.create_entity_synced()
+                            .with(comp::Pos(pos.map(|x| x as f32)))
+                            .with(comp::Vel(Vec3::zero()))
+                            .with(comp::Ori(
+                                Dir::from_unnormalized(Vec3::new(
+                                    rand::thread_rng().gen_range(-1.0, 1.0),
+                                    rand::thread_rng().gen_range(-1.0, 1.0),
+                                    0.0,
+                                ))
+                                .unwrap_or_default(),
+                            ))
+                            .with(comp::Mass(1.0))
+                            .with(comp::Collider::Box {
+                                radius: comp::Body::Object(body).radius(),
+                                z_min: 0.0,
+                                z_max: comp::Body::Object(body).height(),
+                            })
+                            .with(comp::Body::Object(body))
+                            .with(comp::Gravity(1.0))
+                            .with(Item::new_from_asset_expect(
+                                "common.items.crafting_ing.stones",
+                            ));
                     },
                     _ => {},
                 };
