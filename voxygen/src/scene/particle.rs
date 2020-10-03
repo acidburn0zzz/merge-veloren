@@ -120,10 +120,9 @@ impl ParticleMgr {
                 } else {
                     self.particles.reserve(exploded_blocks.len());
                     for (pos, block) in exploded_blocks {
-    
                         match block.kind() {
                             BlockKind::Leaves => {
-                                for _ in 0..(2*2) {
+                                for _ in 0..(2 * 2) {
                                     self.particles.push(Particle::new(
                                         Duration::from_millis(30_000),
                                         time,
@@ -132,8 +131,9 @@ impl ParticleMgr {
                                             _ => ParticleMode::DestroyedBlock,
                                         },
                                         pos.map(|p| p as f32),
-                                        // TODO: include directional force, relative to explosion origin.
-                                        // TODO: include block.get_color()
+                                        /* TODO: include directional force, relative to
+                                         * explosion origin.
+                                         * TODO: include block.get_color() */
                                     ));
                                 }
                             },
@@ -147,8 +147,9 @@ impl ParticleMgr {
                                             _ => ParticleMode::DestroyedBlock,
                                         },
                                         pos.map(|p| p as f32),
-                                        // TODO: include directional force, relative to explosion origin.
-                                        // TODO: include block.get_color()
+                                        /* TODO: include directional force, relative to
+                                         * explosion origin.
+                                         * TODO: include block.get_color() */
                                     ));
                                 }
                             },
@@ -162,8 +163,9 @@ impl ParticleMgr {
                                             _ => ParticleMode::DestroyedBlock,
                                         },
                                         pos.map(|p| p as f32),
-                                        // TODO: include directional force, relative to explosion origin.
-                                        // TODO: include block.get_color()
+                                        /* TODO: include directional force, relative to
+                                         * explosion origin.
+                                         * TODO: include block.get_color() */
                                     ));
                                 }
                             },
