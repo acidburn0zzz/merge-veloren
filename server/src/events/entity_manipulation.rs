@@ -647,7 +647,7 @@ pub fn handle_explosion(
                 .until(|block| block.is_liquid() || rand::random::<f32>() < 0.05)
                 .for_each(|block: &Block, pos| {
                     if block.is_explodable() {
-                        exploded_blocks.push(pos, block.clone());
+                        exploded_blocks.insert(pos, block.clone());
                         block_change.set(pos, block.into_vacant());
                     }
                 })

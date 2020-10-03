@@ -62,7 +62,7 @@ impl Server {
                     reagent,
                     percent_damage,
                 } => handle_explosion(
-                    &self,
+                    self,
                     pos,
                     power,
                     owner,

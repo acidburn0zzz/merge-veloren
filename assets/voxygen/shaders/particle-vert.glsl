@@ -290,32 +290,22 @@ void main() {
 			),
 			vec3(0.8),
 			vec4(vec3(0, 1, 0), 1),
+			spin_in_axis(vec3(rand6, rand7, rand8), rand9 * 3)
+		);
 	} else if (inst_mode == LEVEL_UP) {
 
-		// if (rand0 < -5.5) {
-		// 	// burst upwards like helium baloons
+		// if(rand0 < -0.5) {
+		// 	// burst outwards like helicopter dust cloud
 		// 	attr = Attr(
 		// 		linear_motion(
 		// 			vec3(0),
-		// 			vec3(rand1, rand2, rand3) * 2.0 + grav_vel(-earth_gravity)
+		// 			vec3(rand1, rand2, 0.1) * 20.0
 		// 		),
 		// 		vec3(1.0),
-		// 		vec4(1, 1, 0, 1),
+		// 		vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
 		// 		identity()
 		// 	);
-		// } else 
-		if(rand0 < -0.5) {
-			// burst outwards like helicopter dust cloud
-			attr = Attr(
-				linear_motion(
-					vec3(0),
-					vec3(rand1, rand2, 0.1) * 20.0
-				),
-				vec3(1.0),
-				vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
-				identity()
-			);
-		} else {
+		// } else {
 			// spiral upwards clockwise
 			float r = lifetime + (rand1 * 3.14 * 2);
 			attr = Attr(
@@ -329,7 +319,7 @@ void main() {
 				vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
 				identity()
 			);
-		}
+		//}
 	} else if (inst_mode == BLEED) {
 		attr = Attr(
 			linear_motion(
