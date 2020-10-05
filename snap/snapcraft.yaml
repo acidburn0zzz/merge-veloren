@@ -119,9 +119,9 @@ parts:
       snapcraftctl set-version "$version"
       snapcraftctl set-grade "devel"
     override-build: |
-      snapcraftctl build
+      rustup override set $(cat rust-toolchain)
       # Cannot install virtual manifest packages directly due to https://github.com/rust-lang/cargo/issues/4101
-      cargo +nightly build --release --bin veloren-voxygen --bin veloren-server-cli
+      cargo build --release --bin veloren-voxygen --bin veloren-server-cli
       mkdir -p $SNAPCRAFT_PART_INSTALL/bin
       cp target/release/veloren-voxygen $SNAPCRAFT_PART_INSTALL/bin
       cp target/release/veloren-server-cli $SNAPCRAFT_PART_INSTALL/bin
