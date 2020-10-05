@@ -26,7 +26,7 @@ security:
 # TODO: Used for testing only, remove later
 snap:
   extends: .recompile-branch
-  stage: build
+  stage: check
   tags:
     - veloren-docker
   image: "cibuilds/snapcraft:core20"
