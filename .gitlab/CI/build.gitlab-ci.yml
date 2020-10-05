@@ -32,13 +32,13 @@ snap:
     #- echo $SNAPCRAFT_LOGIN_DATA | base64 --decode --ignore-garbage > snapcraft.login
     #- snapcraft login --with snapcraft.login
     #- snapcraft push --release=edge veloren*.snap
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: always
-    # TODO: Remove this once testing is complete
-    - if: $CI_COMMIT_BRANCH == "timsueberkrueb/snap-testing"
-      when: always
-    - when: never
+  # rules:
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  #     when: always
+  #   # TODO: Remove this once testing is complete
+  #   - if: $CI_COMMIT_BRANCH == "timsueberkrueb/snap-testing"
+  #     when: always
+  #   - when: never
 
 # # Coverage is needed on master for the README.md badge to work
 # coverage:
