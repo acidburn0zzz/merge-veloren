@@ -22,6 +22,7 @@ benchmarks:
 
 # TODO: Used for testing only, remove later
 snap:
+  extends: .recompile-branch
   stage: build
   tags:
     - veloren-docker
