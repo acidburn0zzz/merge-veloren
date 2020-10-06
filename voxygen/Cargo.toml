@@ -13,7 +13,6 @@ gl = ["gfx_device_gl", "gfx_gl"]
 hot-anim = ["anim/use-dyn-lib"]
 singleplayer = ["server"]
 tweak = ["const-tweaker"]
-simd = []
 
 default = ["gl", "singleplayer", "native-dialog"]
 
@@ -26,6 +25,8 @@ anim = {package = "veloren-voxygen-anim", path = "src/anim", default-features = 
 # Graphics
 conrod_core = {git = "https://gitlab.com/veloren/conrod.git", branch="copypasta_0.7"}
 conrod_winit = {git = "https://gitlab.com/veloren/conrod.git", branch="copypasta_0.7"}
+#conrod_core = {path = "../../conrod/conrod_core"}
+#conrod_winit = {path = "../../conrod/backends/conrod_winit"}
 euc = {git = "https://github.com/zesterer/euc.git"}
 gfx = "0.18.2"
 gfx_device_gl = {version = "0.16.2", optional = true}
