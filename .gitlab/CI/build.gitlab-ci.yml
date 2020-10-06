@@ -23,7 +23,7 @@ benchmarks:
 # Coverage is needed on master for the README.md badge to work
 # tmp remove platform_intrinsics from vek as it doesnt work with tarpaulin
 coverage:
-  extends: .recompile
+  extends: .recompile-branch
   stage: build
   script:
     - ln -s /dockercache/cache-tarpaulin target
