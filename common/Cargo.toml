@@ -7,6 +7,9 @@ edition = "2018"
 [features]
 no-assets = []
 tracy = ["tracy-client"]
+simd = ["vek/platform_intrinsics"]
+
+default = ["simd"]
 
 [dependencies]
 arraygen = "0.1.13"
