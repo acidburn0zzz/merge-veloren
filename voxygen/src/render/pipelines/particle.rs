@@ -112,7 +112,7 @@ pub enum ParticleMode {
     HealingBeam = 13,
     EnergyNature = 14,
     LevelUp = 15,
-    Bleed = 16,
+    Impact = 16,
     DestroyedBlock = 17,
 }
 
@@ -126,6 +126,7 @@ impl Instance {
         lifespan: f32,
         inst_mode: ParticleMode,
         inst_pos: Vec3<f32>,
+        inst_dir: Vec3<f32>,
     ) -> Self {
         use rand::Rng;
         Self {
@@ -134,7 +135,7 @@ impl Instance {
             inst_entropy: rand::thread_rng().gen(),
             inst_mode: inst_mode as i32,
             inst_pos: inst_pos.into_array(),
-            inst_dir: [0.0, 0.0, 0.0],
+            inst_dir: inst_dir.into_array(),
         }
     }
 
@@ -158,7 +159,7 @@ impl Instance {
 }
 
 impl Default for Instance {
-    fn default() -> Self { Self::new(0.0, 0.0, ParticleMode::CampfireSmoke, Vec3::zero()) }
+    fn default() -> Self { Self::new(0.0, 0.0, ParticleMode::CampfireSmoke, Vec3::zero(), Vec3::zero()) }
 }
 
 pub struct ParticlePipeline;

@@ -60,10 +60,11 @@ impl ParticleMgr {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
                         self.particles.resize_with(self.particles.len() + 200, || {
                             Particle::new(
-                                Duration::from_millis(2000),
+                                Duration::from_millis(250),
                                 time,
-                                ParticleMode::FireworkRed,
+                                ParticleMode::Impact,
                                 pos.0 + Vec3::new(0.0, 0.0, 1.5), // TODO: relative wound position
+                                Vec3::zero(),
                             )
                         });
                     }
@@ -74,10 +75,11 @@ impl ParticleMgr {
                     if let Some(pos) = scene_data.state.ecs().read_storage::<Pos>().get(entity) {
                         self.particles.resize_with(self.particles.len() + 20, || {
                             Particle::new(
-                                Duration::from_millis(2000),
+                                Duration::from_millis(250),
                                 time,
-                                ParticleMode::Bleed,
-                                pos.0 + Vec3::new(0.0, 0.0, 1.5), // TODO: relative wound position
+                                ParticleMode::Impact,
+                                pos.0 + Vec3::new(0.0, 0.0, 1.5), // TODO: relative position
+                                Vec3::zero(),
                             )
                         });
                     }
@@ -92,6 +94,7 @@ impl ParticleMgr {
                                 time,
                                 ParticleMode::LevelUp,
                                 pos.0,
+                                Vec3::zero(),
                             )
                         });
                     }
@@ -114,12 +117,13 @@ impl ParticleMgr {
                                 ParticleMode::EnergyNature,
                                 *pos + Vec3::<f32>::zero()
                                     .map(|_| rng.gen_range(-3.0, 3.0) * power),
+                                Vec3::zero(),
                             )
                         },
                     );
                 } else {
                     self.particles.reserve(exploded_blocks.len());
-                    for (pos, block) in exploded_blocks {
+                    for (block_pos, block) in exploded_blocks {
                         match block.kind() {
                             BlockKind::Leaves => {
                                 for _ in 0..(2 * 2) {
@@ -130,15 +134,19 @@ impl ParticleMgr {
                                             BlockKind::Leaves => ParticleMode::Leaf,
                                             _ => ParticleMode::DestroyedBlock,
                                         },
-                                        pos.map(|p| p as f32),
-                                        /* TODO: include directional force, relative to
-                                         * explosion origin.
-                                         * TODO: include block.get_color() */
+                                        block_pos.map(|p| p as f32),
+                                        // TODO: include block.get_color() ?
+                                        // velocity; inversely logorithmic proposonate
+                                        Vec3::new(
+                                            pos.x - block_pos.x as f32,
+                                            pos.y - block_pos.y as f32,
+                                            pos.z - block_pos.z as f32,
+                                        ),
                                     ));
                                 }
                             },
                             BlockKind::Grass => {
-                                for _ in 0..1 {
+                                //for _ in 0..1 {
                                     self.particles.push(Particle::new(
                                         Duration::from_millis(5_000),
                                         time,
@@ -146,15 +154,19 @@ impl ParticleMgr {
                                             BlockKind::Leaves => ParticleMode::DestroyedBlock,
                                             _ => ParticleMode::DestroyedBlock,
                                         },
-                                        pos.map(|p| p as f32),
-                                        /* TODO: include directional force, relative to
-                                         * explosion origin.
-                                         * TODO: include block.get_color() */
+                                        block_pos.map(|p| p as f32),
+                                        // TODO: include block.get_color() ?
+                                        // velocity; inversely logorithmic proposonate
+                                        Vec3::new(
+                                            pos.x - block_pos.x as f32,
+                                            pos.y - block_pos.y as f32,
+                                            pos.z - block_pos.z as f32,
+                                        ),
                                     ));
-                                }
+                                //}
                             },
                             BlockKind::WeakRock => {
-                                for _ in 0..1 {
+                                //for _ in 0..1 {
                                     self.particles.push(Particle::new(
                                         Duration::from_millis(5_000),
                                         time,
@@ -162,38 +174,34 @@ impl ParticleMgr {
                                             BlockKind::Leaves => ParticleMode::DestroyedBlock,
                                             _ => ParticleMode::DestroyedBlock,
                                         },
-                                        pos.map(|p| p as f32),
-                                        /* TODO: include directional force, relative to
-                                         * explosion origin.
-                                         * TODO: include block.get_color() */
+                                        block_pos.map(|p| p as f32),
+                                        // TODO: include block.get_color() ?
+                                        // velocity; inversely logorithmic proposonate
+                                        Vec3::new(
+                                            pos.x - block_pos.x as f32,
+                                            pos.y - block_pos.y as f32,
+                                            pos.z - block_pos.z as f32,
+                                        ),
                                     ));
-                                }
+                                //}
                             },
                             BlockKind::Water => {
+                                tracing::warn!("Did a water block just get destroyed?");
                                 // these voxels do not get destroyed, but!
-                                // a water splash might be appropriate?
+                                // a water splash and vapour might be appropriate?
                             },
                             BlockKind::Sand => {
+                                tracing::warn!("Did a sand block just get destroyed?");
                                 // these voxels do not get destroyed, but!
                                 // sand/dust cloud might be appropriate?
                             },
 
-                            // Air = 0x00, // Air counts as a fluid
-                            // Water = 0x01, // water splash?
-                            // Rock = 0x10,
-                            // WeakRock = 0x11, // Explodable
-                            // Grass = 0x20, // Note: *not* the same as grass sprites
-                            // Earth = 0x30,
-                            // Sand = 0x31,
-                            // Wood = 0x40,
-                            // Leaves = 0x41,
-                            // Misc = 0xFE,
                             _ => {
                                 if block.get_sprite().is_some() {
                                     // sprite debris particles
                                     tracing::warn!("Did a sprite just get destroyed?");
                                 } else {
-                                    // not explodeable.
+                                    // not explodeable?
                                 }
                             },
                         }
@@ -214,6 +222,7 @@ impl ParticleMgr {
                                     None => ParticleMode::Shrapnel,
                                 },
                                 *pos,
+                                Vec3::zero(),
                             )
                         },
                     );
@@ -227,6 +236,7 @@ impl ParticleMgr {
                                 ParticleMode::CampfireSmoke,
                                 *pos + Vec2::<f32>::zero()
                                     .map(|_| rng.gen_range(-1.0, 1.0) * power),
+                                Vec3::zero(),
                             )
                         },
                     );
@@ -316,6 +326,7 @@ impl ParticleMgr {
                 time,
                 ParticleMode::CampfireFire,
                 pos.0,
+                Vec3::zero(),
             ));
 
             self.particles.push(Particle::new(
@@ -323,6 +334,7 @@ impl ParticleMgr {
                 time,
                 ParticleMode::CampfireSmoke,
                 pos.0.map(|e| e + thread_rng().gen_range(-0.25, 0.25)),
+                Vec3::zero(),
             ));
         }
     }
@@ -341,12 +353,14 @@ impl ParticleMgr {
                 time,
                 ParticleMode::CampfireFire,
                 pos.0,
+                Vec3::zero(),
             ));
             self.particles.push(Particle::new(
                 Duration::from_secs(1),
                 time,
                 ParticleMode::CampfireSmoke,
                 pos.0,
+                Vec3::zero(),
             ));
         }
     }
@@ -368,6 +382,7 @@ impl ParticleMgr {
                     time,
                     ParticleMode::CampfireFire,
                     pos.0,
+                    Vec3::zero(),
                 )
             },
         );
@@ -381,6 +396,7 @@ impl ParticleMgr {
                     time,
                     ParticleMode::CampfireSmoke,
                     pos.0,
+                    Vec3::zero(),
                 )
             },
         );
@@ -398,6 +414,7 @@ impl ParticleMgr {
                     time,
                     ParticleMode::EnergyNature,
                     pos.0,
+                    Vec3::zero(),
                 )
             },
         );
@@ -418,6 +435,7 @@ impl ParticleMgr {
                 time,
                 ParticleMode::GunPowderSpark,
                 pos.0,
+                Vec3::zero(),
             ));
 
             // smoke
@@ -426,6 +444,7 @@ impl ParticleMgr {
                 time,
                 ParticleMode::CampfireSmoke,
                 pos.0,
+                Vec3::zero(),
             ));
         }
     }
@@ -456,6 +475,7 @@ impl ParticleMgr {
                             time,
                             ParticleMode::CampfireSmoke,
                             pos.0,
+                            Vec3::zero(),
                         )
                     },
                 );
@@ -608,6 +628,7 @@ impl ParticleMgr {
                                 time,
                                 particles.mode,
                                 block_pos.map(|e: i32| e as f32 + rng.gen::<f32>()),
+                                Vec3::zero(),
                             )
                         })
                 });
@@ -668,6 +689,7 @@ impl ParticleMgr {
                         time,
                         ParticleMode::GroundShockwave,
                         position_snapped,
+                        Vec3::zero(),
                     ));
                 }
             }
@@ -834,10 +856,10 @@ struct Particle {
 }
 
 impl Particle {
-    fn new(lifespan: Duration, time: f64, mode: ParticleMode, pos: Vec3<f32>) -> Self {
+    fn new(lifespan: Duration, time: f64, mode: ParticleMode, pos: Vec3<f32>, vel: Vec3<f32>) -> Self {
         Particle {
             alive_until: time + lifespan.as_secs_f64(),
-            instance: ParticleInstance::new(time, lifespan.as_secs_f32(), mode, pos),
+            instance: ParticleInstance::new(time, lifespan.as_secs_f32(), mode, pos, vel),
         }
     }
 

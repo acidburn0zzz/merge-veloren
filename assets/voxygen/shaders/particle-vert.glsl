@@ -23,7 +23,7 @@ in vec3 inst_pos;
 in float inst_time;
 in float inst_lifespan;
 in float inst_entropy;
-in vec3 inst_dir;
+in vec3 inst_dir; // velocity
 in int inst_mode;
 
 out vec3 f_pos;
@@ -52,7 +52,7 @@ const int GROUND_SHOCKWAVE = 12;
 const int HEALING_BEAM = 13;
 const int ENERGY_NATURE = 14;
 const int LEVEL_UP = 15;
-const int BLEED = 16;
+const int IMPACT = 16;
 const int DESTROYED_BLOCK = 17;
 
 // meters per second squared (acceleration)
@@ -238,7 +238,7 @@ void main() {
 		attr = Attr(
 			linear_motion(
 				vec3(0),
-				vec3(0, 0, -2)
+				(inst_dir * (3.0 + rand0) * log(lifetime / inst_lifespan)) + vec3(0, 0, -2)
 			) + vec3(sin(r), sin(r + 0.7), sin(r * 0.5)) * 2.0,
 			vec3(4),
 			vec4(vec3(0.2 + rand7 * 0.2, 0.2 + (0.5 + rand6 * 0.5) * 0.6, 0), 1),
@@ -293,48 +293,33 @@ void main() {
 			spin_in_axis(vec3(rand6, rand7, rand8), rand9 * 3)
 		);
 	} else if (inst_mode == LEVEL_UP) {
-
-		// if(rand0 < -0.5) {
-		// 	// burst outwards like helicopter dust cloud
-		// 	attr = Attr(
-		// 		linear_motion(
-		// 			vec3(0),
-		// 			vec3(rand1, rand2, 0.1) * 20.0
-		// 		),
-		// 		vec3(1.0),
-		// 		vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
-		// 		identity()
-		// 	);
-		// } else {
-			// spiral upwards clockwise
-			float r = lifetime + (rand1 * 3.14 * 2);
-			attr = Attr(
-				vec3(sin(r), cos(r), 0.0)
-				+ linear_motion(
-				 	vec3(0),	
-				 	grav_vel(-1.0 + rand2)
-				)
-				,
-				vec3(1.0),
-				vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
-				identity()
-			);
-		//}
-	} else if (inst_mode == BLEED) {
+		float r = lifetime + (rand1 * 3.14 * 2);
+		attr = Attr(
+			vec3(sin(r), cos(r), 0.0)
+			+ linear_motion(
+				vec3(0),	
+				grav_vel(-1.0 + rand2)
+			)
+			,
+			vec3(1.0),
+			vec4(1, 1, 0, (1.0 - lifetime / inst_lifespan)),
+			identity()
+		);
+	} else if (inst_mode == IMPACT) {
 		attr = Attr(
 			linear_motion(
 				vec3(0),
-				vec3(rand1, rand2, 0.0) * 5.0 + grav_vel(earth_gravity)
+				vec3(rand1, rand2, rand3) * 5.0// + grav_vel(earth_gravity)
 			),
-			vec3(0.1 + rand0),
-			vec4(1, 0, 0, 1),
-			spin_in_axis(vec3(rand6, rand7, rand8), rand9 * 3)
+			vec3(1.0 - lifetime / inst_lifespan),
+			vec4(rand0),
+			identity() // spin_in_axis(vec3(rand6, rand7, rand8), rand9 * 3)
 		);
 	} else if (inst_mode == DESTROYED_BLOCK) {
 		attr = Attr(
 			linear_motion(
 				vec3(0),
-				vec3(rand1, rand2, rand3) * 50.0 + grav_vel(earth_gravity)
+				(inst_dir * (5.0 + rand0) * log(lifetime / inst_lifespan)) + grav_vel(earth_gravity)
 			),
 			vec3(11.0),
 			vec4(0, 0, 0, 1),
