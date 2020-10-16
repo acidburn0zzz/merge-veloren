@@ -5123,7 +5123,7 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 [[package]]
 name = "winit"
 version = "0.22.2"
-source = "git+https://github.com/Imberflur/winit.git?branch=macos-test#62acb90cd7179a719c2aa537951ee9f70cb02e71"
+source = "git+https://gitlab.com/veloren/winit.git?branch=macos-test#7e933196bd28813aa3edfad1878c3eb1bb439b78"
 dependencies = [
  "bitflags",
  "cocoa",
