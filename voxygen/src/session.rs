@@ -1075,6 +1075,7 @@ impl PlayState for SessionState {
                         global_state.window.renderer_mut(),
                         &mut global_state.audio,
                         &scene_data,
+                        &client,
                     );
 
                     // Process outcomes from client
