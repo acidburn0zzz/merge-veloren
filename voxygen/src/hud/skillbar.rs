@@ -622,10 +622,7 @@ impl<'a> Widget for Skillbar<'a> {
                     ToolKind::Bow(_) => self.imgs.bow_m1,
                     ToolKind::Sceptre(_) => self.imgs.heal_0,
                     ToolKind::Staff(_) => self.imgs.fireball,
-                    ToolKind::Debug(kind) => match kind.as_ref() {
-                        "Boost" => self.imgs.flyingrod_m1,
-                        _ => self.imgs.nothing,
-                    },
+                    ToolKind::Debug(_) => self.imgs.flyingrod_m1,
                     _ => self.imgs.nothing,
                 },
                 _ => self.imgs.nothing,
@@ -701,10 +698,7 @@ impl<'a> Widget for Skillbar<'a> {
             Some(ToolKind::Bow(_)) => self.imgs.bow_m2,
             Some(ToolKind::Sceptre(_)) => self.imgs.heal_bomb,
             Some(ToolKind::Staff(_)) => self.imgs.flamethrower,
-            Some(ToolKind::Debug(kind)) => match kind.as_ref() {
-                "Boost" => self.imgs.flyingrod_m2,
-                _ => self.imgs.nothing,
-            },
+            Some(ToolKind::Debug(_)) => self.imgs.flyingrod_m2,
             _ => self.imgs.nothing,
         })
         .w_h(32.0 * scale, 32.0 * scale)
@@ -813,14 +807,10 @@ impl<'a> Widget for Skillbar<'a> {
                                     "Burst",
                                     "\nLaunches a burst of arrows at the top \nof a running leap.",
                                 )),
-                                ToolKind::Debug(kind) => match kind.as_ref() {
-                                    "Boost" => Some((
-                                        "Possessing Arrow",
-                                        "\nShoots a poisonous arrow.\nLets you control your \
-                                         target.",
-                                    )),
-                                    _ => None,
-                                },
+                                ToolKind::Debug(_) => Some((
+                                    "Possessing Arrow",
+                                    "\nShoots a poisonous arrow.\nLets you control your target.",
+                                )),
                                 _ => None,
                             },
                             _ => None,
