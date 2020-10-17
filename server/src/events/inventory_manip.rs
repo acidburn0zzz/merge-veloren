@@ -1,4 +1,7 @@
-use crate::{client::InGameStream, Server, StateExt};
+use crate::{
+    streams::{GetStream, InGameStream},
+    Server, StateExt,
+};
 use common::{
     comp::{
         self, item,
@@ -282,7 +285,7 @@ pub fn handle_inventory(server: &mut Server, entity: EcsEntity, manip: comp::Inv
                                                             .map(|g| (g, s))
                                                     })
                                                     .map(|(g, s)| {
-                                                        s.0.send(ServerGeneral::GroupUpdate(g))
+                                                        s.send(ServerGeneral::GroupUpdate(g))
                                                     });
                                             },
                                         );
