@@ -6,7 +6,6 @@ pub mod body;
 mod character_state;
 pub mod chat;
 mod controller;
-mod damage;
 mod energy;
 pub mod group;
 mod inputs;
@@ -39,7 +38,6 @@ pub use controller::{
     Climb, ControlAction, ControlEvent, Controller, ControllerInputs, GroupManip, Input,
     InventoryManip, MountState, Mounting,
 };
-pub use damage::{Damage, DamageSource};
 pub use energy::{Energy, EnergySource};
 pub use group::Group;
 pub use inputs::CanBuild;
