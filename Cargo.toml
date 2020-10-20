@@ -20,7 +20,7 @@ opt-level = 2
 overflow-checks = true
 debug-assertions = true
 panic = "abort"
-debug = false
+debug = true
 codegen-units = 8
 lto = false
 incremental = true
@@ -70,7 +70,7 @@ opt-level = 3
 overflow-checks = false
 debug-assertions = false
 lto = true
-debug = false
+debug = 1
 
 # this profile is used by developers for release profiling
 [profile.releasedebuginfo]
