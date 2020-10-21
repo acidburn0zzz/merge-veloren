@@ -92,7 +92,7 @@ impl<'a> System<'a> for Sys {
                         > settings.client_timeout.as_secs() as f64 * 0.5
                     {
                         // Try pinging the client if the timeout is nearing.
-                        ping_stream.send_unchecked(PingMsg::Ping);
+                        ping_stream.send_fallible(PingMsg::Ping);
                     }
                 },
             }
