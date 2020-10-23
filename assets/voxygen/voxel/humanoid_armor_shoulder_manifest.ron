@@ -271,5 +271,15 @@
                 color: None
             )
         ),
+        "VeloriteMage0": (
+            left: (
+                vox_spec: ("armor.shoulder.velorite_battlemage_left", (-6.0, -4.0 , 0.0)),
+                color: None
+            ),
+            right: (
+                vox_spec: ("armor.shoulder.velorite_battlemage_left", (-1.0, -4.0, 0.0)),
+                color: None
+            )
+        ),
     },
 ))

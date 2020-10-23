@@ -54,6 +54,14 @@
         (0.0, 0.0, -4.0), (-120.0, 90.0, 0.0), 1.1,
     ),
     // Swords
+    Tool(Sword("FrostCleaver0")): VoxTrans(
+        "voxel.weapon.sword.frost_cleaver-0",
+        (0.0, 0.0, 0.0), (-135.0, 90.0, 0.0), 1.40,
+    ),
+    Tool(Sword("FrostCleaver1")): VoxTrans(
+        "voxel.weapon.sword.frost_cleaver-1",
+        (0.0, 0.0, 0.0), (-135.0, 90.0, 0.0), 1.40,
+    ),
     Tool(Sword("Short0")): VoxTrans(
         "voxel.weapon.sword.short_2h-0",
         (-3.0, 3.0, 0.0), (-135.0, 90.0, 0.0), 1.60,
@@ -705,6 +713,35 @@
     ),
     Armor(Chest("WorkerOrange1")): VoxTrans(
         "voxel.armor.chest.shirt_white-0",
+        (0.0, 0.0, 0.0), (-90.0, 180.0, 0.0), 1.2,
+    ),
+    // Velorite Battlemage Set
+    Armor(Chest("VeloriteMage0")): VoxTrans(
+        "voxel.armor.chest.velorite_battlemage",
+        (0.0, 0.0, 0.0), (-90.0, 180.0, 0.0), 1.2,
+    ),
+    Armor(Pants("VeloriteMage0")): VoxTrans(
+        "voxel.armor.pants.velorite_battlemage",
+        (0.0, 0.0, 0.0), (-90.0, 180.0, 0.0), 1.2,
+    ),
+    Armor(Belt("VeloriteMage0")): VoxTrans(
+        "voxel.armor.belt.velorite_battlemage",
+        (0.0, 0.0, 0.0), (-90.0, 180.0, 0.0), 1.8,
+    ),
+    Armor(Foot("VeloriteMage0")): VoxTrans(
+        "voxel.armor.foot.velorite_battlemage",
+        (0.0, 0.0, 0.0), (-95.0, 140.0, 0.0), 1.1,
+    ),
+    Armor(Hand("VeloriteMage0")): VoxTrans(
+        "voxel.armor.hand.velorite_battlemage_left",
+        (0.0, -1.0, 0.0), (-90.0, 135.0, 0.0), 1.0,
+    ),
+    Armor(Shoulder("VeloriteMage0")): VoxTrans(
+        "voxel.armor.shoulder.velorite_battlemage_left",
+        (0.0, 0.0, 0.0), (-90.0, 180.0, 0.0), 1.2,
+    ),
+    Armor(Back("VeloriteMage0")): VoxTrans(
+        "voxel.armor.back.velorite_battlemage",
         (0.0, 0.0, 0.0), (-90.0, 180.0, 0.0), 1.2,
     ),
     // Assassin Set

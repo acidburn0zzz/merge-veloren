@@ -146,6 +146,10 @@
             vox_spec: ("armor.chest.bonerattler", (-7.0, -4.5, 2.0)),
             color: None
         ),
+        "VeloriteMage0": (
+          vox_spec: ("armor.chest.velorite_battlemage", (-7.0, -4.5, 0.5)),
+          color: None
+      ),
     },
 )
 )
