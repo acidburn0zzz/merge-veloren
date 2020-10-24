@@ -126,7 +126,7 @@
             vox_spec: ("armor.chest.cultist", (-7.0, -3.5, 2.0)),
             color: Some((30, 0, 64))
         ),
-        "CultistBlue": (
+        "VeloriteMage0": (
             vox_spec: ("armor.chest.cultist", (-7.0, -3.5, 2.0)),
             color: Some((57, 81, 132))
         ),

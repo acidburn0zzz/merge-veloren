@@ -68,7 +68,7 @@
             vox_spec: ("armor.pants.cultist", (-5.0, -3.5, 1.0)),
             color: Some((30, 0, 64))
         ),
-        "CultistBlue" : (
+        "VeloriteMage0" : (
             vox_spec: ("armor.pants.cultist", (-5.0, -3.5, 1.0)),
             color: Some((57, 81, 132))
         ),
