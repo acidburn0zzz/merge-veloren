@@ -337,7 +337,7 @@ impl Tool {
                     buildup_duration: Duration::from_millis(200),
                     shoot_duration: Duration::from_millis(200),
                     recover_duration: Duration::from_millis(800),
-                    leap: Some(10.0),
+                    leap: Some(5.0),
                     projectile: Projectile {
                         hit_solid: vec![projectile::Effect::Stick],
                         hit_entity: vec![
@@ -541,10 +541,11 @@ impl Tool {
                 } else if kind == "BeastClaws" {
                     vec![BasicMelee {
                         energy_cost: 0,
-                        buildup_duration: Duration::from_millis(500),
+                        buildup_duration: Duration::from_millis(250),
+                        swing_duration: Duration::from_millis(250),
                         recover_duration: Duration::from_millis(250),
                         knockback: 25.0,
-                        base_healthchange: -200,
+                        base_damage: 200,
                         range: 5.0,
                         max_angle: 120.0,
                     }]
