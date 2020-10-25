@@ -326,6 +326,25 @@ impl Item {
                 });
                 chosen.choose()
             },
+            SpriteKind::ChestBurried => {
+                chosen = Lottery::<String>::load_expect(match rng.gen_range(0, 7) {
+                    0 => "common.loot_tables.loot_table_weapon_uncommon",
+                    1 => "common.loot_tables.loot_table_weapon_common",
+                    2 => "common.loot_tables.loot_table_armor_light",
+                    3 => "common.loot_tables.loot_table_armor_cloth",
+                    4 => "common.loot_tables.loot_table_armor_heavy",
+                    _ => "common.loot_tables.loot_table_armor_misc",
+                });
+                chosen.choose()
+            },
+            SpriteKind::Mud => {
+                chosen = Lottery::<String>::load_expect(match rng.gen_range(0, 4) {
+                    0 => "common.loot_tables.loot_table_crafting",
+                    1 => "common.loot_tables.loot_table_weapon_common",
+                    _ => "common.loot_tables.loot_table_armor_misc",
+                });
+                chosen.choose()
+            },
             SpriteKind::Crate => {
                 chosen = Lottery::<String>::load_expect(match rng.gen_range(0, 4) {
                     0 => "common.loot_tables.loot_table_crafting",
